@@ -24,6 +24,8 @@ default['bcpc']['bootstrap']['preseed']['kernel'] = 'linux-generic-lts-trusty'
 default['bcpc']['bootstrap']['preseed']['add_kernel_opts'] = 'console=ttyS0'
 default['bcpc']['bootstrap']['preseed']['late_command'] = 'true'
 default['bcpc']['bootstrap']['admin_users'] = []
+default['bcpc']['bootstrap']['admin']['user'] = "vagrant"
+default['bcpc']['bootstrap']['admin']['group'] = "vagrant"
 
 #
 # The node_number is used to derive Kafka broker IDs, Zookeeper myid

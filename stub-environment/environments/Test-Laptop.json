@@ -12,25 +12,10 @@
       "networks": {
         "subnet1": {
           "management": {
-            "vip" : "10.0.100.5",
-            "interface" : "eth0",
-            "netmask" : "255.255.255.0",
-            "cidr" : "10.0.100.0/24",
-            "gateway" : "10.0.100.3"
-          },
-          "storage": {
-            "interface" : "eth1",
-            "netmask" : "255.255.255.0",
-            "cidr" : "172.16.100.0/24",
-            "gateway" : "172.16.100.3"
+            "vip" : "10.0.100.5"
           },
           "floating": {
-            "vip" : "192.168.100.5",
-            "interface" : "eth2",
-            "netmask" : "255.255.255.0",
-            "cidr" : "192.168.100.0/24",
-            "gateway" : "192.168.100.3",
-            "available_subnet" : "192.168.100.128/25"
+            "vip" : "192.168.100.5"
           }
         }
       },
@@ -42,7 +27,6 @@
         "dhcp_subnet" : "10.0.100.0",
         "dhcp_range" : "10.0.100.14 10.0.100.250"
       },
-      "dns_servers" : [ "8.8.8.8", "8.8.4.4" ],
       "repos" : {
         "hortonworks": "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.4.0",
         "hdp_utils": "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12"
@@ -121,7 +105,6 @@
        "servers" : [ "0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org" ]
     },
     "chef_client": {
-      "server_url": "http://10.0.100.3:4000",
       "cache_path": "/var/chef/cache",
       "config": {
          "verify_api_cert": false
