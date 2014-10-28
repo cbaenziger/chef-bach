@@ -28,5 +28,5 @@ if [[ "$admin_val" != "true" ]]; then
   echo -e "/\"admin\": false\ns/false/true\nw\nq\n" | EDITOR=ed sudo -E knife client edit `hostname -f` -c .chef/knife.rb -k /etc/chef-server/admin.pem -u admin
 fi
 
-knife node run_list add $(hostname -f) 'role[BCPC-Bootstrap]' -c .chef/knife.rb
+knife node run_list add $(hostname -f) 'role[BCPC-OpenStack-Client],role[Basic],recipe[bcpc::bootstrap],recipe[apache-mirror]' -c .chef/knife.rb
 sudo chef-client -c .chef/knife.rb
