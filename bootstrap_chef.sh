@@ -64,7 +64,7 @@ if [[ -z $VAGRANT ]]; then
   rsync  $RSYNCEXTRA -avP -e "ssh -i $KEYFILE" --exclude vbox --exclude $KEYFILE --exclude .chef . ${SSH_USER}@$IP:chef-bcpc 
   $SSH_CMD "cd $BCPC_DIR && ./setup_ssh_keys.sh ${KEYFILE}.pub"
 else
-  if [[! "${SSH_CMD}" =~ bash.* ]]; then
+  if [[ ! "${SSH_CMD}" =~ bash.* ]]; then
     echo "Running rsync of Vagrant install"
     $SSH_CMD "rsync $RSYNCEXTRA -avP --exclude vbox --exclude .chef /chef-bcpc-host/ /home/vagrant/chef-bcpc/"
   fi
