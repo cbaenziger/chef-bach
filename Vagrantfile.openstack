@@ -80,9 +80,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     build_cluster_txt = <<-EOH
     cd chef-bcpc
     rm cluster.txt
-    echo "#{CLUSTER_NAME}BCPC-1	-	#{FLOATING_IP_2}	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-NoHA],role[BCPC-Hadoop-Head-HBase]" >> cluster.txt
-    echo "#{CLUSTER_NAME}BCPC-2	-	#{FLOATING_IP_3}	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-Standby],role[BCPC-Hadoop-Head-MapReduce],role[BCPC-Hadoop-Head-Hive]" >> cluster.txt
-    echo "#{CLUSTER_NAME}BCPC-3	-	#{FLOATING_IP_4}	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Worker]" >> cluster.txt
+    echo "#{CLUSTER_NAME}BCPC-1	-	#{FLOATING_IP_2}	-	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-NoHA],role[BCPC-Hadoop-Head-HBase]" >> cluster.txt
+    echo "#{CLUSTER_NAME}BCPC-2	-	#{FLOATING_IP_3}	-	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-Standby],role[BCPC-Hadoop-Head-MapReduce],role[BCPC-Hadoop-Head-Hive]" >> cluster.txt
+    echo "#{CLUSTER_NAME}BCPC-3	-	#{FLOATING_IP_4}	-	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Worker]" >> cluster.txt
     ./cluster-assign-roles.sh Test-Laptop hadoop
     EOH
     bcpcchef.vm.provision :shell, :inline => "#{build_cluster_txt}"
