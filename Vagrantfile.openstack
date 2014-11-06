@@ -13,8 +13,8 @@ FLOATING_IP_3="1.2.3.6"
 FLOATING_IP_4="1.2.3.7"
 
 # these rules come from bcpc::powerdns SQL function dns_name
-def munge_hostname(hostname)
-  return hostname.downcase.
+def munge_domainname(domainname)
+  return domainname.downcase.
          gsub('&', 'and').
          gsub('_','-').
          gsub(' ','-').
@@ -49,8 +49,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
     bcpcchef.vm.box = "dummy"
-    raise ArgumentError, 'hostnames longer than 64 characters not permitted per https://docs.getchef.com/server_security.html' if "#{hostname}.#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}".length > 64
-    bcpcchef.vm.hostname = "#{hostname}.#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
+    raise ArgumentError, 'hostnames longer than 64 characters not permitted per https://docs.getchef.com/server_security.html' if "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}".length > 64
+    bcpcchef.vm.hostname = "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
     bcpcchef.vm.provider :openstack do |os|
      vm_settings.call(os)
      os.server_name = hostname
@@ -72,9 +72,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     build_cluster_txt = <<-EOH
     cd chef-bcpc
     rm cluster.txt
-    echo "BCPC-1	-	#{FLOATING_IP_2}	-	#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-NoHA],role[BCPC-Hadoop-Head-HBase]" >> cluster.txt
-    echo "BCPC-2	-	#{FLOATING_IP_3}	-	#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-Standby],role[BCPC-Hadoop-Head-MapReduce],role[BCPC-Hadoop-Head-Hive]" >> cluster.txt
-    echo "BCPC-3	-	#{FLOATING_IP_4}	-	#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Worker]" >> cluster.txt
+    echo "BCPC-1	-	#{FLOATING_IP_2}	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-NoHA],role[BCPC-Hadoop-Head-HBase]" >> cluster.txt
+    echo "BCPC-2	-	#{FLOATING_IP_3}	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Head-Namenode-Standby],role[BCPC-Hadoop-Head-MapReduce],role[BCPC-Hadoop-Head-Hive]" >> cluster.txt
+    echo "BCPC-3	-	#{FLOATING_IP_4}	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Worker]" >> cluster.txt
     ./cluster-assign-roles.sh Test-Laptop hadoop
     EOH
     bcpcchef.vm.provision :shell, :inline => "#{build_cluster_txt}"
@@ -86,7 +86,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
     bcpc1.vm.box = "dummy"
-    bcpc1.vm.hostname = "#{hostname}.#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
+    bcpc1.vm.hostname = "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
     bcpc1.vm.provider :openstack do |os|
      vm_settings.call(os)
      os.server_name = hostname
@@ -102,7 +102,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
     bcpc2.vm.box = "dummy"
-    bcpc2.vm.hostname = "#{hostname}.#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
+    bcpc2.vm.hostname = "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
     bcpc2.vm.provider :openstack do |os|
      vm_settings.call(os)
      os.server_name = hostname
@@ -118,7 +118,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
     bcpc3.vm.box = "dummy"
-    bcpc3.vm.hostname = "#{hostname}.#{munge_hostname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
+    bcpc3.vm.hostname = "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
     bcpc3.vm.provider :openstack do |os|
      vm_settings.call(os)
      os.server_name = hostname
