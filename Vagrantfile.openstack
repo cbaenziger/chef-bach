@@ -8,7 +8,7 @@ OS_TENANTNAME=ENV["OS_TENANT_NAME"]
 OS_ENDPOINT=URI.parse(ENV["OS_AUTH_URL"]).host
 
 # verify we have a domain name for the OS_AUTH_URL
-raise ArgumentError, 'Need OS_AUTH_URL (#{OS_ENDPOINT}) to be the hostname and DNS domain of the OpenStack cluster VMs -- not an IP' if Resolv.getaddress(OS_ENDPOINT) == Resolv.getaddress(OS_ENDPOINT)
+raise ArgumentError, "Need OS_AUTH_URL (#{OS_ENDPOINT}) to be the hostname and DNS domain of the OpenStack cluster VMs -- not an IP" if Resolv.getaddress(OS_ENDPOINT) == OS_ENDPOINT
 
 # instead of doing :auto for floats which would require DNS lookups to build a cluster.txt
 # simply require the user to provide them here
@@ -57,13 +57,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
     bcpcchef.vm.box = "dummy"
-    raise ArgumentError, 'hostnames longer than 64 characters not permitted per https://docs.getchef.com/server_security.html' if "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}".length > 64
-    bcpcchef.vm.hostname = "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
+    fqdn = "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
+    raise ArgumentError, "hostnames longer than 64 characters not permitted per https://docs.getchef.com/server_security.html\nTrying: #{fqdn}" if fqdn.length > 64
+    bcpcchef.vm.hostname = fqdn
     bcpcchef.vm.provider :openstack do |os|
      vm_settings.call(os)
      os.server_name = hostname
-     os.floating_ip        = FLOATING_IP_1
-     os.flavor       = /m1.medium/
+     os.floating_ip = FLOATING_IP_1
+     os.flavor = /m1.medium/
     end
 
     # spoof having a vagrant homedir
@@ -98,9 +99,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     bcpc1.vm.provider :openstack do |os|
      vm_settings.call(os)
      os.server_name = hostname
-     os.floating_ip        = FLOATING_IP_2
-     os.disks	= [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 50},
-                  {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
+     os.floating_ip = FLOATING_IP_2
+     os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 50},
+                 {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
     end
   end
 
@@ -131,8 +132,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      vm_settings.call(os)
      os.server_name = hostname
      os.floating_ip        = FLOATING_IP_4
-     os.disks	= [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 10},
-                  {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
+     os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 10},
+                 {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
     end
   end
 
