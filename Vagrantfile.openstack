@@ -18,7 +18,7 @@ FLOATING_IP_3="1.2.3.6"
 FLOATING_IP_4="1.2.3.7"
 
 # needs to be a valide ruby symbol name (e.g. no hypens, underscores)
-CLUSTER_NAME="Test"
+CLUSTER_NAME="C"
 
 # these rules come from bcpc::powerdns SQL function dns_name
 def munge_domainname(domainname)
@@ -71,8 +71,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     bcpcchef.vm.provision :shell, :inline => "sudo ln -s /home/ubuntu /home/vagrant; sudo ln -s /vagrant /home/ubuntu/chef-bcpc" 
     # clean up /etc/hosts to have correct IP address
     bcpcchef.vm.provision :shell, :inline => "sudo sed -i \"s/127.0.1.1/$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" /etc/hosts"
-    # clean up Chef environment to have correct IP address for bootstrap server, float and mgmt vips
-    bcpcchef.vm.provision :shell, :inline => "sed -i \"s/\(10.0.100.3\|10.0.100.5\|192.168.100.5\)/$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" chef-bcpc/environments/Test-Laptop.json"
+    # clean up Chef environment to have correct IP address for bootstrap server, float and mgmt VIPs
+    bcpcchef.vm.provision :shell, :inline => "sed -i \"s/10.0.100.3/$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" chef-bcpc/environments/Test-Laptop.json"
+    bcpcchef.vm.provision :shell, :inline => "sed -ei \"s/10.0.100.5\|192.168.100.5\)/#{FLOATING_IP_2}/\" chef-bcpc/environments/Test-Laptop.json"
     # build required binaries
     bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && sudo -E ./build_bins.sh || echo '##### Build_bins Failed'"
     # bootstrap the chef server
