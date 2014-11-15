@@ -68,17 +68,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     # spoof having a vagrant homedir
-    bcpcchef.vm.provision :shell, :inline => "sudo ln -s /home/ubuntu /home/vagrant; sudo ln -s /vagrant /home/ubuntu/chef-bcpc" 
+    bcpcchef.vm.provision :shell, :inline => "ln -s /home/ubuntu /home/vagrant ; ln -s /vagrant /home/ubuntu/chef-bcpc ; chown -R ubuntu /home/ubuntu/" 
     # clean up /etc/hosts to have correct IP address
-    bcpcchef.vm.provision :shell, :inline => "sudo sed -i \"s/127.0.1.1/$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" /etc/hosts"
+    bcpcchef.vm.provision :shell, :inline => "sed -i \"s/127.0.1.1/\$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" /etc/hosts"
     # clean up Chef environment to have correct IP address for bootstrap server, float and mgmt VIPs
-    bcpcchef.vm.provision :shell, :inline => "sed -i \"s/10.0.100.3/$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" chef-bcpc/environments/Test-Laptop.json"
-    bcpcchef.vm.provision :shell, :inline => "sed -ei \"s/10.0.100.5\|192.168.100.5\)/#{FLOATING_IP_2}/\" chef-bcpc/environments/Test-Laptop.json"
+    bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i \"s/10.0.100.3/\$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" chef-bcpc/environments/Test-Laptop.json"
+    bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e \"s/\(10.0.100.5\|192.168.100.5\)/#{FLOATING_IP_2}/\" chef-bcpc/environments/Test-Laptop.json"
     # build required binaries
-    bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && sudo -E ./build_bins.sh || echo '##### Build_bins Failed'"
+    bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && sudo -E ./build_bins.sh"
     # bootstrap the chef server
-    bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && ln -s /bin/true rsync; export PATH=.:${PATH} ; ./bootstrap_chef.sh --vagrant-local $(ip addr show dev eth0 scope global | grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)" 
-    bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && ln -s /bin/true rsync; export PATH=.:${PATH} ; ./bootstrap_chef.sh --vagrant-local $(ip addr show dev eth0 scope global | grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)" 
+    bcpcchef.vm.provision :shell, :privileged => false, :inline => "cd chef-bcpc && source proxy_setup.sh && ln -s /bin/true rsync; export PATH=.:${PATH} ; ./bootstrap_chef.sh --vagrant-local \$(ip addr show dev eth0 scope global | grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)" 
     build_cluster_txt = <<-EOH
     cd chef-bcpc
     rm cluster.txt
@@ -87,7 +86,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     echo "#{CLUSTER_NAME}BCPC-3	-	#{FLOATING_IP_4}	-	#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}	role[BCPC-Hadoop-Worker]" >> cluster.txt
     ./cluster-assign-roles.sh Test-Laptop hadoop
     EOH
-    bcpcchef.vm.provision :shell, :inline => "#{build_cluster_txt}"
+    bcpcchef.vm.provision :shell, :keep_color => false, :privileged => false, :inline => "#{build_cluster_txt}"
   end
 
   config.vm.define "#{CLUSTER_NAME}bcpc1".to_sym do |bcpc1|
