@@ -1,11 +1,30 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'json'
 require 'vagrant-openstack-plugin'
 require 'resolv'
 require 'uri'
 
 OS_TENANTNAME=ENV["OS_TENANT_NAME"]
 OS_ENDPOINT=URI.parse(ENV["OS_AUTH_URL"]).host
+
+# load Chef environment
+base_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
+json_file = Dir[File.join(File.join(base_dir, 'environments'), '*.json')]
+if json_file.empty?
+  puts "No environment file found to parse. Please make sure at least one environment file exists."
+  exit
+end
+if json_file.length > 1
+  puts "More than one environment file found."
+  exit
+end
+
+file_name=File.basename(json_file.join(","))
+chef_env = JSON.parse(File.read(json_file.join(",")))
+
+# get proxy from Chef environment
+proxy_url = chef_env["override_attributes"]["bcpc"]["bootstrap"]["proxy"]
 
 # verify we have a domain name for the OS_AUTH_URL
 raise ArgumentError, "Need OS_AUTH_URL (#{OS_ENDPOINT}) to be the hostname and DNS domain of the OpenStack cluster VMs -- not an IP" if Resolv.getaddress(OS_ENDPOINT) == OS_ENDPOINT
@@ -103,6 +122,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 50},
                  {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
     end
+    if proxy_url
+      bcpc1.vm.provision :shell, :inline => "echo 'Acquire::http::Proxy \"#{proxy_url}\";' >> /etc/apt/apt.conf"
+    end
+    # Volume attachment is inconsistent on first boot, so reboot
+    bcpc1.vm.provision :shell, :inline => "reboot"
   end
 
   config.vm.define "#{CLUSTER_NAME}bcpc2".to_sym do |bcpc2|
@@ -119,6 +143,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      os.disks	= [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 10},
                   {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
     end
+    if proxy_url
+      bcpc2.vm.provision :shell, :inline => "echo 'Acquire::http::Proxy \"#{proxy_url}\";' >> /etc/apt/apt.conf"
+    end
+    # Volume attachment is inconsistent on first boot, so reboot
+    bcpc2.vm.provision :shell, :inline => "reboot"
   end
 
   config.vm.define "#{CLUSTER_NAME}bcpc3".to_sym do |bcpc3|
@@ -135,6 +164,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 10},
                  {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
     end
+    if proxy_url
+      bcpc3.vm.provision :shell, :inline => "echo 'Acquire::http::Proxy \"#{proxy_url}\";' >> /etc/apt/apt.conf"
+    end
+    # Volume attachment is inconsistent on first boot, so reboot
+    bcpc3.vm.provision :shell, :inline => "reboot"
   end
 
   config.ca_certificates.enabled = false
