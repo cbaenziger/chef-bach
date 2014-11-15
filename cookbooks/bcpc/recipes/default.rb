@@ -52,7 +52,8 @@ if not plausible_ips or plausible_ips.length < 1
 end
 
 node.set['bcpc']['management']['ip'] = ips.select {|ip,v| v['family'] == "inet" and
-                                                   ip != mgmt_vip and mgmt_cidr===ip}.first[0]
+                                                   ip != mgmt_vip and mgmt_cidr===ip}.first[0] \
+                                                   if not node['bcpc']['management']['ip']
 
 mgmt_bitlen = (node['bcpc']['networks'][subnet]['management']['cidr'].match /\d+\.\d+\.\d+\.\d+\/(\d+)/)[1].to_i
 mgmt_hostaddr = IPAddr.new(node['bcpc']['management']['ip'])<<mgmt_bitlen>>mgmt_bitlen
