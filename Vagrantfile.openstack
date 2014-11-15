@@ -39,6 +39,9 @@ FLOATING_IP_4="1.2.3.7"
 # needs to be a valide ruby symbol name (e.g. no hypens, underscores)
 CLUSTER_NAME="C"
 
+# cluster disk size
+DISK_SIZE=10
+
 # these rules come from bcpc::powerdns SQL function dns_name
 def munge_domainname(domainname)
   return domainname.downcase.
@@ -119,8 +122,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      vm_settings.call(os)
      os.server_name = hostname
      os.floating_ip = FLOATING_IP_2
-     os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 50},
-                 {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
+     os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => DISK_SIZE},
+                 {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => DISK_SIZE}]
     end
     if proxy_url
       bcpc1.vm.provision :shell, :inline => "echo 'Acquire::http::Proxy \"#{proxy_url}\";' >> /etc/apt/apt.conf"
@@ -140,8 +143,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      vm_settings.call(os)
      os.server_name = hostname
      os.floating_ip        = FLOATING_IP_3
-     os.disks	= [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 10},
-                  {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
+     os.disks	= [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => DISK_SIZE},
+                  {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => DISK_SIZE}]
     end
     if proxy_url
       bcpc2.vm.provision :shell, :inline => "echo 'Acquire::http::Proxy \"#{proxy_url}\";' >> /etc/apt/apt.conf"
@@ -161,8 +164,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      vm_settings.call(os)
      os.server_name = hostname
      os.floating_ip        = FLOATING_IP_4
-     os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => 10},
-                 {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => 10}]
+     os.disks = [{"name" => "#{hostname} disk 1", "description" => "Chef-BCPC Disk", "size" => DISK_SIZE},
+                 {"name" => "#{hostname} disk 2", "description" => "Chef-BCPC Disk", "size" => DISK_SIZE}]
     end
     if proxy_url
       bcpc3.vm.provision :shell, :inline => "echo 'Acquire::http::Proxy \"#{proxy_url}\";' >> /etc/apt/apt.conf"
