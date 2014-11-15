@@ -17,10 +17,9 @@ CHEF_ENVIRONMENT=$2
 
 # Assume we are running in the chef-bcpc directory
 
-# Are we running under Vagrant?  If so, jump through some extra hoops.
 sudo chef-client -E "$CHEF_ENVIRONMENT" -c .chef/knife.rb
-sudo chown $(whoami):root .chef/$(hostname -f).pem
-sudo chmod 550 .chef/$(hostname -f).pem
+sudo chown -R $(whoami):root .chef/
+sudo chmod -R 550 .chef/
 
 admin_val=`knife client show $(hostname -f) -c .chef/knife.rb | grep ^admin: | sed "s/admin:[^a-z]*//"`
 if [[ "$admin_val" != "true" ]]; then
