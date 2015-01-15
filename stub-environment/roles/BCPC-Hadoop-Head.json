@@ -13,6 +13,7 @@
     "recipe[bcpc::zabbix-head]",
     "recipe[bcpc::zabbix-work]",
     "recipe[bcpc::graphite]",
+    "recipe[bcpc::powerdns]",
     "recipe[bcpc-hadoop::disks]",
     "recipe[bcpc-hadoop::graphite_disk_wrapper]",
     "recipe[bcpc::graphite]",
