@@ -6,7 +6,6 @@
     "run_list": [
       "recipe[bach_common::motd]",
       "recipe[bcpc::graphite_handler]",
-      "role[BCPC-OpenStack-Client]",
       "recipe[apt]",
       "recipe[ubuntu]",
       "recipe[ntp]",
