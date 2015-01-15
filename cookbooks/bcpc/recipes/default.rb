@@ -51,6 +51,11 @@ if not plausible_ips or plausible_ips.length < 1
   raise "Unable to find any plausible IPs for node['bcpc']['management']['ip']\nPossible IPs: #{ips}\nCan not match #{mgmt_vip} and must be in network #{subnet} -- #{mgmt_cidr.to_range}"
 end
 
+# select the fixed IP if we are on OpenStack
+node.set['bcpc']['management']['ip'] = node['openstack']['local_ipv4'] if node['openstack']['local_ipv4']
+
+# select the first IP address which is on the management network skip the VIP if we have more
+# than one address
 node.set['bcpc']['management']['ip'] = ips.select {|ip,v| v['family'] == "inet" and
                                                    ip != mgmt_vip and mgmt_cidr===ip}.first[0] \
                                                    if not node['bcpc']['management']['ip']
