@@ -76,7 +76,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      os.tenant             = OS_TENANTNAME
   }
 
-  (1...FLOATING_IPS[1..-1].length()).each do |num|
+  (1...FLOATING_IPS.length()).each do |num|
     config.vm.define "#{CLUSTER_NAME}bcpc#{num}".to_sym do |vm|
       hostname="#{CLUSTER_NAME}bcpc-#{num}"
       vm.ssh.private_key_path = "vagrant_ssh/id_rsa"
@@ -98,7 +98,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  config.vm.define "#{CLUSTER_NAME}bcpcchef".to_sym  do |bcpcchef|
+  config.vm.define "#{CLUSTER_NAME}bcpcchef".to_sym, primary: true, autostart: false  do |bcpcchef|
     hostname="#{CLUSTER_NAME}bcpc-chef"
     bcpcchef.ssh.private_key_path = "vagrant_ssh/id_rsa"
 
@@ -144,6 +144,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # clean up Chef environment to have correct IP address for bootstrap server, float and mgmt VIPs
     bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i \"s/10.0.100.3/\$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" chef-bcpc/environments/Test-Laptop.json"
     bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e \"s/\\(10.0.100.5\\|192.168.100.5\\)/#{vm1_fixed_ip}/\" chef-bcpc/environments/Test-Laptop.json"
+    # set correct domain name in environment
+    bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e 's/\"bcpc\"[ ]*:[ ]*{/\"bcpc\": {\n\"domain_name\": \"#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}\",/' chef-bcpc/environments/Test-Laptop.json"
     # build required binaries
     bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && sudo -E ./build_bins.sh"
     # bootstrap the chef server
