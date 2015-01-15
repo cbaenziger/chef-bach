@@ -1,9 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'fog'
 require 'json'
-require 'vagrant-openstack-plugin'
 require 'resolv'
 require 'uri'
+require 'vagrant-openstack-plugin'
 
 OS_TENANTNAME=ENV["OS_TENANT_NAME"]
 OS_ENDPOINT=URI.parse(ENV["OS_AUTH_URL"]).host
@@ -101,7 +102,30 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     hostname="#{CLUSTER_NAME}bcpc-chef"
     bcpcchef.ssh.private_key_path = "vagrant_ssh/id_rsa"
 
-  # Every Vagrant virtual environment requires a box to build off of.
+    openstack_compute = Fog::Compute.new({:provider           => :openstack,
+                                          :connection_options => { :ssl_verify_peer => false },
+                                          :openstack_username => ENV["OS_USERNAME"],
+                                          :openstack_api_key  => ENV["OS_PASSWORD"],
+                                          :openstack_auth_url => "https://#{OS_ENDPOINT}:5000/v2.0/tokens",
+                                          :openstack_tenant   => OS_TENANTNAME
+                                          })
+
+    machines = openstack_compute.servers.all( :name => "#{CLUSTER_NAME}bcpc-1" )
+    id = machines.first.id if machines.length() == 1
+    if not id
+      nil
+      puts "Unable to find host #{CLUSTER_NAME}bcpc-1 found #{machines.length()} matches"
+      exit
+    end
+    ips = openstack_compute.servers.get(id).private_ip_addresses
+    if not ips.length() == 1
+      nil
+      puts "Unable to find IP for #{CLUSTER_NAME}bcpc-#{idx} found #{ips.length()} IPs"
+      exit
+    end
+    vm1_fixed_ip = ips.first
+
+    # Every Vagrant virtual environment requires a box to build off of.
     bcpcchef.vm.box = "dummy"
     fqdn = "#{hostname}.#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}"
     raise ArgumentError, "hostnames longer than 64 characters not permitted per https://docs.getchef.com/server_security.html\nTrying: #{fqdn}" if fqdn.length > 64
@@ -119,7 +143,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     bcpcchef.vm.provision :shell, :inline => "sed -i \"s/127.0.1.1/\$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" /etc/hosts"
     # clean up Chef environment to have correct IP address for bootstrap server, float and mgmt VIPs
     bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i \"s/10.0.100.3/\$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" chef-bcpc/environments/Test-Laptop.json"
-    bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e \"s/\\(10.0.100.5\\|192.168.100.5\\)/#{FLOATING_IPS[1]}/\" chef-bcpc/environments/Test-Laptop.json"
+    bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e \"s/\\(10.0.100.5\\|192.168.100.5\\)/#{vm1_fixed_ip}/\" chef-bcpc/environments/Test-Laptop.json"
     # build required binaries
     bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && sudo -E ./build_bins.sh"
     # bootstrap the chef server
