@@ -10,6 +10,9 @@
     "recipe[bcpc::networking]",
     "recipe[bcpc::mysql]",
     "recipe[bcpc::haproxy]",
+    "recipe[bcpc::zabbix-head]",
+    "recipe[bcpc::zabbix-work]",
+    "recipe[bcpc::graphite]",
     "recipe[bcpc-hadoop::disks]",
     "recipe[bcpc-hadoop::graphite_disk_wrapper]",
     "recipe[bcpc::graphite]",
@@ -20,7 +23,9 @@
     "recipe[bcpc-hadoop::configs]",
     "recipe[pam::default]",
     "recipe[bcpc-hadoop::zookeeper_server]",
-    "recipe[bcpc-hadoop::journalnode]"
+    "recipe[bcpc-hadoop::journalnode]",
+    "recipe[bcpc-hadoop::graphite_to_zabbix]",
+    "recipe[bcpc_jmxtrans]"
   ],
   "description": "A highly-available head node in a BCPC Hadoop cluster",
   "chef_type": "role",
