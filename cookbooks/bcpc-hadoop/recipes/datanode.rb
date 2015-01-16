@@ -6,15 +6,13 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
     'docopy' => true
 }
 
-%w{hadoop-hdfs-datanode
-   hadoop-client}.each do |pkg|
+%w{hadoop-hdfs-datanode}.each do |pkg|
   package pkg do
     action :upgrade
   end
 end
 
-# Setup HDFS datanode bits
-if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
+jf node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
   Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:disks]} than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]}! See comments of HDFS-4442.")
 end
 
