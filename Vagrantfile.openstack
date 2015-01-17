@@ -30,9 +30,9 @@ proxy_url = chef_env["override_attributes"]["bcpc"]["bootstrap"]["proxy"]
 # verify we have a domain name for the OS_AUTH_URL
 raise ArgumentError, "Need OS_AUTH_URL (#{OS_ENDPOINT}) to be the hostname and DNS domain of the OpenStack cluster VMs -- not an IP" if Resolv.getaddress(OS_ENDPOINT) == OS_ENDPOINT
 
-# ensure we have an authorized_keys and ssh private key in the vagrant_ssh directory
-raise ArgumentError, "Need a vagrant_ssh/id_rsa and vagrant_ssh/authorized_keys file to run" unless \
-    (File.exists?("vagrant_ssh/id_rsa") and File.exists?("vagrant_ssh/authorized_keys"))
+# ensure we have a ssh private key and authorized_keys in the vagrant_ssh directory
+raise ArgumentError, "Need a vagrant_ssh/id_rsa file to run" unless File.exists?("vagrant_ssh/id_rsa")
+`ssh-keygen -y -f vagrant_ssh/id_rsa > vagrant_ssh/authorized_keys` unless File.exists?("vagrant_ssh/authorized_keys")
 
 # instead of doing :auto for floats which would require DNS lookups to build a cluster.txt
 # simply require the user to provide them here
