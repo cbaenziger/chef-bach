@@ -112,18 +112,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     machines = openstack_compute.servers.all( :name => "#{CLUSTER_NAME}bcpc-1" )
     id = machines.first.id if machines.length() == 1
+    # Set a bogus address incase we do not have a bcpc-1 VM at this time
+    vm1_fixed_ip = "## DID NOT FIND #{CLUSTER_NAME}bcpc-1 VM ##"
     if not id
       nil
       puts "Unable to find host #{CLUSTER_NAME}bcpc-1 found #{machines.length()} matches"
-      exit
+    else
+      ips = openstack_compute.servers.get(id).private_ip_addresses
+      if not ips.length() == 1
+        nil
+        puts "Unable to find IP for #{CLUSTER_NAME}bcpc-#{idx} found #{ips.length()} IPs"
+      end
+      vm1_fixed_ip = ips.first
     end
-    ips = openstack_compute.servers.get(id).private_ip_addresses
-    if not ips.length() == 1
-      nil
-      puts "Unable to find IP for #{CLUSTER_NAME}bcpc-#{idx} found #{ips.length()} IPs"
-      exit
-    end
-    vm1_fixed_ip = ips.first
 
     # Every Vagrant virtual environment requires a box to build off of.
     bcpcchef.vm.box = "dummy"
@@ -145,7 +146,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i \"s/10.0.100.3/\$(ip addr show dev eth0 scope global |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*##'|tail -1)/\" chef-bcpc/environments/Test-Laptop.json"
     bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e \"s/\\(10.0.100.5\\|192.168.100.5\\)/#{vm1_fixed_ip}/\" chef-bcpc/environments/Test-Laptop.json"
     # set correct domain name in environment
-    bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e 's/\"bcpc\"[ ]*:[ ]*{/\"bcpc\": {\n\"domain_name\": \"#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}\",/' chef-bcpc/environments/Test-Laptop.json"
+    bcpcchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e 's/\"bcpc\"[ ]*:[ ]*{/\"bcpc\": {\\n\"domain_name\": \"#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}\",/' chef-bcpc/environments/Test-Laptop.json"
     # build required binaries
     bcpcchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && sudo -E ./build_bins.sh"
     # bootstrap the chef server
@@ -155,7 +156,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
              "role[BCPC-OpenStack-Client],role[BCPC-Hadoop-Head-Namenode-Standby],role[BCPC-Hadoop-Head-MapReduce],role[BCPC-Hadoop-Head-Hive]",
              "role[BCPC-OpenStack-Client],role[BCPC-Hadoop-Worker]"]
     cluster_txt = ""
-    cluster_txt_contents = (1...FLOATING_IPS[1..-1].length()).map do |idx|
+    cluster_txt_contents = (1...FLOATING_IPS.length()).map do |idx|
       # Create each line of cluster.txt. Pick each role taking the last role as the "generic" role
       ["#{CLUSTER_NAME}bcpc-#{idx}", "-", FLOATING_IPS[idx], "-", "-", "#{munge_domainname(OS_TENANTNAME)}.#{OS_ENDPOINT}", roles[[idx-1, roles.length()].min()]].join("\t")
     end
