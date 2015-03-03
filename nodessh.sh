@@ -3,7 +3,7 @@
 # nodessh.sh
 #
 # Convenience script for running commands over ssh to BCPC nodes when
-# their cobbler root passwd is available in the chef databags. 
+# their cobbler root password is available in the chef databags. 
 #
 # Parameters:
 # $1 is the name of chef environment file, without the .json file extension
@@ -58,8 +58,8 @@ else
     SSHCMD="ssh $SSHCOMMON"
 
     if [[ "$4" == sudo ]]; then
-        # if we need to sudo, pipe the passwd to that too
-        if [ -n "$PASSWORD" ]; then
+        # if we need to sudo, pipe the password to that too
+        if [ -n "$PASSWD" ]; then
             sshpass -p $PASSWD $SSHCMD -t ubuntu@$IP "echo $PASSWD | sudo -S $COMMAND"
         else
             $SSHCMD -t ubuntu@$IP "sudo -S $COMMAND"
@@ -67,7 +67,7 @@ else
     else  
         # not sudo, do it the normal way
         if [[ "$COMMAND" == - ]]; then
-            [ -n "$PASSWORD" ] && echo "You might need this : cobbler_root = $PASSWD"
+            [ -n "$PASSWD" ] && echo "You might need this : cobbler_root = $PASSWD"
             $SSHPASS $SSHCMD -t ubuntu@$IP
         else
             $SSHPASS $SSHCMD -t ubuntu@$IP "$COMMAND"
