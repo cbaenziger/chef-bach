@@ -1,11 +1,11 @@
-###########################################
+############################################
 #
 #  Hadoop specific configs
 #
 #############################################
-require 'pathname'
 
 user = node['bcpc']['bootstrap']['admin']['user']
+default['bcpc']['cluster']['file_path'] = "/home/#{user}/chef-bcpc/cluster.txt"
 
 default['bcpc']['hadoop'] = {}
 default['bcpc']['hadoop']['distribution']['release'] = '2.6.1.17-1'
@@ -96,14 +96,14 @@ default['bcpc']['hadoop']['yarn']['scheduler']['minimum-allocation-mb'] = 256
 # Attributes for service rolling restart process
 #
 # Number of tries to acquire the lock required to restart the process
-default['bcpc']['hadoop']['restart_lock_acquire']['max_tries'] = 5
+default["bcpc"]["hadoop"]["restart_lock_acquire"]["max_tries"] = 5
 # The path in ZK where the restart locks (znodes)  need to be created
-# The path should exist in ZooKeeper e.g. '/lock' and the default is '/'
-default['bcpc']['hadoop']['restart_lock']['root'] = '/'
+# The path should exist in ZooKeeper e.g. "/lock" and the default is "/"
+default["bcpc"]["hadoop"]["restart_lock"]["root"] = "/"
 # Sleep time in seconds between tries to acquire the lock for restart
-default['bcpc']['hadoop']['restart_lock_acquire']['sleep_time'] = 2
+default["bcpc"]["hadoop"]["restart_lock_acquire"]["sleep_time"] = 2
 # Flag to set whether the restart process was successful or not
-default['bcpc']['hadoop']['datanode']['restart_failed'] = false
+default["bcpc"]["hadoop"]["datanode"]["restart_failed"] = false
 
 # These are to cache Chef search results and
 # allow hardcoding nodes performing various roles
@@ -120,35 +120,35 @@ default[:bcpc][:hadoop][:httpfs_hosts] = []
 default[:bcpc][:hadoop][:rs_hosts] = []
 default[:bcpc][:hadoop][:mysql_hosts] = []
 
-default['bcpc']['keepalived']['config_template'] = 'keepalived.conf_hadoop'
+default["bcpc"]["keepalived"]["config_template"] = "keepalived.conf_hadoop"
 
-default['bcpc']['revelytix']['loom_username'] = 'loom'
-default['bcpc']['revelytix']['activescan_hdfs_user'] = 'activescan-user'
-default['bcpc']['revelytix']['activescan_hdfs_enabled'] = 'true'
-default['bcpc']['revelytix']['activescan_table_enabled'] = 'true'
-default['bcpc']['revelytix']['hdfs_scan_interval'] = 60
-default['bcpc']['revelytix']['hdfs_parse_lines'] = 50
-default['bcpc']['revelytix']['hdfs_score_threshold'] = 0.25
-default['bcpc']['revelytix']['hdfs_max_buffer_size'] = 8_388_608
-default['bcpc']['revelytix']['persist_mode'] = 'hive'
-default['bcpc']['revelytix']['dataset_persist_dir'] = 'loom-datasets'
-default['bcpc']['revelytix']['temporary_file_dir'] = 'hdfs-default:loom-temp'
-default['bcpc']['revelytix']['job_service_thread_pool_size'] = 10
-default['bcpc']['revelytix']['security_authentication'] = 'loom'
-default['bcpc']['revelytix']['security_enabled'] = 'true'
-default['bcpc']['revelytix']['ssl_enabled'] = 'true'
-default['bcpc']['revelytix']['ssl_port'] = 8443
-default['bcpc']['revelytix']['ssl_keystore'] = 'config/keystore'
-default['bcpc']['revelytix']['ssl_key_password'] = ''
-default['bcpc']['revelytix']['ssl_trust_store'] = 'config/truststore'
-default['bcpc']['revelytix']['ssl_trust_password'] = ''
-default['bcpc']['revelytix']['loom_dist_cache'] = 'loom-dist-cache'
-default['bcpc']['revelytix']['hive_classloader_blacklist_jars'] = 'slf4j,log4j,commons-logging'
-default['bcpc']['revelytix']['port'] = 8080
+default["bcpc"]["revelytix"]["loom_username"] = "loom"
+default["bcpc"]["revelytix"]["activescan_hdfs_user"] = "activescan-user"
+default["bcpc"]["revelytix"]["activescan_hdfs_enabled"] = "true"
+default["bcpc"]["revelytix"]["activescan_table_enabled"] = "true"
+default["bcpc"]["revelytix"]["hdfs_scan_interval"] = 60
+default["bcpc"]["revelytix"]["hdfs_parse_lines"] = 50
+default["bcpc"]["revelytix"]["hdfs_score_threshold"] = 0.25
+default["bcpc"]["revelytix"]["hdfs_max_buffer_size"] = 8388608
+default["bcpc"]["revelytix"]["persist_mode"] = "hive"
+default["bcpc"]["revelytix"]["dataset_persist_dir"] = "loom-datasets"
+default["bcpc"]["revelytix"]["temporary_file_dir"] = "hdfs-default:loom-temp"
+default["bcpc"]["revelytix"]["job_service_thread_pool_size"] = 10
+default["bcpc"]["revelytix"]["security_authentication"] = "loom"
+default["bcpc"]["revelytix"]["security_enabled"] = "true"
+default["bcpc"]["revelytix"]["ssl_enabled"] = "true"
+default["bcpc"]["revelytix"]["ssl_port"] = 8443
+default["bcpc"]["revelytix"]["ssl_keystore"] = "config/keystore"
+default["bcpc"]["revelytix"]["ssl_key_password"] = ""
+default["bcpc"]["revelytix"]["ssl_trust_store"] = "config/truststore"
+default["bcpc"]["revelytix"]["ssl_trust_password"] = ""
+default["bcpc"]["revelytix"]["loom_dist_cache"] = "loom-dist-cache"
+default["bcpc"]["revelytix"]["hive_classloader_blacklist_jars"] = "slf4j,log4j,commons-logging"
+default["bcpc"]["revelytix"]["port"] = 8080
 
 # Attributes to store details about (log) files from nodes to be copied
 # into a centralized location (currently HDFS).
-# E.g. value {'hbase_rs' =>  { 'logfile' => '/path/file_name_of_log_file',
+# E.g. value {'hbase_rs' =>  { 'logfile' => "/path/file_name_of_log_file",
 #                              'docopy' => true (or false)
 #                             },...
 #            }
@@ -156,59 +156,32 @@ default['bcpc']['revelytix']['port'] = 8080
 default['bcpc']['hadoop']['copylog'] = {}
 # Attribute to enable/disable the copylog feature
 default['bcpc']['hadoop']['copylog_enable'] = true
-# HDFS quotas for copylogs files
-default['bcpc']['hadoop']['copylog_quota'] = {
-  'space' => '10G',
-  'files' => 10_000
-}
 # File rollup interval in secs for log data copied into HDFS through Flume
-default['bcpc']['hadoop']['copylog_rollup_interval'] = 86_400
-# Ensure copylogs can read Chef's client.log
-default['chef_client']['log_perm'] = 0o644
-
-default['bcpc']['hadoop']['copylog']['syslog'] = {
-  'logfile' => '/var/log/syslog',
-  'docopy' => true
-}
-
-default['bcpc']['hadoop']['copylog']['authlog'] = {
-  'logfile' => '/var/log/auth.log',
-  'docopy' => true
-}
+default['bcpc']['hadoop']['copylog_rollup_interval'] = 86400
 
 # Ensure the following group mappings in the group database
-default[:bcpc][:hadoop][:os][:group][:hadoop][:members] = %w(
-  hdfs
-  yarn
-  hbase
-  oozie
-  hive
-  zookeeper
-  mapred
-  httpfs
-)
+default[:bcpc][:hadoop][:os][:group][:hadoop][:members]=["hdfs","yarn"]
+default[:bcpc][:hadoop][:os][:group][:hdfs][:members]=["hdfs"]
+default[:bcpc][:hadoop][:os][:group][:mapred][:members]=["yarn"]
 
-default[:bcpc][:hadoop][:os][:group][:hdfs][:members] = ['hdfs']
-default[:bcpc][:hadoop][:os][:group][:mapred][:members] = ['yarn']
+default[:bcpc][:hadoop][:hdfs][:ldap][:integration] = false
+default[:bcpc][:hadoop][:hdfs][:ldap][:user] = "" #must be LDAP DN
+default[:bcpc][:hadoop][:hdfs][:ldap][:domain] = "BCPC.EXAMPLE.COM"
+default[:bcpc][:hadoop][:hdfs][:ldap][:port] = 389
+default[:bcpc][:hadoop][:hdfs][:ldap][:password] =  nil
+default[:bcpc][:hadoop][:hdfs][:ldap][:search][:filter][:user]="(&(objectclass=user)(sAMAccountName={0}))"
+default[:bcpc][:hadoop][:hdfs][:ldap][:search][:filter][:group]="(objectClass=group)"
 
-# Override attributes to install Java
-# use java cookbook (https://github.com/agileorbit-cookbooks/java)
-default['java']['jdk_version'] = 8
-default['java']['install_flavor'] = 'oracle'
+# Override defaults for the Java cookbook
+default['java']['jdk_version'] = 7
+default['java']['install_flavor'] = "oracle"
 default['java']['accept_license_agreement'] = true
+default['java']['jdk']['7']['x86_64']['url'] = get_binary_server_url + "jdk-7u51-linux-x64.tar.gz"
+default['java']['jdk']['8']['x86_64']['url'] = get_binary_server_url + 'jdk-8u74-linux-x64.tar.gz'
+default['java']['jdk']['8']['x86_64']['checksum'] = '0bfd5d79f776d448efc64cb47075a52618ef76aabb31fde21c5c1018683cdddd'
 default['java']['oracle']['jce']['enabled'] = true
-
-# redirect the installation URLs to the bootstrap node
-jdk_url = node['java']['jdk']['8']['x86_64']['url']
-jce_url = node['java']['oracle']['jce']['8']['url']
-
-jdk_tgz_name = Pathname.new(jdk_url).basename.to_s
-jce_tgz_name = Pathname.new(jce_url).basename.to_s
-
-default['java']['jdk']['8']['x86_64']['url'] = get_binary_server_url + jdk_tgz_name
-default['java']['oracle']['jce']['8']['url'] = get_binary_server_url + jce_tgz_name
+default['java']['oracle']['jce']['7']['url'] = get_binary_server_url + "UnlimitedJCEPolicyJDK7.zip"
+default['java']['oracle']['jce']['8']['url'] = get_binary_server_url + "jce_policy-8.zip"
 
 # Set the JAVA_HOME for Hadoop components
 default['bcpc']['hadoop']['java'] = '/usr/lib/jvm/java-8-oracle-amd64'
-
-default['bcpc']['cluster']['file_path'] = "/home/#{user}/chef-bcpc/cluster.txt"
