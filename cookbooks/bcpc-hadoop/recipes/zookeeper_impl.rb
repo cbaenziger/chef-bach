@@ -84,7 +84,8 @@ file "#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid" do
   mode 0644
 end
 
-zk_service_dep = ["template[/etc/zookeeper/conf/zoo.cfg]",
+zk_service_dep = ["template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zoo.cfg]",
+                  "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zookeeper-env.sh]",
                   "template[/usr/lib/zookeeper/bin/zkServer.sh]",
                   "template[/etc/default/zookeeper-server]",
                   "file[#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid]"]
