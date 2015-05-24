@@ -39,6 +39,9 @@ end.run_action(:create_if_missing)
 subnet = node[:bcpc][:management][:subnet]
 raise "Did not get a subnet" if not subnet
 
+subnet = node[:bcpc][:management][:subnet]
+raise "Did not get a subnet" if not subnet
+
 %w{pdns-server pdns-backend-mysql}.each do |pkg|
     package pkg do
         action :upgrade
