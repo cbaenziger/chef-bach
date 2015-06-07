@@ -48,14 +48,14 @@ end
 
 bash "setup-mapreduce-app" do
   code <<-EOH
-  hdfs dfs -mkdir -p /hdp/apps/2.2.0.0-2041/mapreduce/
-  hdfs dfs -put /usr/hdp/2.2.0.0-2041/hadoop/mapreduce.tar.gz /hdp/apps/2.2.0.0-2041/mapreduce/
+  hdfs dfs -mkdir -p /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/
+  hdfs dfs -put /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/mapreduce.tar.gz /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/
   hdfs dfs -chown -R hdfs:hadoop /hdp
-  hdfs dfs -chmod -R 555 /hdp/apps/2.2.0.0-2041/mapreduce
-  hdfs dfs -chmod -R 444 /hdp/apps/2.2.0.0-2041/mapreduce/mapreduce.tar.gz
+  hdfs dfs -chmod -R 555 /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce
+  hdfs dfs -chmod -R 444 /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/mapreduce.tar.gz
   EOH
   user "hdfs"
-  not_if "sudo -u hdfs hdfs dfs -test -f /hdp/apps/2.2.0.0-2041/mapreduce/mapreduce.tar.gz" 
+  not_if "sudo -u hdfs hdfs dfs -test -f /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/mapreduce.tar.gz" 
   only_if "echo 'test'|sudo -u hdfs hdfs dfs -copyFromLocal - /tmp/mapred-test"
   notifies :run,"bash[delete-temp-file]",:immediately
 end

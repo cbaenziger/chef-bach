@@ -32,7 +32,7 @@
 set -e
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON_SCRIPT="/usr/bin/zookeeper-server"
+DAEMON_SCRIPT="/usr/hdp/<%= node[:bcpc][:hadoop][:distribution][:release]  %>/zookeeper/bin/zkServer.sh"
 
 . <%= node[:bcpc][:hadoop][:zookeeper][:conf_dir] %>/zookeeper-env.sh
 NAME=zookeeper-server

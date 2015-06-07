@@ -57,7 +57,7 @@ PROC_NAME="java"
 
 DAEMON="hadoop-httpfs"
 DESC="Hadoop httpfs"
-EXEC_PATH="/usr/hdp/2.2.0.0-2041/hadoop-httpfs/sbin/httpfs.sh"
+EXEC_PATH="/usr/hdp/<%= node[:bcpc][:hadoop][:distribution][:release] %>/hadoop-httpfs/sbin/httpfs.sh"
 SVC_USER="httpfs"
 DAEMON_FLAGS="httpfs"
 CONF_DIR="/etc/hadoop-httpfs/conf"

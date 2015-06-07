@@ -38,14 +38,14 @@ end
 
 bash "make_dir_to_copy_tez_targz" do
   code <<EOH
-  hdfs dfs -mkdir -p /hdp/apps/2.2.0.0-2041/tez/ 
-  hdfs dfs -put /usr/hdp/2.2.0.0-2041/tez/lib/tez.tar.gz /hdp/apps/2.2.0.0-2041/tez/
+  hdfs dfs -mkdir -p /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/tez/ 
+  hdfs dfs -put /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/tez/lib/tez.tar.gz /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/tez/
   hdfs dfs -chown -R hdfs:hadoop /hdp
-  hdfs dfs -chmod -R 555 /hdp/apps/2.2.0.0-2041/tez
-  hdfs dfs -chmod -R 444 /hdp/apps/2.2.0.0-2041/tez/tez.tar.gz
+  hdfs dfs -chmod -R 555 /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/tez
+  hdfs dfs -chmod -R 444 /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/tez/tez.tar.gz
 EOH
   user "hdfs"
-  not_if "hdfs dfs -test -f /hdp/apps/2.2.0.0-2041/tez/tez.tar.gz", :user => "hdfs"
+  not_if "hdfs dfs -test -f /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/tez/tez.tar.gz", :user => "hdfs"
   only_if "echo 'test'|sudo -u hdfs hdfs dfs -copyFromLocal - /tmp/tez-test"
   notifies :run,"bash[delete-tez-temp-file]",:immediately
 end

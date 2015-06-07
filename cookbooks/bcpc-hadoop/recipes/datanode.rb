@@ -103,29 +103,27 @@ template "/etc/init.d/hadoop-yarn-nodemanager" do
   mode 0655
 end
 
-directory "/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64" do
-  action :create
-  mode 0755
-  recursive true
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
+  to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end
 
-link "/usr/hdp/current/hadoop-client/lib/hadoop-lzo-0.6.0.jar" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
    to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end
  
-link "/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64/libgplcompression.la" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/libgplcompression.la" do
    to "/usr/lib/hadoop/lib/native/Linux-amd64-64/libgplcompression.la"
  end
  
-link "/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64/libgplcompression.a" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/libgplcompression.a" do
    to "/usr/lib/hadoop/lib/native/Linux-amd64-64/libgplcompression.a"
  end
  
-link "/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64/libgplcompression.so" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/libgplcompression.so" do
    to "/usr/lib/hadoop/lib/native/Linux-amd64-64/libgplcompression.so.0.0.0"
 end
  
-link "/usr/hdp/current/hadoop-client/lib/native/liblzo2.so" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/liblzo2.so" do
   to "/usr/lib/x86_64-linux-gnu/liblzo2.so.2.0.0"
 end
 
