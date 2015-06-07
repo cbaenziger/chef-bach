@@ -5,7 +5,7 @@ dpkg_autostart "oozie" do
   allow false
 end
 
-%w{zip unzip extjs hadoop-lzo oozie oozie-client}.each do |pkg|
+%w{libmysql-java zip unzip extjs hadoop-lzo oozie oozie-client}.each do |pkg|
   package pkg do
     action :upgrade
   end
@@ -18,8 +18,9 @@ end
 
 OOZIE_LIB_PATH='/usr/hdp/current/oozie'
 OOZIE_CLIENT_PATH='/usr/hdp/current/oozie-client'
-OOZIE_SERVER_PATH='/usr/hdp/current/oozie-server/oozie-server'
-OOZIE_SHARELIB_TARBALL_PATH='/usr/hdp/2.2.0.0-2041/oozie/oozie-sharelib.tar.gz'
+OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie-server/oozie-server"
+OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie-server"
+OOZIE_SHARELIB_TARBALL_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/oozie-sharelib.tar.gz"
 HDFS_URL=node[:bcpc][:hadoop][:hdfs_url]
 
 directory "#{OOZIE_LIB_PATH}/libext" do
@@ -38,7 +39,17 @@ directory "/var/run/oozie" do
   recursive true
 end
 
-%w{/usr/share/HDP-oozie/ext-2.2.zip
+#bash "copy hadoop libs" do
+#  src_dir="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib"
+#  dst_dir="#{OOZIE_LIB_PATH}/libext/"
+#  code "for f in `ls *.jar`; do ln -s #{src_dir}/$f #{dst_dir}/$f; done"
+#  cwd src_dir
+#  user "oozie"
+#  # check if all source files are in destination directory
+#  not_if { (::Dir.entries("#{src_dir}") - ::Dir.entries("#{dst_dir}")).empty? }
+#end
+
+%w{/usr/share/HDP-oozie/ext-#{node[:bcpc][:hadoop][:distribution][:release]}
    /usr/share/java/mysql-connector-java.jar
    /usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar}.each do |path|
   link "#{OOZIE_CLIENT_PATH}/libext/#{File.basename(path)}" do
@@ -47,7 +58,7 @@ end
 end
 
 bash "copy" do
-  code "cp -r /usr/hdp/2.2.0.0-2041/oozie/tomcat-deployment/conf/ssl /usr/hdp/current/oozie-server/conf/"
+  code "cp -r /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/tomcat-deployment/conf/ssl /usr/hdp/current/oozie-server/conf/"
 end
 
 service "stop-oozie-for-war-setup" do
@@ -152,7 +163,7 @@ ruby_block "oozie-database-creation" do
       IO.popen("mysql -uroot -p#{get_config!('password','mysql-root','os')}", "r+") do |db|
         db.write code
       end
-      system "sudo -u oozie /usr/hdp/current/oozie-server/bin/ooziedb.sh create -sqlfile /usr/hdp/current/oozie-server/oozie.sql -run Validate DB Connection"
+      system "sudo -u oozie /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/bin/ooziedb.sh create -sqlfile /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/oozie.sql -run Validate DB Connection"
       self.resolve_notification_references
     end
   end

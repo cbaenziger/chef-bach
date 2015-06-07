@@ -5,8 +5,8 @@ package "hadoop-httpfs" do
   action :upgrade
 end
 
-link "/usr/hdp/2.2.0.0-2041/hadoop-httpfs/conf" do
-  to "/usr/hdp/2.2.0.0-2041/etc/hadoop-httpfs/tomcat-deployment.dist/conf"
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-httpfs/conf" do
+  to "/usr/hdp/<#{node[:bcpc][:hadoop][:distribution][:release]}/etc/hadoop-httpfs/tomcat-deployment.dist/conf"
 end
 
 template "/etc/init.d/hadoop-httpfs" do

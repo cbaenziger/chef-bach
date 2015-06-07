@@ -7,7 +7,7 @@ end
 
 package  "zookeeper-server" do
   action :upgrade
-  notifies :create, "template[/tmp/zkServer.sh]", :immediately
+  notifies :create, "template[#{Chef::Config[:file_cache_path]}/zkServer.sh]", :immediately
   notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately
 end
 
@@ -15,7 +15,7 @@ user_ulimit "zookeeper" do
   filehandle_limit 32769
 end
 
-template "/tmp/zkServer.sh" do
+template "#{Chef::Config[:file_cache_path]}/zkServer.sh" do
   source "zk_zkServer.sh.orig.erb"
   mode 0644
 end
@@ -23,8 +23,8 @@ end
 ruby_block "Compare_zookeeper_server_start_shell_script" do
   block do
     require "digest"
-    orig_checksum=Digest::MD5.hexdigest(File.read("/tmp/zkServer.sh"))
-    new_checksum=Digest::MD5.hexdigest(File.read("/usr/hdp/2.2.0.0-2041/zookeeper/bin/zkServer.sh"))
+    orig_checksum=Digest::MD5.hexdigest(File.read("#{Chef::Config[:file_cache_path]}/zkServer.sh"))
+    new_checksum=Digest::MD5.hexdigest(File.read("/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh"))
     if orig_checksum != new_checksum
       Chef::Application.fatal!("zookeeper-server:New version of zkServer.sh need to be created and used")
     end
@@ -61,7 +61,7 @@ directory node[:bcpc][:hadoop][:zookeeper][:data_dir] do
   mode 0755
 end
 
-template "/usr/hdp/2.2.0.0-2041/zookeeper/bin/zkServer.sh" do
+template "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh" do
   source "zk_zkServer.sh.erb"
 end
 

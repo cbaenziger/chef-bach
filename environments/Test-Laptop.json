@@ -43,9 +43,10 @@
           "dfs_replication_factor" : 1
         },
         "disks" : ["sdb" , "sdc" ],
-        "distribution": {
-          "version": "HDP",
-          "key": "hortonworks.key"
+        "distribution" : {
+          "version" : "HDP",
+          "key" : "hortonworks.key",
+          "release": "2.2.6.2-1"
         },
         "hbase": {
           "bucketcache": {
@@ -93,7 +94,7 @@
         }
       },
       "repos" : {
-        "hortonworks" : "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/GA/2.2.0.0",
+        "hortonworks" : "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.2.6.0",
         "hdp_utils" : "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12"
       }
     },
