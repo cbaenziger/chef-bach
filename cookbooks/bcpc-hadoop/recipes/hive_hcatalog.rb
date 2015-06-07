@@ -17,7 +17,7 @@ user_ulimit "hive" do
   process_limit 65536
 end
 
-link "/usr/hdp/2.2.0.0-2041/hadoop/lib/hadoop-lzo-0.6.0.jar" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
   to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end
 
@@ -100,7 +100,7 @@ end
 
 #bash "create-hive-metastore-db" do
 #  code <<-EOH
-#  /usr/hdp/2.2.0.0-2041/hive/bin/schematool -initSchema -dbType mysql -verbose
+#  /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hive/bin/schematool -initSchema -dbType mysql -verbose
 #  EOH
 #end
 
