@@ -91,8 +91,24 @@
 
   <property>
     <name>hbase.region.server.rpc.scheduler.factory.class</name>
-    <value>org.apache.phoenix.hbase.index.ipc.PhoenixIndexRpcSchedulerFactory</value>
+    <value>org.apache.hadoop.hbase.ipc.PhoenixRpcSchedulerFactory</value>
     <description>Factory to create the Phoenix RPC Scheduler that knows to put index updates into index queues</description>
+  </property>
+
+  <property>
+    <name>hbase.rpc.controllerfactory.class</name>
+    <value>org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory</value>
+    <description>Factory to create the Phoenix RPC Scheduler that uses separate queues for index and metadata updates</description>
+  </property>
+
+  <property>
+    <name>dfs.client.read.shortcircuit</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>dfs.domain.socket.path</name>
+    <value>/var/run/hadoop-hdfs/dn._PORT</value>
   </property>
 
   <% if node[:bcpc][:hadoop][:kerberos][:enable] == true then %>
@@ -108,6 +124,11 @@
     <description>List of users or groups (comma-separated), who are allowed full privileges, regardless of stored ACLs, across the cluster. Only used when HBase security is enabled.</description>
   </property>
 
+  <property>
+    <name>hbase.master.loadbalancer.class</name>
+    <value>org.apache.phoenix.hbase.index.balancer.IndexLoadBalancer</value>
+  </property>
+
   <property>    
     <name>hbase.coprocessor.region.classes</name>    
     <value>org.apache.hadoop.hbase.security.token.TokenProvider,org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint,org.apache.hadoop.hbase.security.access.AccessController</value>
@@ -121,12 +142,12 @@
 
   <property>    
     <name>hbase.coprocessor.regionserver.classes</name>    
-    <value>org.apache.hadoop.hbase.security.access.AccessController</value>    
+    <value>org.apache.hadoop.hbase.security.access.AccessController,org.apache.hadoop.hbase.regionserver.LocalIndexMerger</value>    
   </property> 
 
   <property>    
     <name>hbase.coprocessor.master.classes</name>    
-    <value>org.apache.hadoop.hbase.security.access.AccessController</value>    
+    <value>org.apache.hadoop.hbase.security.access.AccessController,org.apache.phoenix.hbase.index.master.IndexMasterObserver</value>    
   </property> 
 
   <!-- HBase Security Configuration -->

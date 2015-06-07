@@ -28,7 +28,6 @@ end
   oozie-env.sh
   oozie-site.xml
   adminusers.txt
-  oozie-default.xml
   oozie-log4j.properties
   }.each do |t|
   template "/etc/oozie/conf/#{t}" do

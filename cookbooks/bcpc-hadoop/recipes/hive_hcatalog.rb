@@ -3,13 +3,27 @@
 #
 include_recipe "bcpc-hadoop::hive_config"
 include_recipe "bcpc-hadoop::hive_table_stat"
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-package "hive-hcatalog" do
-  action :upgrade
+%W{#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}
+   hadoop-lzo
+   libmysql-java}.each do |pkg|
+  package pkg do
+    action :upgrade
+  end
 end
 
-package "hadoop-lzo" do
-  action :upgrade
+bash "hdp-select hive-metastore" do
+  code "hdp-select set hive-metastore #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  action :nothing
+end
+
+bash "hdp-select hive-server2" do
+  code "hdp-select set hive-server2 #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  action :nothing
 end
 
 user_ulimit "hive" do
@@ -17,36 +31,8 @@ user_ulimit "hive" do
   process_limit 65536
 end
 
-link "/usr/hdp/2.2.0.0-2041/hadoop/lib/hadoop-lzo-0.6.0.jar" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
   to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
-end
-
-remote_file "#{Chef::Config[:file_cache_path]}/mysql-connector-java-5.1.34.tar.gz" do
-  source "#{get_binary_server_url}/mysql-connector-java-5.1.34.tar.gz"
-  owner "root"
-  group "root"
-  mode "755"
-  not_if { File.exists?('/usr/share/java/mysql-connector-java-5.1.34-bin.jar') && (Digest::SHA256.hexdigest File.read "/usr/share/java/mysql-connector-java-5.1.34-bin.jar") == "af1e5f28be112c85ec52a82d94e7a8dc02ede57a182dc2f1545f7cec5e808142" } 
-end
-
-bash "extract-mysql-connector" do
-  code "tar xvzf #{Chef::Config[:file_cache_path]}/mysql-connector-java-5.1.34.tar.gz -C /usr/share/java --no-anchored mysql-connector-java-5.1.34-bin.jar --strip-components=1"
-  action :run
-  group "root"
-  user "root"
-  not_if { File.exists?('/usr/share/java/mysql-connector-java-5.1.34-bin.jar') && (Digest::SHA256.hexdigest File.read "/usr/share/java/mysql-connector-java-5.1.34-bin.jar") == "af1e5f28be112c85ec52a82d94e7a8dc02ede57a182dc2f1545f7cec5e808142" }
-end
-
-link "/usr/share/java/mysql-connector-java.jar" do
-  to "/usr/share/java/mysql-connector-java-5.1.34-bin.jar"
-end
-
-link "/usr/share/java/mysql.jar" do
-  to "/usr/share/java/mysql-connector-java.jar"
-end
-
-link "/usr/hdp/current/mysql-connector-java.jar" do
-  to "/usr/share/java/mysql.jar"
 end
 
 bash "create-hive-user-home" do
@@ -100,7 +86,7 @@ end
 
 #bash "create-hive-metastore-db" do
 #  code <<-EOH
-#  /usr/hdp/2.2.0.0-2041/hive/bin/schematool -initSchema -dbType mysql -verbose
+#  /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hive/bin/schematool -initSchema -dbType mysql -verbose
 #  EOH
 #end
 
@@ -124,7 +110,7 @@ service "hive-metastore" do
   action [:enable, :start]
   subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-log4j.properties]", :delayed
-  subscribes :restart, "bash[extract-mysql-connector]", :delayed
+  subscribes :restart, "bash[hdp-select hive-hcatalog]", :delayed
   subscribes :restart, "directory[/var/log/hive/gc]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
@@ -135,7 +121,6 @@ service "hive-server2" do
   supports :status => true, :restart => true, :reload => false
   subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-log4j.properties]", :delayed
-  subscribes :restart, "bash[extract-mysql-connector]", :delayed
   subscribes :restart, "directory[/var/log/hive/gc]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed

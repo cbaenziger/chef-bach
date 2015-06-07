@@ -1,13 +1,16 @@
 require 'base64'
-include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hadoop_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-%w{hadoop-hdfs-namenode }.each do |pkg|
-  dpkg_autostart pkg do
-    allow false
+%w{hadoop-hdfs-namenode hadoop-hdfs-journalnode}.each do |pkg|
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+    action :install
   end
-  package pkg do
-    action :upgrade
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{pkg}]", :immediate
+    action :nothing
   end
 end
 
@@ -88,13 +91,8 @@ ruby_block 'create_or_manage_groups' do
   end
 end
 
-template "hadoop-hdfs-journalnode" do
-  path "/etc/init.d/hadoop-hdfs-journalnode"
-  source "hdp_hadoop-hdfs-journalnode-initd.erb"
-  owner "root"
-  group "root"
-  mode "0755"
-  notifies :restart, "service[hadoop-hdfs-journalnode]"
+link "/etc/init.d/hadoop-hdfs-journalnode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-journalnode"
 end
 
 service "hadoop-hdfs-journalnode" do
@@ -103,4 +101,5 @@ service "hadoop-hdfs-journalnode" do
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site_HA.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
+  subscribes :restart, "bash[hdp-select hadoop-hdfs-journalnode]", :delayed
 end

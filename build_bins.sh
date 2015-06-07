@@ -61,14 +61,6 @@ if ! [[ -f jmxtrans-20120525-210643-4e956b1144.zip ]]; then
 fi
 FILES="jmxtrans-20120525-210643-4e956b1144.zip $FILES"
 
-# Fetch MySQL connector
-if ! [[ -f mysql-connector-java-5.1.34.tar.gz ]]; then
-  while ! $(file mysql-connector-java-5.1.34.tar.gz | grep -q 'gzip compressed data'); do
-    $CURL -O -L http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.34.tar.gz
-  done
-fi
-FILES="mysql-connector-java-5.1.34.tar.gz $FILES"
-
 # Fetch Kafka Tar
 for version in 0.8.1 0.8.1.1; do
   mkdir -p kafka/${version}/

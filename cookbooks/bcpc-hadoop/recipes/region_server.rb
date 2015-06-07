@@ -1,4 +1,6 @@
 include_recipe 'bcpc-hadoop::hbase_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 node.default['bcpc']['hadoop']['copylog']['region_server'] = {
     'logfile' => "/var/log/hbase/hbase-hbase-0-regionserver-#{node.hostname}.log", 
@@ -10,9 +12,18 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
     'docopy' => true
 }
 
-%w{hbase-regionserver libsnappy1 phoenix}.each do |pkg|
+(%w{libsnappy1} +
+ %w{hbase hbase-regionserver phoenix}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
   package pkg do
-    action :install
+    action :upgrade
+  end
+end
+
+%w{hbase-client hbase-regionserver phoenix-client}.each do |pkg|
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    action :nothing
   end
 end
 
@@ -35,6 +46,10 @@ template "/etc/default/hbase" do
   variables(:hbrs_jmx_port => node[:bcpc][:hadoop][:hbase_rs][:jmx][:port])
 end
 
+#link "/etc/init.d/hbase-regionserver" do
+#  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/init.d/hbase-regionserver"
+#end
+
 template "/etc/init.d/hbase-regionserver" do
   source "hdp_hbase-regionserver-initd.erb"
   mode 0655
@@ -48,4 +63,5 @@ service "hbase-regionserver" do
   subscribes :restart, "template[/etc/hbase/conf/hbase-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "user_ulimit[hbase]", :delayed
+  subscribes :restart, "bash[hdp-select hbase-regionserver]", :delayed
 end
