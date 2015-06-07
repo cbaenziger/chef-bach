@@ -2,9 +2,10 @@ require "base64"
 require "digest"
 require 'mixlib/shellout'
 
-include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hadoop_config'
 include_recipe 'bcpc-hadoop::namenode_queries'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 #
 # Updating node attribuetes to copy namenode log files to centralized location (HDFS)
@@ -19,13 +20,18 @@ node.default['bcpc']['hadoop']['copylog']['namenode_master_out'] = {
     'docopy' => true
 }
 
+# shortcut to the desired HDFS command version
+hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
+
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
-  dpkg_autostart pkg do
-    allow false
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+    action :install
   end
-  package pkg do
-    action :upgrade
-  end
+end
+bash "hdp-select hadoop-hdfs-namenode" do
+  code "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  action :nothing
 end
 
 # need to ensure hdfs user is in hadoop and hdfs
@@ -89,18 +95,8 @@ node[:bcpc][:hadoop][:mounts].each do |d|
   end
 end
 
-template "/etc/init.d/hadoop-hdfs-namenode" do
-  source "hdp_hadoop-hdfs-namenode-initd.erb"
-  mode 0655
-end
-
-template "/etc/init.d/hadoop-hdfs-zkfc" do
-  source "hdp_hadoop-hdfs-zkfc-initd.erb"
-  mode 0655
-end
-
 bash "format namenode" do
-  code "hdfs namenode -format -nonInteractive -force"
+  code "#{hdfs_cmd} namenode -format -nonInteractive -force"
   user "hdfs"
   action :run
   creates "/disk/#{node[:bcpc][:hadoop][:mounts][0]}/dfs/nn/current/VERSION"
@@ -108,12 +104,16 @@ bash "format namenode" do
 end
 
 bash "format-zk-hdfs-ha" do
-  code "yes | hdfs zkfc -formatZK"
+  code "yes | #{hdfs_cmd} zkfc -formatZK"
   action :run
   user "hdfs"
   notifies :restart, "service[generally run hadoop-hdfs-namenode]", :delayed
   zks = node[:bcpc][:hadoop][:zookeeper][:servers].map{|zkh| "#{zkh[:hostname]}:#{node[:bcpc][:hadoop][:zookeeper][:port]}"}.join(",")
   not_if { znode_exists?("/hadoop-ha/#{node.chef_environment}", zks) }
+end
+
+link "/etc/init.d/hadoop-hdfs-zkfc" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
 end
 
 service "hadoop-hdfs-zkfc" do
@@ -123,6 +123,10 @@ service "hadoop-hdfs-zkfc" do
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site_HA.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
+end
+
+link "/etc/init.d/hadoop-hdfs-namenode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
 end
 
 # need to bring the namenode down to initialize shared edits
@@ -135,7 +139,7 @@ service "bring hadoop-hdfs-namenode down for shared edits and HA transition" do
 end
 
 bash "initialize-shared-edits" do
-  code "hdfs namenode -initializeSharedEdits"
+  code "#{hdfs_cmd} namenode -initializeSharedEdits"
   user "hdfs"
   action :nothing
 end
@@ -152,6 +156,7 @@ service "generally run hadoop-hdfs-namenode" do
   subscribes :restart, "template[/etc/hadoop/conf/topology]", :delayed
   subscribes :restart, "user_ulimit[hdfs]", :delayed
   subscribes :restart, "bash[initialize-shared-edits]", :immediately
+  subscribes :restart, "bash[hdp-select hadoop-hdfs-namenode]", :delayed
 end
 
 ## We need to bootstrap the standby and journal node transaction logs
@@ -219,7 +224,7 @@ ruby_block "upload-format-UUID-File" do
 end
 
 bash "reload hdfs nodes" do
-  code "hdfs dfsadmin -refreshNodes"
+  code "#{hdfs_cmd} dfsadmin -refreshNodes"
   user "hdfs"
   action :nothing
   subscribes :run, "template[/etc/hadoop/conf/dfs.exclude]", :delayed
@@ -230,31 +235,31 @@ end
 # We'd prefer to do it after all nodes are members of the HDFS system
 #
 bash "create-hdfs-temp" do
-  code "hadoop fs -mkdir /tmp; hadoop fs -chmod -R 1777 /tmp"
+  code "#{hdfs_cmd} dfs -mkdir /tmp; #{hdfs_cmd} dfs -chmod -R 1777 /tmp"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /tmp"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /tmp"
 end
 
 bash "create-hdfs-applogs" do
-  code "hadoop fs -mkdir /app-logs; hadoop fs -chmod -R 1777 /app-logs; hadoop fs -chown yarn /app-logs"
+  code "#{hdfs_cmd} dfs -mkdir /app-logs; #{hdfs_cmd} dfs -chmod -R 1777 /app-logs; #{hdfs_cmd} dfs -chown yarn /app-logs"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /app-logs"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /app-logs"
 end
 
 bash "create-hdfs-user" do
-  code "hadoop fs -mkdir /user; hadoop fs -chmod -R 0755 /user"
+  code "#{hdfs_cmd} dfs -mkdir /user; #{hdfs_cmd} dfs -chmod -R 0755 /user"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /user"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /user"
 end
 
 bash "create-hdfs-history" do
-  code "hadoop fs -mkdir /user/history; hadoop fs -chmod -R 1777 /user/history; hadoop fs -chown mapred:hdfs /user/history"
+  code "#{hdfs_cmd} dfs -mkdir /user/history; #{hdfs_cmd} dfs -chmod -R 1777 /user/history; #{hdfs_cmd} dfs -chown mapred:hdfs /user/history"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /user/history"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /user/history"
 end
 
 bash "create-hdfs-yarn-log" do
-  code "hadoop fs -mkdir -p /var/log/hadoop-yarn; hadoop fs -chown yarn:mapred /var/log/hadoop-yarn"
+  code "#{hdfs_cmd} dfs -mkdir -p /var/log/hadoop-yarn; #{hdfs_cmd} dfs -chown yarn:mapred /var/log/hadoop-yarn"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /var/log/hadoop-yarn"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /var/log/hadoop-yarn"
 end

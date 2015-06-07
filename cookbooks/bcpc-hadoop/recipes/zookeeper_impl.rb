@@ -1,40 +1,24 @@
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-include_recipe 'dpkg_autostart'
-include_recipe 'bcpc-hadoop::zookeeper_config'
-dpkg_autostart "zookeeper-server" do
-  allow false
+package  hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release]) do
+  action :install
 end
 
-package  "zookeeper-server" do
-  action :upgrade
-  notifies :create, "template[/tmp/zkServer.sh]", :immediately
-  notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately
+include_recipe 'bcpc-hadoop::zookeeper_config'
+
+bash "hdp-select zookeeper-server" do
+  code "hdp-select set zookeeper-server #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[#{hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  action :nothing
 end
 
 user_ulimit "zookeeper" do
   filehandle_limit 32769
 end
 
-template "/tmp/zkServer.sh" do
-  source "zk_zkServer.sh.orig.erb"
-  mode 0644
-end
-
-ruby_block "Compare_zookeeper_server_start_shell_script" do
-  block do
-    require "digest"
-    orig_checksum=Digest::MD5.hexdigest(File.read("/tmp/zkServer.sh"))
-    new_checksum=Digest::MD5.hexdigest(File.read("/usr/hdp/2.2.0.0-2041/zookeeper/bin/zkServer.sh"))
-    if orig_checksum != new_checksum
-      Chef::Application.fatal!("zookeeper-server:New version of zkServer.sh need to be created and used")
-    end
-  end
-  action :nothing
-end
-
-template "/etc/init.d/zookeeper-server" do
-  source "zk_zookeeper-server-initd.erb"
-  mode 0655
+link '/etc/init.d/zookeeper-server' do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/etc/init.d/zookeeper-server"
 end
 
 directory "/var/run/zookeeper" do 
@@ -61,7 +45,7 @@ directory node[:bcpc][:hadoop][:zookeeper][:data_dir] do
   mode 0755
 end
 
-template "/usr/hdp/2.2.0.0-2041/zookeeper/bin/zkServer.sh" do
+template "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh" do
   source "zk_zkServer.sh.erb"
 end
 
@@ -82,7 +66,8 @@ service "zookeeper-server" do
   action [:enable, :start]
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zoo.cfg]", :delayed
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zookeeper-env.sh]", :delayed
-  subscribes :restart, "template[/usr/lib/zookeeper/bin/zkServer.sh]", :delayed
+  subscribes :restart, "link[/usr/lib/zookeeper/bin/zkServer.sh]", :delayed
   subscribes :restart, "file[#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid]", :delayed
   subscribes :restart, "user_ulimit[zookeeper]", :delayed
+  subscribes :restart, "bash[hdp-select zookeeper-server]", :delayed
 end
