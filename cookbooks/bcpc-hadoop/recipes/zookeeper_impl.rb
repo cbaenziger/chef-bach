@@ -1,11 +1,11 @@
 
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::zookeeper_config'
-dpkg_autostart "zookeeper-server" do
+dpkg_autostart "zookeeper" do
   allow false
 end
 
-package  "zookeeper-server" do
+package  "zookeeper" do
   action :upgrade
   notifies :create, "template[/tmp/zkServer.sh]", :immediately
   notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately

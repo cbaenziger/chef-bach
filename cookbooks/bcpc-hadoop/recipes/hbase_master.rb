@@ -52,8 +52,6 @@ node.normal['bcpc']['hadoop']['graphite']['service_queries']['hbase_master'] = {
 
 %w{
 hbase
-hbase-master
-hbase-thrift
 libsnappy1
 phoenix
 }.each do |p|
