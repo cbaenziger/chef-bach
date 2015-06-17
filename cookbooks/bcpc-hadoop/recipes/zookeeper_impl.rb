@@ -7,7 +7,7 @@ end
 
 package  "zookeeper-server" do
   action :upgrade
-  notifies :create, "template[#{Chef::Config[:file_cache_path]}/zkServer.sh]", :immediately
+  notifies :create, "template[/tmp/zkServer.sh]", :immediately
   notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately
 end
 
@@ -23,7 +23,7 @@ end
 ruby_block "Compare_zookeeper_server_start_shell_script" do
   block do
     require "digest"
-    orig_checksum=Digest::MD5.hexdigest(File.read("#{Chef::Config[:file_cache_path]}/zkServer.sh"))
+    orig_checksum=Digest::MD5.hexdigest(File.read("/tmp/zkServer.sh"))
     new_checksum=Digest::MD5.hexdigest(File.read("/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh"))
     if orig_checksum != new_checksum
       Chef::Application.fatal!("zookeeper-server:New version of zkServer.sh need to be created and used")
