@@ -11,6 +11,10 @@ package  "zookeeper-server" do
   notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately
 end
 
+user_ulimit "zookeeper" do
+  filehandle_limit 32769
+end
+
 template "/tmp/zkServer.sh" do
   source "zk_zkServer.sh.orig.erb"
   mode 0644
@@ -76,8 +80,8 @@ end
 zk_service_dep = ["template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zoo.cfg]",
                   "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zookeeper-env.sh]",
                   "template[/usr/lib/zookeeper/bin/zkServer.sh]",
-                  "template[/etc/default/zookeeper-server]",
-                  "file[#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid]"]
+                  "file[#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid]",
+                  "user_ulimit[zookeeper]"]
 
 hadoop_service "zookeeper-server" do
   dependencies zk_service_dep

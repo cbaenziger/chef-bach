@@ -16,6 +16,10 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
   end
 end
 
+user_ulimit "hbase" do
+  filehandle_limit 32769
+end
+
 directory "/usr/hdp/current/hbase-regionserver/lib/native/Linux-amd64-64" do
   recursive true
   action :create
@@ -42,8 +46,9 @@ template "/etc/init.d/hbase-regionserver" do
 end
 
 rs_service_dep = ["template[/etc/hbase/conf/hbase-site.xml]",
+                  "template[/etc/hbase/conf/hbase-policy.xml]",
                   "template[/etc/hbase/conf/hbase-env.sh]",
-                  "template[/etc/hbase/conf/hbase-policy.xml]"] 
+                  "user_ulimit[hbase]"]
 
 hadoop_service "hbase-regionserver" do
   dependencies rs_service_dep

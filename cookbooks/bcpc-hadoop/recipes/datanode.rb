@@ -12,6 +12,11 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
   end
 end
 
+user_ulimit "hdfs" do
+  filehandle_limit 32769
+  process_limit 65536
+end
+
 if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
   Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:disks]} than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]}! See comments of HDFS-4442.")
 end
@@ -32,10 +37,13 @@ node[:bcpc][:hadoop][:mounts].each do |i|
   end
 end
 
-dep = ["template[/etc/hadoop/conf/hdfs-site.xml]",
-       "template[/etc/hadoop/conf/hadoop-env.sh]"]
+dn_deps = ["template[/etc/hadoop/conf/hdfs-site.xml]",
+           "template[/etc/hadoop/conf/hadoop-env.sh]",
+           "template[/etc/hadoop/conf/topology]",
+           "user_ulimit[hdfs]",
+           "ruby_block[handle_prev_datanode_restart_failure]"]
 
 hadoop_service "hadoop-hdfs-datanode" do
-  dependencies dep
+  dependencies dn_deps
   process_identifier "org.apache.hadoop.hdfs.server.datanode.DataNode"
 end
