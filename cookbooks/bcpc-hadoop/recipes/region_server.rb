@@ -43,6 +43,7 @@ end
 rs_service_dep = ["template[/etc/hbase/conf/hbase-site.xml]",
                   "template[/etc/hbase/conf/hbase-policy.xml]",
                   "template[/etc/hbase/conf/hbase-env.sh]",
+                  "template[/etc/hadoop/conf/hdfs-site.xml]",
                   "user_ulimit[hbase]"]
 
 hadoop_service "hbase-regionserver" do
