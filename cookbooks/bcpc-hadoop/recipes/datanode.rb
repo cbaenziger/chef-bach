@@ -22,10 +22,6 @@ user_ulimit "hdfs" do
   process_limit 65536
 end
 
-if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
-  Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:disks]} than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]}! See comments of HDFS-4442.")
-end
-
 # Build nodes for HDFS storage
 node[:bcpc][:hadoop][:mounts].each do |i|
   directory "/disk/#{i}/dfs" do
