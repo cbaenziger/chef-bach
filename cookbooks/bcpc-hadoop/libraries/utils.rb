@@ -1,49 +1,3 @@
-#
-# Cookbook Name:: bcpc
-# Library:: utils
-#
-# Copyright 2013, Bloomberg Finance L.P.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
-require 'openssl'
-require 'thread'
-
-#
-# Constant string which defines the default attributes which need to be retrieved from node objects
-# The format is hash { key => value , key => value }
-# Key will be used as the key in the search result which is a hash and the value is the node attribute which needs
-# to be included in the result. Attribute hierarchy can be expressed as a dot seperated string. User the following
-# as an example
-#
-HOSTNAME_ATTR_SRCH_KEYS = {'hostname' => 'hostname'}
-HOSTNAME_NODENO_ATTR_SRCH_KEYS = {'hostname' => 'hostname', 'node_number' => 'bcpc.node_number'}
-MGMT_IP_ATTR_SRCH_KEYS = {'mgmt_ip' => 'bcpc.management.ip'}
-
-def init_config
-  if not Chef::DataBag.list.key?('configs')
-     puts "************ Creating data_bag \"configs\""
-     bag = Chef::DataBag.new
-     bag.name("configs")
-     bag.create
-  end rescue nil
-  begin
-     $dbi = Chef::DataBagItem.load('configs', node.chef_environment)
-     $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['bcpc']['encrypt_data_bag']
-     puts "============ Loaded existing data_bag_item \"configs/#{node.chef_environment}\""
-  rescue
-     $dbi = Chef::DataBagItem.new
      $dbi.data_bag('configs')
      $dbi.raw_data = { 'id' => node.chef_environment }
      $dbi.save
@@ -210,14 +164,6 @@ def set_hosts
   node.default[:bcpc][:hadoop][:mysql_hosts] = get_node_attributes(HOSTNAME_ATTR_SRCH_KEYS,"mysql","bcpc")
 end
 
-def zk_formatted?
-  require 'rubygems'
-  require 'zookeeper'
-  z = Zookeeper.new("localhost:2181")
-  r = z.get_children(:path => "/hadoop-ha/#{node.chef_environment}")
-  return (r[:rc] == 0)
-end
-
 #
 # Library function to get attributes for nodes that executes a particular recipe
 #
@@ -374,6 +320,7 @@ def get_restart_lock_holder(znode_path, zk_hosts="localhost:2181")
   end
   return val
 end
+
 #
 # Function to generate the full path of znode which will be used to create a restart lock znode
 # Input paramaters: The path in ZK where znodes are created for the retart locks and the lock name
@@ -433,4 +380,15 @@ def process_restarted_after_failure?(restart_failure_time, process_identifier)
       return false
     end
   end
+end
+
+def user_exists?(user_name)
+  user_found = false
+  chk_usr_cmd = "getent passwd #{user_name}"
+  Chef::Log.debug("Executing command: #{chk_usr_cmd}")
+  cmd = Mixlib::ShellOut.new(chk_usr_cmd, :timeout => 10).run_command
+  if cmd.exitstatus == 0
+    user_found = true
+  end
+  return user_found
 end
