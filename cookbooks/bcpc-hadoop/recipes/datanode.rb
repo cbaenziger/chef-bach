@@ -12,6 +12,11 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
   end
 end
 
+user_ulimit "root" do
+  filehandle_limit 32769
+  process_limit 65536
+end
+
 user_ulimit "hdfs" do
   filehandle_limit 32769
   process_limit 65536
@@ -41,6 +46,7 @@ dn_deps = ["template[/etc/hadoop/conf/hdfs-site.xml]",
            "template[/etc/hadoop/conf/hadoop-env.sh]",
            "template[/etc/hadoop/conf/topology]",
            "user_ulimit[hdfs]",
+           "user_ulimit[root]",
            "ruby_block[handle_prev_datanode_restart_failure]"]
 
 hadoop_service "hadoop-hdfs-datanode" do
