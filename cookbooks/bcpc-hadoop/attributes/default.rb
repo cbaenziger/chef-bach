@@ -4,12 +4,10 @@
 #
 #############################################
 
-<<<<<<< d1a3ab10f1eabb4996519427486ad63a21881809
 default['bcpc']['hadoop'] = {}
 default['bcpc']['hadoop']['distribution']['release'] = '2.6.1.17-1'
 default['bcpc']['hadoop']['distribution']['active_release'] = node['bcpc']['hadoop']['distribution']['release']
 default['bcpc']['hadoop']['decommission']['hosts'] = []
-# disks to use for Hadoop activities (expected to be an environment or role set variable)
 default['bcpc']['hadoop']['hadoop_home_warn_suppress'] = 1
 default['bcpc']['hadoop']['hadoop_log_dir'] = '/var/log/hadoop-hdfs'
 default['bcpc']['hadoop']['hadoop_mapred_ident_string'] = 'mapred'
