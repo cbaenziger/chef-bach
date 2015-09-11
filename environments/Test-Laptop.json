@@ -46,7 +46,7 @@
         "distribution" : {
           "version" : "HDP",
           "key" : "hortonworks.key",
-          "release": "2.2.6.2-1"
+          "release": "2.2.6.0-2800"
         },
         "hbase": {
           "bucketcache": {
