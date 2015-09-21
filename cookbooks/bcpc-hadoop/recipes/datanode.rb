@@ -22,6 +22,30 @@ user_ulimit "hdfs" do
   process_limit 65536
 end
 
+# Create all the resources to add them in resource collection
+node[:bcpc][:hadoop][:os][:group].keys.each do |group_name|
+  group group_name do
+    append true
+    members node[:bcpc][:hadoop][:os][:group][group_name][:members]
+    action :nothing
+  end
+end
+  
+# Take action on each group resource based on its existence 
+ruby_block 'create_or_manage_groups' do
+  block do
+    node[:bcpc][:hadoop][:os][:group].keys.each do |group_name|
+      res = run_context.resource_collection.find("group[#{group_name}]")
+      res.run_action(get_group_action(group_name))
+    end
+  end
+end
+
+directory "/var/run/hadoop-hdfs" do
+  owner "hdfs"
+  group "root"
+end
+
 if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
   Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:disks]} than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]}! See comments of HDFS-4442.")
 end
