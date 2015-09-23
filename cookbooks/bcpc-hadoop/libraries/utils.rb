@@ -402,3 +402,4 @@ end
 
 def get_group_action(group_name)
   return  group_exists?(group_name) ? :manage : :create 
+end
