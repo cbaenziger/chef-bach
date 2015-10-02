@@ -29,6 +29,13 @@ end
 
 link "/etc/init.d/flume-agent-multi" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent"
+  subscribes :run, "package[#{hwx_pkg_str('flume-agent', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  action :nothing
+end
+
+service "flume-agent" do
+  action [:stop, :disable]
+  subscribes :restart, "bash[hdp-select flume-server]", :delayed
 end
 
 bash "make_shared_logs_dir" do
