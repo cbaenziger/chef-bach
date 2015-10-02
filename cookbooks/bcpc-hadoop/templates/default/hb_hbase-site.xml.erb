@@ -79,17 +79,6 @@
   </property>
 
   <property>
-    <name>hbase.regionserver.wal.codec</name>
-    <value>org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec</value>
-  </property>
-
-  <property>
-    <name>hbase.region.server.rpc.scheduler.factory.class</name>
-    <value>org.apache.phoenix.hbase.index.ipc.PhoenixIndexRpcSchedulerFactory</value>
-    <description>Factory to create the Phoenix RPC Scheduler that knows to put index updates into index queues</description>
-  </property>
-
-  <property>
     <name>dfs.client.read.shortcircuit</name>
     <value>true</value>
   </property>
@@ -112,6 +101,11 @@
     <description>List of users or groups (comma-separated), who are allowed full privileges, regardless of stored ACLs, across the cluster. Only used when HBase security is enabled.</description>
   </property>
 
+  <property>
+    <name>hbase.master.loadbalancer.class</name>
+    <value>org.apache.phoenix.hbase.index.balancer.IndexLoadBalancer</value>
+  </property>
+
   <property>    
     <name>hbase.coprocessor.region.classes</name>    
     <value>org.apache.hadoop.hbase.security.token.TokenProvider,org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint,org.apache.hadoop.hbase.security.access.AccessController</value>
@@ -125,12 +119,12 @@
 
   <property>    
     <name>hbase.coprocessor.regionserver.classes</name>    
-    <value>org.apache.hadoop.hbase.security.access.AccessController</value>    
+    <value>org.apache.hadoop.hbase.security.access.AccessController,org.apache.hadoop.hbase.regionserver.LocalIndexMerger</value>    
   </property> 
 
   <property>    
     <name>hbase.coprocessor.master.classes</name>    
-    <value>org.apache.hadoop.hbase.security.access.AccessController</value>    
+    <value>org.apache.hadoop.hbase.security.access.AccessController,org.apache.phoenix.hbase.index.master.IndexMasterObserver</value>    
   </property> 
 
   <!-- HBase Security Configuration -->

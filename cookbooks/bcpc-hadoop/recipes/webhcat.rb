@@ -11,6 +11,13 @@ end
     action :upgrade
   end
 end
+%w{hive-metastore hive-webhcat hive-server2}.each do |comp|
+  bash "hdp-select #{comp}" do
+    code "hdp-select set #{comp} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{comp}]", :immediate
+    action :nothing
+  end
+end
 
 %w{hive-hcatalog-server}.each do |s|
   service s do
@@ -18,5 +25,6 @@ end
     supports :status => true, :restart => true, :reload => false
     subscribes :restart, "template[/etc/webhcat/conf/webhcat-site.xml]", :delayed
     subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
+    subscribes :restart, "bash[hdp-select hive-metastore]", :delayed
   end
 end
