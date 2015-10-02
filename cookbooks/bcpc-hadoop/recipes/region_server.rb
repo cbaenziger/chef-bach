@@ -18,6 +18,7 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
     action :upgrade
   end
 end
+
 %w{hbase-client hbase-regionserver phoenix-client}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
