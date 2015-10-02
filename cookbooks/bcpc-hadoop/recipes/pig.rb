@@ -1,4 +1,4 @@
-%w{pig }.each do |pkg|
+%w{pig jython}.each do |pkg|
   package pkg do
     action :upgrade
   end

@@ -20,8 +20,15 @@ end
   end
 end
 
+bash "hdp-select flume-server" do
+  code "hdp-select set flume-server #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[flume-agent]", :immediate
+  action :nothing
+end
+
 service "flume-agent" do
   action [:stop, :disable]
+  subscribes :restart, "bash[hdp-select flume-server]", :immediate
 end
 
 bash "make_shared_logs_dir" do
@@ -30,7 +37,7 @@ bash "make_shared_logs_dir" do
   hdfs dfs -chown -R flume #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/
 EOH
   user "hdfs"
-  not_if "hdfs dfs -test #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/logs/", :user => "hdfs"
+  not_if "hdfs dfs -test -d #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/logs/", :user => "hdfs"
 end
 
 template "/etc/flume/conf/flume-env.sh" do

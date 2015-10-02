@@ -5,36 +5,22 @@ dpkg_autostart "zookeeper" do
   allow false
 end
 
-package  "zookeeper" do
+package  "zookeeper-server" do
   action :upgrade
-  notifies :create, "template[#{Chef::Config[:file_cache_path]}/zkServer.sh]", :immediately
-  notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately
+end
+
+bash "hdp-select zookeeper-server" do
+  code "hdp-select set zookeeper-server #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[zookeeper-server]", :immediate
+  action :nothing
 end
 
 user_ulimit "zookeeper" do
   filehandle_limit 32769
 end
 
-template "#{Chef::Config[:file_cache_path]}/zkServer.sh" do
-  source "zk_zkServer.sh.orig.erb"
-  mode 0644
-end
-
-ruby_block "Compare_zookeeper_server_start_shell_script" do
-  block do
-    require "digest"
-    orig_checksum=Digest::MD5.hexdigest(File.read("#{Chef::Config[:file_cache_path]}/zkServer.sh"))
-    new_checksum=Digest::MD5.hexdigest(File.read("/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh"))
-    if orig_checksum != new_checksum
-      Chef::Application.fatal!("zookeeper-server:New version of zkServer.sh need to be created and used")
-    end
-  end
-  action :nothing
-end
-
-template "/etc/init.d/zookeeper-server" do
-  source "zk_zookeeper-server-initd.erb"
-  mode 0655
+link "/etc/init.d/zookeeper-server" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh"
 end
 
 directory "/var/run/zookeeper" do 
@@ -81,6 +67,7 @@ zk_service_dep = ["template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zoo.c
                   "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zookeeper-env.sh]",
                   "template[/usr/lib/zookeeper/bin/zkServer.sh]",
                   "file[#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid]",
+                  "bash[hdp-select zookeeper-server]",
                   "user_ulimit[zookeeper]"]
 
 hadoop_service "zookeeper-server" do

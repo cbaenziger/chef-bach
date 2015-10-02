@@ -10,6 +10,12 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
   package pkg do
     action :upgrade
   end
+
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[pkg]", :immediate
+    action :nothing
+  end
 end
 
 user_ulimit "root" do
@@ -81,6 +87,7 @@ dn_deps = ["template[/etc/hadoop/conf/hdfs-site.xml]",
            "template[/etc/hadoop/conf/topology]",
            "user_ulimit[hdfs]",
            "user_ulimit[root]",
+           "bash[hdp-select hadoop-hdfs-datanode]",
            "ruby_block[handle_prev_datanode_restart_failure]"]
 
 hadoop_service "hadoop-hdfs-datanode" do

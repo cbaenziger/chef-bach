@@ -56,7 +56,18 @@ libsnappy1
 phoenix
 }.each do |p|
   package p do
-    action :install
+    action :upgrade
+  end
+end
+
+%w{hbase-master
+hbase-client
+phoenix-client
+}.each do |p|
+  bash "hdp-select #{p}" do
+    code "hdp-select set #{p} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{p}]", :immediate
+    action :nothing
   end
 end
 
@@ -77,7 +88,7 @@ end
 directory "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64" do
   recursive true
   action :create
- end
+end
 
 link "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64/libsnappy.so" do
   to "/usr/lib/libsnappy.so.1"
@@ -95,5 +106,6 @@ service "hbase-master" do
   subscribes :restart, "template[/etc/hbase/conf/hbase-policy.xml]", :delayed
   subscribes :restart, "template[/etc/hbase/conf/hbase-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
+  subscribes :restart, "bash[hdp-select hbase-master]", :delayed
   subscribes :restart, "user_ulimit[hbase]", :delayed
 end

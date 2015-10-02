@@ -27,6 +27,11 @@ node.default['bcpc']['hadoop']['copylog']['namenode_master_out'] = {
     action :upgrade
   end
 end
+bash "hdp-select hadoop-hdfs-namenode" do
+  code "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[hadoop-hdfs-namenode]", :immediate
+  action :nothing
+end
 
 # need to ensure hdfs user is in hadoop and hdfs
 # groups. Packages will not add hdfs if it
@@ -151,6 +156,7 @@ service "generally run hadoop-hdfs-namenode" do
   subscribes :restart, "template[/etc/hadoop/conf/topology]", :delayed
   subscribes :restart, "user_ulimit[hdfs]", :delayed
   subscribes :restart, "bash[initialize-shared-edits]", :immediately
+  subscribes :restart, "bash[hdp-select hadoop-hdfs-namenode]", :delayed
 end
 
 ## We need to bootstrap the standby and journal node transaction logs

@@ -8,6 +8,12 @@ package "hive-hcatalog" do
   action :upgrade
 end
 
+bash "hdp-select hive-hcatalog" do
+  code "hdp-select set hive-hcatalog #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[hive-hcatalog]", :immediate
+  action :nothing
+end
+
 package "hadoop-lzo" do
   action :upgrade
 end
@@ -124,6 +130,7 @@ service "hive-metastore" do
   action [:enable, :start]
   subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-log4j.properties]", :delayed
+  subscribes :restart, "bash[hdp-select hive-hcatalog]", :delayed
   subscribes :restart, "bash[extract-mysql-connector]", :delayed
   subscribes :restart, "directory[/var/log/hive/gc]", :delayed
 end

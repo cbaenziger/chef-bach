@@ -10,9 +10,16 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
     'docopy' => true
 }
 
-%w{hbase libsnappy1 phoenix}.each do |pkg|
+%w{hbase-regionserver libsnappy1 phoenix}.each do |pkg|
   package pkg do
-    action :install
+    action :upgrade
+  end
+end
+%w{hbase-client hbase-regionserver phoenix-client}.each do |pkg|
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{pkg}]", :immediate
+    action :nothing
   end
 end
 
@@ -40,11 +47,13 @@ template "/etc/init.d/hbase-regionserver" do
   mode 0655
 end
 
+<<<<<<< HEAD
 rs_service_dep = ["template[/etc/hbase/conf/hbase-site.xml]",
                   "template[/etc/hbase/conf/hbase-policy.xml]",
                   "template[/etc/hbase/conf/hbase-env.sh]",
                   "template[/etc/hadoop/conf/hdfs-site.xml]",
-                  "user_ulimit[hbase]"]
+                  "user_ulimit[hbase]",
+                  "bash[hdp-select hbase-regionserver]"]
 
 hadoop_service "hbase-regionserver" do
   dependencies rs_service_dep

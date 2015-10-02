@@ -1,13 +1,20 @@
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::oozie_config'
 
-dpkg_autostart "oozie" do
+dpkg_autostart "oozie-server" do
   allow false
 end
 
-%w{libmysql-java zip unzip extjs hadoop-lzo oozie oozie-client}.each do |pkg|
+%w{libmysql-java zip unzip extjs hadoop-lzo oozie-server oozie-client}.each do |pkg|
   package pkg do
     action :upgrade
+  end
+end
+%w{oozie-server oozie-client}.each do |pkg|
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{pkg}]", :immediate
+    action :nothing
   end
 end
 
@@ -16,7 +23,7 @@ template "/etc/init.d/oozie" do
   mode 0655
 end
 
-OOZIE_LIB_PATH='/usr/hdp/current/oozie'
+OOZIE_LIB_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie"
 OOZIE_CLIENT_PATH='/usr/hdp/current/oozie-client'
 OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie-server/oozie-server"
 OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie-server"
@@ -49,10 +56,10 @@ end
 #  not_if { (::Dir.entries("#{src_dir}") - ::Dir.entries("#{dst_dir}")).empty? }
 #end
 
-%w{/usr/share/HDP-oozie/ext-#{node[:bcpc][:hadoop][:distribution][:release]}
-   /usr/share/java/mysql-connector-java.jar
-   /usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar}.each do |path|
-  link "#{OOZIE_CLIENT_PATH}/libext/#{File.basename(path)}" do
+["/usr/share/HDP-oozie/ext-2.2.zip",
+ "/usr/share/java/mysql-connector-java.jar",
+ "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"].each do |path|
+  link "#{OOZIE_LIB_PATH}/libext/#{File.basename(path)}" do
     to path
   end
 end
@@ -175,6 +182,7 @@ service "generally run oozie" do
   supports :status => true, :restart => true, :reload => false
   subscribes :restart, "template[/etc/oozie/conf/oozie-site.xml]", :delayed
   subscribes :restart, "template[/etc/oozie/conf/oozie-env.sh]", :delayed
+  subscribes :restart, "bash[hdp-select oozie-server]", :delayed
 end
 
 ruby_block "Oozie Down" do
