@@ -44,6 +44,12 @@ end
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
+
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{pkg}]", :immediate
+    action :nothing
+  end
 end
 
 # list of hdp-select values from packages above

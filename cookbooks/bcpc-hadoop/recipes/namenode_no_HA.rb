@@ -30,6 +30,11 @@ hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdf
     action :upgrade
   end
 end
+bash "hdp-select hadoop-hdfs-namenode" do
+  command "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[hadoop-hdfs-namenode]", :immediate
+  action :nothing
+end
 
 bash "hdp-select hadoop-hdfs-namenode" do
   command "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
