@@ -36,8 +36,15 @@ end
   dpkg_autostart pkg do
     allow false
   end
+
   package pkg do
     action :upgrade
+  end
+
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{pkg}]", :immediate
+    action :nothing
   end
 end
 
@@ -56,16 +63,6 @@ bash "setup-mapreduce-app" do
   EOH
   user "hdfs"
   not_if "sudo -u hdfs hdfs dfs -test -f /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/mapreduce.tar.gz" 
-  only_if "echo 'test'|sudo -u hdfs hdfs dfs -copyFromLocal - /tmp/mapred-test"
-  notifies :run,"bash[delete-temp-file]",:immediately
-end
-
-bash "delete-temp-file" do
-  code <<-EOH
-  hdfs dfs -rm /tmp/mapred-test
-  EOH
-  user "hdfs"
-  action :nothing
 end
 
 service "hadoop-yarn-resourcemanager" do
@@ -75,6 +72,7 @@ service "hadoop-yarn-resourcemanager" do
   subscribes :restart, "template[/etc/hadoop/conf/yarn-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/mapred-site.xml]", :delayed
+  subscribes :restart, "bash[hdp-select hadoop-yarn-resourcemanager]", :delayed
 end
 
 bash "reload mapreduce nodes" do

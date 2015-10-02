@@ -33,7 +33,7 @@ bash "make_apps_tez_dir" do
   hdfs dfs -mkdir -p /apps/tez
 EOH
   user "hdfs"
-  not_if "hdfs dfs -test /apps/tez/", :user => "hdfs"
+  not_if "hdfs dfs -test -d /apps/tez/", :user => "hdfs"
 end
 
 bash "make_dir_to_copy_tez_targz" do

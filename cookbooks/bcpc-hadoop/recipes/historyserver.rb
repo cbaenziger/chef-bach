@@ -4,6 +4,11 @@ include_recipe 'bcpc-hadoop::hadoop_config'
   package pkg do
     action :upgrade
   end
+
+  bash "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}" do
+    subscribes :run, "package[#{pkg}]", :immediate
+    action :nothing
+  end
 end
 
 template "/etc/init.d/hadoop-mapreduce-historyserver" do

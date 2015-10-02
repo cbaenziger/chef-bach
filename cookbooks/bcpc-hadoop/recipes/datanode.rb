@@ -6,16 +6,28 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
     'docopy' => true
 }
 
-%w{hadoop-yarn-nodemanager
-   hadoop-hdfs-datanode
-   hadoop-mapreduce
-   hadoop-client
-   sqoop
-   lzop
-   cgroup-bin
-   hadoop-lzo}.each do |pkg|
+hdp_select_pkgs = %w{hadoop-yarn-nodemanager
+                     hadoop-hdfs-datanode
+                     hadoop-client
+                     slider-client
+                     sqoop-client
+                     sqoop-server
+                     }
+
+hdp_select_pkgs + %w{hadoop-mapreduce
+                     lzop
+                     cgroup-bin
+                     hadoop-lzo}.each do |pkg|
   package pkg do
     action :upgrade
+  end
+end
+
+hdp_select_pkgs.each do |pkg|
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[pkg]", :immediate
+    action :nothing
   end
 end
 
@@ -274,6 +286,7 @@ ruby_block "acquire_lock_to_restart_datanode" do
   subscribes :create, "template[/etc/hadoop/conf/topology]", :immediate
   subscribes :create, "user_ulimit[hdfs]", :immediate
   subscribes :create, "user_ulimit[root]", :immediate
+  subscribes :create, "bash[hdp-select hadoop-hdfs-datanode]", :immediate
   subscribes :create, "ruby_block[handle_prev_datanode_restart_failure]", :immediate
 end
 #
@@ -315,5 +328,6 @@ service "hadoop-yarn-nodemanager" do
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-site.xml]", :delayed
+  subscribes :restart, "bash[hdp-select hadoop-yarn-nodemanager]", :delayed
   subscribes :restart, "user_ulimit[yarn]", :delayed
 end
