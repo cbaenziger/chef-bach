@@ -94,16 +94,6 @@ node[:bcpc][:hadoop][:mounts].each do |d|
   end
 end
 
-template "/etc/init.d/hadoop-hdfs-namenode" do
-  source "hdp_hadoop-hdfs-namenode-initd.erb"
-  mode 0655
-end
-
-template "/etc/init.d/hadoop-hdfs-zkfc" do
-  source "hdp_hadoop-hdfs-zkfc-initd.erb"
-  mode 0655
-end
-
 bash "format namenode" do
   code "hdfs namenode -format -nonInteractive -force"
   user "hdfs"

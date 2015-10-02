@@ -1,4 +1,3 @@
-
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::zookeeper_config'
 dpkg_autostart "zookeeper" do
@@ -17,10 +16,6 @@ end
 
 user_ulimit "zookeeper" do
   filehandle_limit 32769
-end
-
-link "/etc/init.d/zookeeper-server" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh"
 end
 
 directory "/var/run/zookeeper" do 

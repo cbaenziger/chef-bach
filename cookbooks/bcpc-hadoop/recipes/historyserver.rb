@@ -11,11 +11,6 @@ include_recipe 'bcpc-hadoop::hadoop_config'
   end
 end
 
-template "/etc/init.d/hadoop-mapreduce-historyserver" do
-  source "hdp_hadoop-mapreduce-historyserver-initd.erb"
-  mode 0655
-end
-
 template "/etc/hadoop/conf/mapred-env.sh" do
   source "hdp_mapred-env.sh.erb"
   mode 0655

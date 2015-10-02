@@ -47,14 +47,6 @@ template "/etc/flume/conf/flume-env.sh" do
   mode "0755"
 end
 
-template "/etc/init.d/flume-agent-multi" do
-  source "flume_flume-agent.erb"
-  owner "root"
-  group "root"
-  mode "0755"
-  action :create
-end
-
 if node['bcpc']['hadoop']['copylog_enable']
   service "flume-agent-multi" do
     supports :status => true, :restart => true, :reload => false

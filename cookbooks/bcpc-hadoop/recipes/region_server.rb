@@ -47,7 +47,6 @@ template "/etc/init.d/hbase-regionserver" do
   mode 0655
 end
 
-<<<<<<< HEAD
 rs_service_dep = ["template[/etc/hbase/conf/hbase-site.xml]",
                   "template[/etc/hbase/conf/hbase-policy.xml]",
                   "template[/etc/hbase/conf/hbase-env.sh]",
