@@ -42,11 +42,6 @@ template "/etc/default/hbase" do
   variables(:hbrs_jmx_port => node[:bcpc][:hadoop][:hbase_rs][:jmx][:port])
 end
 
-template "/etc/init.d/hbase-regionserver" do
-  source "hdp_hbase-regionserver-initd.erb"
-  mode 0655
-end
-
 service "hbase-regionserver" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]

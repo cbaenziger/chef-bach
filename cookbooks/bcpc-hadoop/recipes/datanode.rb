@@ -105,16 +105,6 @@ execute "chown hadoop-yarn cgroup tree to yarn" do
   action :run
 end
 
-template "/etc/init.d/hadoop-hdfs-datanode" do
-  source "hdp_hadoop-hdfs-datanode-initd.erb"
-  mode 0655
-end
-
-template "/etc/init.d/hadoop-yarn-nodemanager" do
-  source "hdp_hadoop-yarn-nodemanager-initd.erb"
-  mode 0655
-end
-
 link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
   to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end

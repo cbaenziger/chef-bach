@@ -22,7 +22,7 @@ end
   bash "create-hdfs-history-dir #{dir}" do
     code "hadoop fs -mkdir /user/history/#{dir} && hadoop fs -chmod 1777 /user/history/#{dir} && hadoop fs -chown yarn:mapred /user/history/#{dir}"
     user "hdfs"
-    not_if "sudo -u hdfs hadoop fs -test -d /user/history/#{dir}"
+   not_if "sudo -u hdfs hadoop fs -test -d /user/history/#{dir}"
   end
 end
 
@@ -46,11 +46,6 @@ end
     subscribes :run, "package[#{pkg}]", :immediate
     action :nothing
   end
-end
-
-template "/etc/init.d/hadoop-yarn-resourcemanager" do
-  source "hdp_hadoop-yarn-resourcemanager-initd.erb"
-  mode 0655
 end
 
 bash "setup-mapreduce-app" do

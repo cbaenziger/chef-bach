@@ -94,11 +94,6 @@ link "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64/libsnappy.so" do
   to "/usr/lib/libsnappy.so.1"
 end
 
-template "/etc/init.d/hbase-master" do
-  source "hdp_hbase-master-initd.erb"
-  mode 0655
-end
-
 service "hbase-master" do
   action [:enable, :start]
   supports :status => true, :restart => true, :reload => false
