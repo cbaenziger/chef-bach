@@ -20,6 +20,14 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
   end
 end
 
+hdp_select_pkgs.each do |pkg|
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[pkg]", :immediate
+    action :nothing
+  end
+end
+
 user_ulimit "root" do
   filehandle_limit 32769
   process_limit 65536
