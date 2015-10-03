@@ -14,10 +14,10 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      sqoop-server
                      }
 
-hdp_select_pkgs + %w{hadoop-mapreduce
+(hdp_select_pkgs + %w{hadoop-mapreduce
                      lzop
                      cgroup-bin
-                     hadoop-lzo}.each do |pkg|
+                     hadoop-lzo}).each do |pkg|
   package pkg do
     action :upgrade
   end
