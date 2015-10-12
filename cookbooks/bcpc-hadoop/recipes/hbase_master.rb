@@ -94,6 +94,10 @@ link "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64/libsnappy.so" do
   to "/usr/lib/libsnappy.so.1"
 end
 
+link "/etc/init.d/hbase-master" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/init.d/hbase-master"
+end
+
 service "hbase-master" do
   action [:enable, :start]
   supports :status => true, :restart => true, :reload => false
