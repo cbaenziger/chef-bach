@@ -10,7 +10,7 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
     'docopy' => true
 }
 
-%w{hbase-regionserver libsnappy1 phoenix}.each do |pkg|
+%w{hbase hbase-regionserver libsnappy1 phoenix}.each do |pkg|
   package pkg do
     action :upgrade
   end
@@ -40,6 +40,15 @@ template "/etc/default/hbase" do
   source "hdp_hbase.default.erb"
   mode 0655
   variables(:hbrs_jmx_port => node[:bcpc][:hadoop][:hbase_rs][:jmx][:port])
+end
+
+#link "/etc/init.d/hbase-regionserver" do
+#  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/init.d/hbase-regionserver"
+#end
+
+template "/etc/init.d/hbase-regionserver" do
+  source "hdp_hbase-regionserver-initd.erb"
+  mode 0655
 end
 
 service "hbase-regionserver" do
