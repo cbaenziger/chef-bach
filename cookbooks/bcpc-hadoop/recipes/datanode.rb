@@ -9,9 +9,7 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
 hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      hadoop-hdfs-datanode
                      hadoop-client
-                     slider-client
-                     sqoop-client
-                     sqoop-server
+                     sqoop
                      }
 
 (hdp_select_pkgs + %w{hadoop-mapreduce
@@ -105,6 +103,10 @@ execute "chown hadoop-yarn cgroup tree to yarn" do
   action :run
 end
 
+link "/etc/init.d/hadoop-hdfs-datanode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-datanode"
+end
+
 link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
   to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end
@@ -180,6 +182,10 @@ end
 # Setup datanode and nodemanager bits
 if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
   Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:disks]} than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]}! See comments of HDFS-4442.")
+end
+
+link "/etc/init.d/hadoop-yarn-nodemanager" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/init.d/hadoop-yarn-nodemanager"
 end
 
 # Build nodes for HDFS storage
