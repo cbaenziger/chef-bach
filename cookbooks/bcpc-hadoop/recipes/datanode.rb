@@ -171,6 +171,12 @@ package 'hive-hcatalog' do
   action :upgrade
 end
 
+bash "hdp-select hive-webhcat" do
+  code "hdp-select set hive-webhcat #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[hive-hcatalog]", :immediate
+  action :nothing
+end
+
 link "/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar" do
   to "/usr/share/java/mysql-connector-java.jar"
 end
