@@ -15,6 +15,9 @@ node.default['bcpc']['hadoop']['copylog']['namenode_standby_out'] = {
     'docopy' => true
 }
 
+# shortcut to the desired HDFS command version
+hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
+
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
   dpkg_autostart pkg do
     allow false
@@ -90,8 +93,8 @@ node[:bcpc][:hadoop][:mounts].each do |d|
 end
 
 if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
-  bash "hdfs namenode -bootstrapStandby -force -nonInteractive" do
-    code "hdfs namenode -bootstrapStandby -force -nonInteractive"
+  bash "#{hdfs_cmd} namenode -bootstrapStandby -force -nonInteractive" do
+    code "#{hdfs_cmd} namenode -bootstrapStandby -force -nonInteractive"
     user "hdfs"
     cwd  "/var/lib/hadoop-hdfs"
     action :run
@@ -128,7 +131,7 @@ else
 end
 
 bash "reload hdfs nodes" do
-  code "hdfs dfsadmin -refreshNodes"
+  code "#{hdfs_cmd} dfsadmin -refreshNodes"
   user "hdfs"
   action :nothing
   subscribes :run, "template[/etc/hadoop/conf/dfs.exclude]", :delayed
