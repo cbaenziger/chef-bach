@@ -32,6 +32,7 @@ bash "create-hdfs-yarn-log" do
   not_if "sudo -u hdfs hadoop fs -test -d /var/log/hadoop-yarn"
 end
 
+# list hdp packages to install
 %w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce}.each do |pkg|
   dpkg_autostart pkg do
     allow false
@@ -40,7 +41,10 @@ end
   package pkg do
     action :upgrade
   end
+end
 
+# list of hdp-select values from packages above
+%w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce-server}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
     subscribes :run, "package[#{pkg}]", :immediate
@@ -58,6 +62,15 @@ bash "setup-mapreduce-app" do
   EOH
   user "hdfs"
   not_if "sudo -u hdfs hdfs dfs -test -f /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/mapreduce.tar.gz" 
+  only_if "echo 'test'|sudo -u hdfs hdfs dfs -copyFromLocal - /tmp/mapred-test"
+end
+
+bash "delete-temp-file" do
+  code <<-EOH
+  hdfs dfs -rm /tmp/mapred-test
+  EOH
+  user "hdfs"
+  action :nothing
 end
 
 service "hadoop-yarn-resourcemanager" do
