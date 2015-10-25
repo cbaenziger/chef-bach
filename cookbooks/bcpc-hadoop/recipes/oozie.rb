@@ -187,9 +187,10 @@ ruby_block "Oozie Down" do
       if i < 10
         sleep(0.5)
         i += 1
-        Chef::Log.debug("Oozie is down")
+        Chef::Log.debug("Oozie is down - #{status}")
       else
-        raise Chef::Application.fatal! "Oozie is reported as down for more than 5 seconds"
+        Chef::Application.fatal! "Oozie is reported as down for more than 5 seconds -- #{status}"
+        raise
       end
     end
     Chef::Log.debug("Oozie is up")
