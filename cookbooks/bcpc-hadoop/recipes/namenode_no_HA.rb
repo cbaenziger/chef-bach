@@ -17,6 +17,9 @@ node.default['bcpc']['hadoop']['copylog']['namenode_out'] = {
     'docopy' => true
 }
 
+# shortcut to the desired HDFS command version
+hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
+
 %w{hadoop-hdfs-namenode hadoop-mapreduce}.each do |pkg|
   dpkg_autostart pkg do
     allow false
@@ -25,6 +28,7 @@ node.default['bcpc']['hadoop']['copylog']['namenode_out'] = {
     action :upgrade
   end
 end
+
 bash "hdp-select hadoop-hdfs-namenode" do
   command "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
   subscribes :run, "package[hadoop-hdfs-namenode]", :immediate
@@ -93,7 +97,7 @@ node[:bcpc][:hadoop][:mounts].each do |d|
 end
 
 bash "format namenode" do
-  code "hdfs namenode -format -nonInteractive -force"
+  code "#{hdfs_cmd} namenode -format -nonInteractive -force"
   user "hdfs"
   action :run
   creates "/disk/#{node[:bcpc][:hadoop][:mounts][0]}/dfs/nn/current/VERSION"
@@ -112,7 +116,7 @@ service "hadoop-hdfs-namenode" do
 end
 
 bash "reload hdfs nodes" do
-  code "hdfs dfsadmin -refreshNodes"
+  code "#{hdfs_cmd} dfsadmin -refreshNodes"
   user "hdfs"
   action :nothing
   subscribes :run, "template[/etc/hadoop/conf/dfs.exclude]", :delayed
@@ -123,31 +127,31 @@ end
 # We'd prefer to do it after all nodes are members of the HDFS system
 #
 bash "create-hdfs-temp" do
-  code "hadoop fs -mkdir /tmp; hadoop fs -chmod -R 1777 /tmp"
+  code "#{hdfs_cmd} dfs -mkdir /tmp; #{hdfs_cmd} dfs -chmod -R 1777 /tmp"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /tmp"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /tmp"
 end
 
 bash "create-hdfs-applogs" do
-  code "hadoop fs -mkdir /app-logs; hadoop fs -chmod -R 1777 /app-logs; hadoop fs -chown yarn /app-logs"
+  code "#{hdfs_cmd} dfs -mkdir /app-logs; #{hdfs_cmd} dfs -chmod -R 1777 /app-logs; #{hdfs_cmd} dfs -chown yarn /app-logs"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /app-logs"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /app-logs"
 end
 
 bash "create-hdfs-user" do
-  code "hadoop fs -mkdir /user; hadoop fs -chmod -R 0755 /user"
+  code "#{hdfs_cmd} dfs -mkdir /user; #{hdfs_cmd} dfs -chmod -R 0755 /user"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /user"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /user"
 end
 
 bash "create-hdfs-history" do
-  code "hadoop fs -mkdir /user/history; hadoop fs -chmod -R 1777 /user/history; hadoop fs -chown mapred:hdfs /user/history"
+  code "#{hdfs_cmd} dfs -mkdir /user/history; #{hdfs_cmd} dfs -chmod -R 1777 /user/history; #{hdfs_cmd} dfs -chown mapred:hdfs /user/history"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /user/history"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /user/history"
 end
 
 bash "create-hdfs-yarn-log" do
-  code "hadoop fs -mkdir -p /var/log/hadoop-yarn; hadoop fs -chown yarn:mapred /var/log/hadoop-yarn"
+  code "#{hdfs_cmd} dfs -mkdir -p /var/log/hadoop-yarn; #{hdfs_cmd} dfs -chown yarn:mapred /var/log/hadoop-yarn"
   user "hdfs"
-  not_if "sudo -u hdfs hadoop fs -test -d /var/log/hadoop-yarn"
+  not_if "sudo -u hdfs #{hdfs_cmd} dfs -test -d /var/log/hadoop-yarn"
 end
