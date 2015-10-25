@@ -8,8 +8,14 @@ package "hive-hcatalog" do
   action :upgrade
 end
 
-bash "hdp-select hive-hcatalog" do
-  code "hdp-select set hive-hcatalog #{node[:bcpc][:hadoop][:distribution][:release]}"
+bash "hdp-select hive-metastore" do
+  code "hdp-select set hive-metastore #{node[:bcpc][:hadoop][:distribution][:release]}"
+  subscribes :run, "package[hive-hcatalog]", :immediate
+  action :nothing
+end
+
+bash "hdp-select hive-server2" do
+  code "hdp-select set hive-server2 #{node[:bcpc][:hadoop][:distribution][:release]}"
   subscribes :run, "package[hive-hcatalog]", :immediate
   action :nothing
 end
