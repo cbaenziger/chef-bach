@@ -13,6 +13,10 @@ Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
   end
 end
 
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver" do
+  to "/etc/init.d/hadoop-mapreduce-historyserver"
+end
+
 template "/etc/hadoop/conf/mapred-env.sh" do
   source "hdp_mapred-env.sh.erb"
   mode 0655
