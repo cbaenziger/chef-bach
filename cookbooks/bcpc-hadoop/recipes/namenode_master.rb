@@ -5,6 +5,8 @@ require 'mixlib/shellout'
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hadoop_config'
 include_recipe 'bcpc-hadoop::namenode_queries'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 #
 # Updating node attribuetes to copy namenode log files to centralized location (HDFS)
@@ -26,13 +28,13 @@ hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdf
   dpkg_autostart pkg do
     allow false
   end
-  package pkg do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
 end
 bash "hdp-select hadoop-hdfs-namenode" do
   code "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[hadoop-hdfs-namenode]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
   action :nothing
 end
 

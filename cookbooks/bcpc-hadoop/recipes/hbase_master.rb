@@ -1,4 +1,6 @@
 include_recipe 'bcpc-hadoop::hbase_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 #
 # Updating node attributes to copy HBase master log file to centralized location (HDFS)
@@ -50,11 +52,11 @@ node.normal['bcpc']['hadoop']['graphite']['service_queries']['hbase_master'] = {
   }
 }
 
-%w{
-hbase
-libsnappy1
-phoenix
-}.each do |p|
+[
+hwx_pkg_str("hbase", node[:bcpc][:hadoop][:distribution][:release]),
+"libsnappy1",
+hwx_pkg_str("phoenix", node[:bcpc][:hadoop][:distribution][:release])
+].each do |p|
   package p do
     action :upgrade
   end
@@ -66,7 +68,7 @@ phoenix-client
 }.each do |p|
   bash "hdp-select #{p}" do
     code "hdp-select set #{p} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{p}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
     action :nothing
   end
 end

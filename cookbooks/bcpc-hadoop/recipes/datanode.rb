@@ -1,5 +1,7 @@
 include_recipe 'bcpc-hadoop::hadoop_config'
 include_recipe 'bcpc-hadoop::hive_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 node.default['bcpc']['hadoop']['copylog']['datanode'] = {
     'logfile' => "/var/log/hadoop-hdfs/hadoop-hdfs-datanode-#{node.hostname}.log",
@@ -16,15 +18,15 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      lzop
                      cgroup-bin
                      hadoop-lzo}).each do |pkg|
-  package pkg do
-    action :upgrade
+  package hwx_pkg_str(dpkg, node[:bcpc][:hadoop][:distribution][:release]) do
+    action :install
   end
 end
 
 hdp_select_pkgs.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[pkg]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
     action :nothing
   end
 end
@@ -167,13 +169,13 @@ user "hcat" do
   not_if { user_exists? "hcat" }
 end
 
-package 'hive-hcatalog' do
-  action :upgrade
+package hwx_pkg_str('hive-hcatalog', node[:bcpc][:hadoop][:distribution][:release]) do
+  action :install
 end
 
 bash "hdp-select hive-webhcat" do
   code "hdp-select set hive-webhcat #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[hive-hcatalog]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str(hive-hcatalog, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
   action :nothing
 end
 

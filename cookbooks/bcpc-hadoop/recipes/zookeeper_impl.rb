@@ -1,16 +1,19 @@
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::zookeeper_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
+
 dpkg_autostart "zookeeper" do
   allow false
 end
 
-package  "zookeeper-server" do
+package  hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release]) do
   action :upgrade
 end
 
 bash "hdp-select zookeeper-server" do
   code "hdp-select set zookeeper-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[zookeeper-server]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
   action :nothing
 end
 

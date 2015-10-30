@@ -1,7 +1,9 @@
 include_recipe 'bcpc-hadoop::hadoop_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 %w{hadoop-mapreduce-historyserver hadoop-yarn-proxyserver}.each do |pkg|
-  package pkg do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
       action :upgrade
   end
 end
@@ -13,7 +15,7 @@ end
 
 bash "hdp-select hadoop-yarn-historyserver" do
   code "hdp-select set hadoop-yarn-historyserver #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[hadoop-yarn-historyserver]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hadoop-yarn-historyserver", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
   action :nothing
 end
 

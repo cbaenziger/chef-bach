@@ -1,13 +1,15 @@
 include_recipe 'bcpc-hadoop::hadoop_config'
 include_recipe 'bcpc-hadoop::httpfs_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-package "hadoop-httpfs" do
+package hwx_pkg_str("hadoop-httpfs", node[:bcpc][:hadoop][:distribution][:release]) do
   action :upgrade
 end
 
 bash "hdp-select hadoop-httpfs" do
   code "hdp-select set hadoop-httpfs #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[hadoop-httpfs]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hadoop-httpfs", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
   action :nothing
 end
 
