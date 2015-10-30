@@ -1,11 +1,14 @@
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::oozie_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 dpkg_autostart "oozie-server" do
   allow false
 end
 
-%w{libmysql-java zip unzip extjs hadoop-lzo oozie-server oozie-client}.each do |pkg|
+(%w{libmysql-java zip unzip extjs hadoop-lzo} +
+ %w{oozie-server oozie-client}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
   package pkg do
     action :upgrade
   end
@@ -13,7 +16,7 @@ end
 %w{oozie-server oozie-client}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{pkg}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
     action :nothing
   end
 end

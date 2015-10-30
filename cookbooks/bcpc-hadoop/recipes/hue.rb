@@ -1,5 +1,6 @@
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hue_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 
 make_config('mysql-hue-password', secure_password)
 make_config('hue-session-key', secure_password)
@@ -30,7 +31,7 @@ end
   dpkg_autostart pkg do
     allow false
   end
-  package pkg do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
 end

@@ -1,5 +1,4 @@
 require "mixlib/shellout"
-
 Chef::Resource::RubyBlock.send(:include, Bcpc_Hadoop::Helper)
 
 %w(ldap-utils libsasl2-modules-gssapi-mit).each do |pkg|

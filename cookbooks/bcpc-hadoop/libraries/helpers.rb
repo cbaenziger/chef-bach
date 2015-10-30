@@ -4,6 +4,23 @@ module Bcpc_Hadoop
 
     include Chef::Mixin::ShellOut
 
+    # Apply translation rules for Hortonworks release strings
+    # to the debian package name strings
+    #
+    # release - String dotted Hortonworks release (e.g. 2.2.0-2041)
+    # package name - String for base package name
+    #
+    # Raises RuntimeError on any unspecified error
+    # Returns - string to use in a Hortonworks debian package name
+    # (i.e. 2.2.0.2041 for a release and package like
+    #  hadoop-hdfs-datanode to something akin to
+    #  hadoop-2-2-0-2041-hdfs-datanode)
+    #
+    def hwx_pkg_str(package, version)
+      version_hyphenated = version.gsub('.', '-')
+      package.index('-').nil? ? package + '-' + version_hyphenated : package.insert(package.index('-'), "-#{version_hyphenated}")
+    end
+
     # Verify an HDFS directory exists or create it
     #
     # hdfs - String HDFS URI (e.g. hdfs://FOO1)

@@ -126,14 +126,6 @@
     <value><%=float_host(node[:hostname])%>:<%=node["bcpc"]["hadoop"]["yarn"]["nodemanager"]["port"]%></value>
   </property>
 
-  <% if node.run_list.expand(node.chef_environment).recipes.include?("bcpc-hadoop::datanode") %>
-  <!-- Group nodemanager restart option with nodemanager port specification
-       since a stable port is needed for a successful restart -->
-  <property>
-    <name>yarn.nodemanager.recovery.enabled</name>
-    <value>true</value>
-  </property>
-
   <property>
     <name>yarn.nodemanager.address</name>
     <value><%=float_host(node[:hostname])%>:<%=node["bcpc"]["hadoop"]["yarn"]["nodemanager"]["port"]%></value>

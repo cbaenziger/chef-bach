@@ -1,12 +1,14 @@
 require 'base64'
 include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hadoop_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 %w{hadoop-hdfs-namenode hadoop-hdfs-journalnode}.each do |pkg|
   dpkg_autostart pkg do
     allow false
   end
-  package pkg do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
   bash "hdp-select #{pkg}" do
