@@ -18,7 +18,7 @@ module Bcpc_Hadoop
     #
     def hwx_pkg_str(package, version)
       version_hyphenated = version.gsub('.', '-')
-      package.index('-').nil? ? package + '-' + version_hyphenated : package.insert(package.index('-'), "-#{version_hyphenated}")
+      package.index('-').nil? ? package.dup + '-' + version_hyphenated : package.dup.insert(package.index('-'), "-#{version_hyphenated}")
     end
 
     # Verify an HDFS directory exists or create it
