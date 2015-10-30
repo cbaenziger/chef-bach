@@ -8,21 +8,22 @@
 # This can be achieved by adding the Copylog role as the last role to the node
 # Since flume writes into HDFS nodes running this recipe should have HDFS
 # client components installed on them.
-
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 dpkg_autostart "flume-agent" do
   allow false
 end
 
 %w{flume flume-agent}.each do |p|
-  package p do
+  package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
 end
 
 bash "hdp-select flume-server" do
   code "hdp-select set flume-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[flume-agent]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("flume-agent", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
   action :nothing
 end
 

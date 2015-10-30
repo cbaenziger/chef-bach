@@ -1,12 +1,14 @@
 include_recipe 'bcpc-hadoop::hadoop_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 %w{hadoop-mapreduce-historyserver}.each do |pkg|
-  package pkg do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
 
   bash "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}" do
-    subscribes :run, "package[#{pkg}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
     action :nothing
   end
 end

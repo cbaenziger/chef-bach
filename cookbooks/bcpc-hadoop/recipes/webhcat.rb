@@ -1,3 +1,6 @@
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
+
 package "libmysql-java" do
   action :upgrade
 end
@@ -7,14 +10,14 @@ link "/usr/lib/hive/lib/mysql.jar" do
 end
 
 %w{hive-hcatalog hive-hcatalog-server hive-webhcat}.each do |p|
-  package p do
+  package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
 end
 %w{hive-metastore hive-webhcat hive-server2}.each do |comp|
   bash "hdp-select #{comp}" do
     code "hdp-select set #{comp} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{comp}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(comp, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
     action :nothing
   end
 end

@@ -1,4 +1,6 @@
 include_recipe 'bcpc-hadoop::hbase_config'
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 node.default['bcpc']['hadoop']['copylog']['region_server'] = {
     'logfile' => "/var/log/hbase/hbase-hbase-0-regionserver-#{node.hostname}.log", 
@@ -10,7 +12,8 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
     'docopy' => true
 }
 
-%w{hbase hbase-regionserver libsnappy1 phoenix}.each do |pkg|
+(%w{libsnappy1} +
+ %w{hbase hbase-regionserver phoenix}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
   package pkg do
     action :upgrade
   end
@@ -18,7 +21,7 @@ end
 %w{hbase-client hbase-regionserver phoenix-client}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{pkg}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
     action :nothing
   end
 end

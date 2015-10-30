@@ -3,8 +3,9 @@
 # Recipe Name : TEZ
 # Description : To setup TEZ
 #
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 
-package 'tez' do
+package hwx_pkg_str('tez', node[:bcpc][:hadoop][:distribution][:release]) do
   action :upgrade
 end
 
