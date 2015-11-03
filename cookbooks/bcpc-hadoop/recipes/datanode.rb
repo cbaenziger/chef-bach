@@ -18,7 +18,7 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      lzop
                      cgroup-bin
                      hadoop-lzo}).each do |pkg|
-  package hwx_pkg_str(dpkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :install
   end
 end
