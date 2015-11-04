@@ -27,8 +27,8 @@ bash "hdp-select flume-server" do
   action :nothing
 end
 
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent" do
-  to "/etc/init.d/flume-agent"
+link "/etc/init.d/flume-agent-multi" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent"
 end
 
 service "flume-agent" do
