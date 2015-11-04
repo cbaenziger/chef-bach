@@ -14,11 +14,12 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      sqoop
                      }
 
-(hdp_select_pkgs + %w{hadoop-mapreduce
+(hdp_select_pkgs.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])} +
+                  %w{hadoop-mapreduce
                      lzop
                      cgroup-bin
                      hadoop-lzo}).each do |pkg|
-  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package pkg do
     action :install
   end
 end
@@ -175,7 +176,7 @@ end
 
 bash "hdp-select hive-webhcat" do
   code "hdp-select set hive-webhcat #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str(hive-hcatalog, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
   action :nothing
 end
 
