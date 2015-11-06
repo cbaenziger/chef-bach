@@ -44,8 +44,8 @@
         "head_disks" : ["sdb" , "sdc", "sdd"],
         "distribution": {
           "version": "HDP",
-          "key": "hortonworks.key"
-          "release": "2.2.6.0-2800"
+          "key": "hortonworks.key",
+          "release": "2.3.2.0-2950"
         },
         "hbase": {
           "bucketcache": {
@@ -93,7 +93,7 @@
         }
       },
       "repos" : {
-        "hortonworks" : "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.2.6.0",
+        "hortonworks" : "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.2.0/",
         "hdp_utils" : "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12"
       }
     },
