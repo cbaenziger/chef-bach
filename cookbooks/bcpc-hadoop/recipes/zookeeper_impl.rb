@@ -1,5 +1,4 @@
 include_recipe 'dpkg_autostart'
-include_recipe 'bcpc-hadoop::zookeeper_config'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
@@ -11,6 +10,8 @@ package  hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:re
   action :upgrade
 end
 
+include_recipe 'bcpc-hadoop::zookeeper_config'
+
 bash "hdp-select zookeeper-server" do
   code "hdp-select set zookeeper-server #{node[:bcpc][:hadoop][:distribution][:release]}"
   subscribes :run, "package[#{hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
@@ -19,6 +20,10 @@ end
 
 user_ulimit "zookeeper" do
   filehandle_limit 32769
+end
+
+link '/etc/init.d/zookeeper-server' do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/etc/init.d/zookeeper-server"
 end
 
 directory "/var/run/zookeeper" do 

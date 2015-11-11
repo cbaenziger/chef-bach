@@ -93,10 +93,6 @@
           "memory_opts": "-Xmx512m -XX:MaxPermSize=64m"
         }
       },
-      "repos" : {
-        "hortonworks" : "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.2.0/",
-        "hdp_utils" : "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12"
-      }
     },
     "kafka": {
       "version": "0.8.1.1",
