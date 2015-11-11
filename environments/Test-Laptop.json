@@ -30,6 +30,7 @@
         "available_subnet" : "192.168.100.128/25"
       },
       "bootstrap": {
+"proxy" : "http://proxy.inet.bloomberg.com:81",
         "interface" : "eth0",
         "pxe_interface" : "eth1",
         "hostname" : "bcpc-bootstrap",
@@ -37,7 +38,7 @@
         "dhcp_subnet" : "10.0.100.0",
         "dhcp_range" : "10.0.100.14 10.0.100.250"
       },
-      "dns_servers" : [ "8.8.8.8", "8.8.4.4" ],
+      "dns_servers" : [ "10.16.23.33","10.16.23.17" ],
       "hadoop" : {
         "hdfs" : {
           "dfs_replication_factor" : 1
@@ -46,7 +47,7 @@
         "oozie": {
           "memory_opts": "-Xmx512m -XX:MaxPermSize=64m"
         }
-      },
+      }
     },
     "kafka": {
       "version": "0.8.1.1",
