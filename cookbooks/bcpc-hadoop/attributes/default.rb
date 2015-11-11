@@ -9,7 +9,8 @@ default["bcpc"]["zookeeper"]["id"] = 0
 default["bcpc"]["namenode"]["id"] = -1
 default["bcpc"]["hadoop"]["distribution"]["version"] = 'HDP'
 default["bcpc"]["hadoop"]["distribution"]["key"] = 'hortonworks.key'
-default["bcpc"]["repos"]["hortonworks"] = 'http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/GA/2.2.0.0'
+default["bcpc"]["hadoop"]["distribution"]["release"] = '2.3.2.0-2950'
+default["bcpc"]["repos"]["hortonworks"] = 'http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.2.0'
 default["bcpc"]["repos"]["hdp_utils"] = 'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12'
 default["bcpc"]["hadoop"]["disks"] = []
 default["bcpc"]["hadoop"]["oozie"]["admins"] = []
@@ -136,3 +137,12 @@ default['jmxtrans']['run_interval'] = "15"
 default[:bcpc][:hadoop][:os][:group][:hadoop][:members]=["hdfs","yarn"]
 default[:bcpc][:hadoop][:os][:group][:hdfs][:members]=["hdfs"]
 default[:bcpc][:hadoop][:os][:group][:mapred][:members]=["yarn"]
+
+#
+# Some Java defaults
+#
+default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/java-7-oracle-amd64"
+default['java']['install_flavor'] = "oracle"
+default['java']['accept_license_agreement'] = true
+default['java']['jdk_version'] = 7
+default['java']['oracle']['jce']['enabled'] = true
