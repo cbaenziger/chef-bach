@@ -96,8 +96,9 @@ link "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64/libsnappy.so" do
   to "/usr/lib/libsnappy.so.1"
 end
 
-link "/etc/init.d/hbase-master" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/init.d/hbase-master"
+template "/etc/init.d/hbase-master" do
+  source "hdp_hbase-master-initd.erb"
+  mode 0655
 end
 
 service "hbase-master" do
