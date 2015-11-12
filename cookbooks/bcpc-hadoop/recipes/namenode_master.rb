@@ -125,6 +125,10 @@ service "hadoop-hdfs-zkfc" do
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
 end
 
+link "/etc/init.d/hadoop-hdfs-namenode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+end
+
 # need to bring the namenode down to initialize shared edits
 service "bring hadoop-hdfs-namenode down for shared edits and HA transition" do
   service_name "hadoop-hdfs-namenode"

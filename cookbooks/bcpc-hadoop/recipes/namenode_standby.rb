@@ -111,6 +111,10 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
     subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   end
 
+  link "/etc/init.d/hadoop-hdfs-namenode" do
+    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+  end
+
   service "hadoop-hdfs-namenode" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
