@@ -106,6 +106,10 @@ bash "format namenode" do
   not_if { node[:bcpc][:hadoop][:mounts].any? { |d| File.exists?("/disk/#{d}/dfs/nn/current/VERSION") } }
 end
 
+link "/etc/init.d/hadoop-hdfs-namenode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+end
+
 service "hadoop-hdfs-namenode" do
   supports :restart => true, :status => true, :reload => false
   action [:enable, :start]
