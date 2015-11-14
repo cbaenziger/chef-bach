@@ -13,8 +13,8 @@ Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
   end
 end
 
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver" do
-  to "/etc/init.d/hadoop-mapreduce-historyserver"
+link "/etc/init.d/hadoop-mapreduce-historyserver" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
 end
 
 template "/etc/hadoop/conf/mapred-env.sh" do
@@ -24,17 +24,18 @@ end
 
 bash "create-hdfs-history-dir" do
   code <<-EOH
-  hdfs dfs -mkdir -p /mr-history/tmp
-  hdfs dfs -chmod -R 1777 /mr-history/tmp
-  hdfs dfs -mkdir -p /mr-history/done
-  hdfs dfs -chmod -R 1777 /mr-history/done
-  hdfs dfs -chown -R mapred:hdfs /mr-history
-  hdfs dfs -mkdir -p /app-logs
-  hdfs dfs -chmod -R 1777 /app-logs
-  hdfs dfs -chown yarn /app-logs
+  hdfs dfs -mkdir -p /var/log/hadoop-yarn/apps
+  hdfs dfs -chmod -R 1777 /var/log/hadoop-yarn/apps
+#  hdfs dfs -mkdir -p /mr-history/done
+#  hdfs dfs -chmod -R 1777 /mr-history/done
+#  hdfs dfs -chown -R mapred:hdfs /mr-history
+#  hdfs dfs -mkdir -p /app-logs
+#  hdfs dfs -chmod -R 1777 /app-logs
+#  hdfs dfs -chown yarn /app-logs
   EOH
   user "hdfs"
-  not_if "sudo -u hdfs hadoop dfs -test -d /mr-history"
+#  not_if "sudo -u hdfs hadoop dfs -test -d /mr-history"
+  not_if "hdfs dfs -test -d /var/log/hadoop-yarn/apps", :user => "hdfs"
 end
 
 service "hadoop-mapreduce-historyserver" do

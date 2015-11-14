@@ -11,11 +11,11 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
 hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      hadoop-hdfs-datanode
                      hadoop-client
-                     sqoop
                      }
 
 (hdp_select_pkgs.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])} +
                   %w{hadoop-mapreduce
+                     sqoop
                      lzop
                      cgroup-bin
                      hadoop-lzo}).each do |pkg|
@@ -24,7 +24,7 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
   end
 end
 
-hdp_select_pkgs.each do |pkg|
+(hdp_select_pkgs + ['sqoop-client', 'sqoop-server']).each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
     subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
