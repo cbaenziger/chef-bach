@@ -103,6 +103,10 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
     not_if { node[:bcpc][:hadoop][:mounts].all? { |d| Dir.entries("/disk/#{d}/dfs/nn/").include?("current") } }
   end  
 
+  link "/etc/init.d/hadoop-hdfs-zkfc" do
+    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+  end
+
   service "hadoop-hdfs-zkfc" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
