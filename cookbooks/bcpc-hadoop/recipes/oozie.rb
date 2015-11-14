@@ -174,6 +174,10 @@ ruby_block "oozie-database-creation" do
   end
 end
 
+link '/etc/init.d/oozie' do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/etc/init.d/oozie-server"
+end
+
 service "generally run oozie" do
   action [:enable, :start]
   service_name "oozie"

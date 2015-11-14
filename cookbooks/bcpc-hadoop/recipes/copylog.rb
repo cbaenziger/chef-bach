@@ -31,11 +31,6 @@ link "/etc/init.d/flume-agent-multi" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent"
 end
 
-service "flume-agent" do
-  action [:stop, :disable]
-  subscribes :restart, "bash[hdp-select flume-server]", :immediate
-end
-
 bash "make_shared_logs_dir" do
   code <<EOH
   hdfs dfs -mkdir -p #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/logs/ && \

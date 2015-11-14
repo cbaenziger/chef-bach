@@ -55,6 +55,10 @@ end
   end
 end
 
+link "/etc/init.d/hadoop-yarn-resourcemanager" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/init.d/hadoop-yarn-resourcemanager"
+end
+
 bash "setup-mapreduce-app" do
   code <<-EOH
   hdfs dfs -mkdir -p /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/

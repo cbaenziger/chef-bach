@@ -95,13 +95,8 @@ ruby_block 'create_or_manage_groups' do
   end
 end
 
-template "hadoop-hdfs-journalnode" do
-  path "/etc/init.d/hadoop-hdfs-journalnode"
-  source "hdp_hadoop-hdfs-journalnode-initd.erb"
-  owner "root"
-  group "root"
-  mode "0755"
-  notifies :restart, "service[hadoop-hdfs-journalnode]"
+link "/etc/init.d/hadoop-hdfs-journalnode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-journalnode"
 end
 
 service "hadoop-hdfs-journalnode" do
