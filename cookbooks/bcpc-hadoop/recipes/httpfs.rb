@@ -17,9 +17,8 @@ link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-httpfs/co
   to "/usr/hdp/<#{node[:bcpc][:hadoop][:distribution][:release]}/etc/hadoop-httpfs/tomcat-deployment.dist/conf"
 end
 
-template "/etc/init.d/hadoop-httpfs" do
-  source "hdp_hadoop-httpfs-initd.erb"
-  mode 0655
+link '/etc/init.d/hadoop-httpfs' do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-httpfs/etc/init.d/hadoop-httpfs"
 end
 
 service "hadoop-httpfs" do

@@ -116,6 +116,10 @@ bash "format-zk-hdfs-ha" do
   not_if { znode_exists?("/hadoop-ha/#{node.chef_environment}", zks) }
 end
 
+link "/etc/init.d/hadoop-hdfs-zkfc" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+end
+
 service "hadoop-hdfs-zkfc" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
