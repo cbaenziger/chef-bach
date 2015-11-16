@@ -114,6 +114,8 @@ default['bcpc']['repos']['ceph-fcgi'] = "http://gitbuilder.ceph.com/libapache-mo
 default['bcpc']['repos']['gridcentric'] = "http://downloads.gridcentric.com/packages/%s/%s/ubuntu"
 default['bcpc']['repos']['ubuntu-tools'] = "http://ppa.launchpad.net/canonical-support/support-tools/ubuntu"
 default['bcpc']['ubuntu']['version'] = "precise"
+default["bcpc"]["repos"]["hortonworks"] = 'http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.2.0'
+default["bcpc"]["repos"]["hdp_utils"] = 'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12'
 
 ###########################################
 #
