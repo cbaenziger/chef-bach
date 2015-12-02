@@ -161,7 +161,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     cluster_txt = ""
     cluster_txt_contents = (1...FLOATING_IPS.length()).map do |idx|
       # Create each line of cluster.txt. Pick each role taking the last role as the "generic" role
-      ["#{CLUSTER_NAME}bcpc-#{idx}", "-", FLOATING_IPS[idx], "-", "-", "#{munge_domainname(OS_TENANTNAME)}.#{DNS_DOMAIN}", roles[[idx-1, roles.length()].min()]].join("\t")
+      ["#{CLUSTER_NAME}bcpc-#{idx}", "-", FLOATING_IPS[idx], "-", "-", "#{munge_domainname(OS_TENANTNAME)}.#{DNS_DOMAIN}", roles[[idx-1, roles.length()-1].min()]].join("\t")
     end
 
     build_cluster_txt = <<-EOH
