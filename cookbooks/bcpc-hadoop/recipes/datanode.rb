@@ -17,6 +17,7 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                   %w{hadoop-mapreduce
                      sqoop
                      lzop
+                     libmysql-java
                      cgroup-bin
                      hadoop-lzo}).each do |pkg|
   package pkg do

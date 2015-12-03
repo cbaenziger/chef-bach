@@ -8,6 +8,7 @@ provisioner:
 platforms:
   - name: ubuntu-14.04
     run_list:
+      - 'recipe[apt::default]'
       - 'recipe[java::oracle]'
       - 'recipe[bcpc-hadoop::hdp_repo]'
     attributes: {
@@ -26,6 +27,14 @@ platforms:
       }
     }
 suites:
+  - name: mysql_connector
+    run_list:
+      - 'recipe[bcpc::mysql_connector]' 
+      - 'recipe[bcpc::test_mysql_connector]' 
+    attributes:
+      bcpc:
+        bin_dir:
+          path: "/tmp/"
   - name: zookeeper
     run_list:
       - 'recipe[kafka-bcpc::zookeeper_server]'
