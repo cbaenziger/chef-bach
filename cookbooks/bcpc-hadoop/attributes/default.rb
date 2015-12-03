@@ -1,15 +1,14 @@
-#############################################
+############################################
 #
 #  Hadoop specific configs
 #
 #############################################
 
 default["bcpc"]["hadoop"] = {}
-default["bcpc"]["zookeeper"]["id"] = 0
-default["bcpc"]["namenode"]["id"] = -1
 default["bcpc"]["hadoop"]["distribution"]["version"] = 'HDP'
 default["bcpc"]["hadoop"]["distribution"]["key"] = 'hortonworks.key'
 default["bcpc"]["hadoop"]["distribution"]["release"] = '2.3.2.0-2950'
+# disks to use for Hadoop activities (expected to be an environment or role set variable)
 default["bcpc"]["hadoop"]["disks"] = []
 default["bcpc"]["hadoop"]["oozie"]["admins"] = []
 default["bcpc"]["hadoop"]["oozie"]["memory_opts"] = "-Xmx2048m -XX:MaxPermSize=256m"
@@ -24,6 +23,8 @@ default["bcpc"]["hadoop"]["yarn"]["scheduler"]["class"] = "org.apache.hadoop.yar
 default["bcpc"]["hadoop"]["yarn"]["scheduler"]["minimum-allocation-mb"] = 256
 default['bcpc']['hadoop']['yarn']['historyserver']['heap']["size"] = 128
 default['bcpc']['hadoop']['yarn']['historyserver']['heap']["ratio"] = 0
+# Set the JAVA_HOME for Hadoop components
+default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/java-7-oracle-amd64"
 default["bcpc"]["hadoop"]["yarn"]["resourcemanager"]["port"] = 8032
 default['bcpc']['hadoop']['yarn']['aux_services']['mapreduce_shuffle']['class'] = 'org.apache.hadoop.mapred.ShuffleHandler'
 default["bcpc"]["hadoop"]["hdfs"]["HA"] = false
@@ -51,7 +52,6 @@ default["bcpc"]["hadoop"]["hbase"]["major_compact"]["time"] = 0
 default["bcpc"]["hadoop"]["hbase_master"]["jmx"]["port"] = 10101
 default["bcpc"]["hadoop"]["hbase_rs"]["jmx"]["port"] = 10102
 default["bcpc"]["hadoop"]["kafka"]["jmx"]["port"] = 9995
-default["bcpc"]["hadoop"]["java"] = "/usr/lib/jvm/java-1.7.0-openjdk-amd64"
 default["bcpc"]["hadoop"]["topology"]["script"] = "topology"
 default["bcpc"]["hadoop"]["topology"]["cookbook"] = "bcpc-hadoop"
 default["bcpc"]["hadoop"]["hive"]["hive_table_stats_db"] = "hive_table_stats"
@@ -59,6 +59,7 @@ default["bcpc"]["hadoop"]["hive"]["hive_table_stats_db_user"] = "hive_table_stat
 
 # Setting balancer bandwidth to default value as per hdfs-default.xml
 default["bcpc"]["hadoop"]["balancer"]["bandwidth"] = 1048576
+
 #
 # Attributes for service rolling restart process
 #
@@ -72,6 +73,8 @@ default["bcpc"]["hadoop"]["restart_lock_acquire"]["sleep_time"] = 2
 # Flag to set whether the restart process was successful or not
 default["bcpc"]["hadoop"]["datanode"]["restart_failed"] = false
 
+# These are to cache Chef search results and
+# allow hardcoding nodes performing various roles
 default[:bcpc][:hadoop][:nn_hosts] = []
 default[:bcpc][:hadoop][:jn_hosts] = []
 default[:bcpc][:hadoop][:rm_hosts] = []
@@ -117,30 +120,26 @@ default["bcpc"]["revelytix"]["port"] = 8080
 #                              'docopy' => true (or false)
 #                             },...
 #            }
-#
+# It is expected recipes will extend this value as they have files to ship
 default['bcpc']['hadoop']['copylog'] = {}
-#
 # Attribute to enable/disable the copylog feature
-#
 default['bcpc']['hadoop']['copylog_enable'] = true
-#
 # File rollup interval in secs for log data copied into HDFS through Flume
-#
 default['bcpc']['hadoop']['copylog_rollup_interval'] = 86400
-#
-# Some jmxtrans defaults
-#
+
+# Override defaults for the jmxtrans cookbook
 default['jmxtrans']['run_interval'] = "15"
 
+# Ensure the following group mappings in the group database
 default[:bcpc][:hadoop][:os][:group][:hadoop][:members]=["hdfs","yarn"]
 default[:bcpc][:hadoop][:os][:group][:hdfs][:members]=["hdfs"]
 default[:bcpc][:hadoop][:os][:group][:mapred][:members]=["yarn"]
 
-#
-# Some Java defaults
-#
-default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/java-7-oracle-amd64"
+# Override defaults for the Java cookbook
 default['java']['install_flavor'] = "oracle"
 default['java']['accept_license_agreement'] = true
 default['java']['jdk_version'] = 7
 default['java']['oracle']['jce']['enabled'] = true
+
+# Set the JAVA_HOME for Hadoop components
+default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/java-7-oracle-amd64"
