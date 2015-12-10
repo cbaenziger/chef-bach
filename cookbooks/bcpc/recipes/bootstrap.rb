@@ -76,7 +76,7 @@ bash 'build_bins' do
   code './build_bins.sh'
   umask 0002
   action :run
-  only_if { File.mtime('/home/vagrant/chef-bcpc/bins/dists/0.5.0/main/binary-amd64/Packages') < Dir.glob('/home/vagrant/chef-bcpc/bins/*.deb').map{|f| File.mtime("/home/vagrant/chef-bcpc/bins/#{f}")}.max ||
-            File.mtime('/home/vagrant/chef-bcpc/bins/latest_specs.4.8') < Dir.glob('/home/vagrant/chef-bcpc/bins/gems/*.gem').map{|f| File.mtime("/home/vagrant/chef-bcpc/bins/#{f}")}.max ||
+  only_if { File.mtime('/home/vagrant/chef-bcpc/bins/dists/0.5.0/main/binary-amd64/Packages') < Dir.glob('/home/vagrant/chef-bcpc/bins/*.deb').map{|f| File.mtime("#{f}")}.max ||
+            File.mtime('/home/vagrant/chef-bcpc/bins/latest_specs.4.8') < Dir.glob('/home/vagrant/chef-bcpc/bins/gems/*.gem').map{|f| File.mtime("#{f}")}.max ||
             Dir.glob('/home/vagrant/chef-bcpc/bins/*.gem').any? }
 end
