@@ -21,11 +21,6 @@ end
   end
 end
 
-template "/etc/init.d/oozie" do
-  source "hdp_oozie-initd.erb"
-  mode 0655
-end
-
 OOZIE_LIB_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie"
 OOZIE_CLIENT_PATH='/usr/hdp/current/oozie-client'
 OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie-server/oozie-server"
