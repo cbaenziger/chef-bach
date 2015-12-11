@@ -14,7 +14,7 @@ bash "hdp-select hadoop-httpfs" do
 end
 
 link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-httpfs/conf" do
-  to "/usr/hdp/<#{node[:bcpc][:hadoop][:distribution][:release]}/etc/hadoop-httpfs/tomcat-deployment.dist/conf"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/etc/hadoop-httpfs/tomcat-deployment.dist/conf"
 end
 
 link '/etc/init.d/hadoop-httpfs' do
