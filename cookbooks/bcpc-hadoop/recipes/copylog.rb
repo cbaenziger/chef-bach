@@ -11,10 +11,6 @@
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-dpkg_autostart "flume-agent" do
-  allow false
-end
-
 %w{flume flume-agent}.each do |p|
   package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
