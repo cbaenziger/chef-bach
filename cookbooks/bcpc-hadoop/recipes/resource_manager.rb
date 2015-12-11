@@ -1,4 +1,3 @@
-include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hadoop_config'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
@@ -37,10 +36,6 @@ end
 
 # list hdp packages to install
 %w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce}.each do |pkg|
-  dpkg_autostart hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
-    allow false
-  end
-
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end

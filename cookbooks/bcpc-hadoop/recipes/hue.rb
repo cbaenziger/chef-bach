@@ -1,4 +1,3 @@
-include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hue_config'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 
@@ -28,9 +27,6 @@ end
    hue-sqoop
    hue-zookeeper
 }.each do |pkg|
-  dpkg_autostart pkg do
-    allow false
-  end
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end

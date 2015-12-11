@@ -2,7 +2,6 @@ require "base64"
 require "digest"
 require 'mixlib/shellout'
 
-include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hadoop_config'
 include_recipe 'bcpc-hadoop::namenode_queries'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
@@ -25,9 +24,6 @@ node.default['bcpc']['hadoop']['copylog']['namenode_master_out'] = {
 hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
 
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
-  dpkg_autostart pkg do
-    allow false
-  end
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end

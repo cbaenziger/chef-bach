@@ -1,4 +1,3 @@
-include_recipe 'dpkg_autostart'
 require "base64"
 
 include_recipe 'bcpc-hadoop::hadoop_config'
@@ -23,9 +22,6 @@ node.default['bcpc']['hadoop']['copylog']['namenode_out'] = {
 hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
 
 %w{hadoop-hdfs-namenode hadoop-mapreduce}.each do |pkg|
-  dpkg_autostart pkg do
-    allow false
-  end
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
