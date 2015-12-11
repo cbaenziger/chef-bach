@@ -1,10 +1,5 @@
-include_recipe 'dpkg_autostart'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
-
-dpkg_autostart "zookeeper" do
-  allow false
-end
 
 package  hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release]) do
   action :upgrade
