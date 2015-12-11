@@ -111,7 +111,6 @@ service "hive-metastore" do
   subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-log4j.properties]", :delayed
   subscribes :restart, "bash[hdp-select hive-hcatalog]", :delayed
-  subscribes :restart, "bash[extract-mysql-connector]", :delayed
   subscribes :restart, "directory[/var/log/hive/gc]", :delayed
 end
 
@@ -120,6 +119,5 @@ service "hive-server2" do
   supports :status => true, :restart => true, :reload => false
   subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-log4j.properties]", :delayed
-  subscribes :restart, "bash[extract-mysql-connector]", :delayed
   subscribes :restart, "directory[/var/log/hive/gc]", :delayed
 end
