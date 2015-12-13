@@ -10,6 +10,7 @@
 # client components installed on them.
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Link.send(:include, Bcpc_Hadoop::Helper)
 
 %w{flume flume-agent}.each do |p|
   package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release]) do
