@@ -24,15 +24,9 @@ bash "hdp-select flume-server" do
   action :nothing
 end
 
-link "/etc/init.d/flume-agent-multi" do
+link "/etc/init.d/flume-agent" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent"
   subscribes :create, "package[#{hwx_pkg_str('flume-agent', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
-
-service "flume-agent" do
-  action [:stop, :disable]
-  subscribes :restart, "bash[hdp-select flume-server]", :delayed
 end
 
 bash "make_shared_logs_dir" do
@@ -52,7 +46,7 @@ template "/etc/flume/conf/flume-env.sh" do
 end
 
 if node['bcpc']['hadoop']['copylog_enable']
-  service "flume-agent-multi" do
+  service "flume-agent" do
     supports :status => true, :restart => true, :reload => false
     action [:enable, :start]
     subscribes :restart, "template[/etc/flume/conf/flume-env.sh]", :delayed
@@ -67,23 +61,23 @@ if node['bcpc']['hadoop']['copylog_enable']
         action :create
         variables(:agent_name => "#{id}",
                   :log_location => "#{f['logfile']}" )
-        notifies :restart,"service[flume-agent-multi-#{id}]",:delayed
+        notifies :restart,"service[flume-agent-#{id}]",:delayed
       end
       
-      service "flume-agent-multi-#{id}" do
+      service "flume-agent-#{id}" do
         supports :status => true, :restart => true, :reload => false
-        service_name "flume-agent-multi"
+        service_name "flume-agent"
         action :start
-        start_command "service flume-agent-multi start #{id}"
-        restart_command "service flume-agent-multi restart #{id}"
-        status_command "service flume-agent-multi status #{id}"
+        start_command "service flume-agent start #{id}"
+        restart_command "service flume-agent restart #{id}"
+        status_command "service flume-agent status #{id}"
       end
     else
-      service "flume-agent-multi-#{id}" do
+      service "flume-agent-#{id}" do
         supports :status => true, :restart => true, :reload => false
         action :stop
-        stop_command "service flume-agent-multi stop #{id}"
-        status_command "service flume-agent-multi status #{id}"
+        stop_command "service flume-agent stop #{id}"
+        status_command "service flume-agent status #{id}"
       end
 
       file "/etc/flume/conf/flume-#{id}.conf" do
@@ -92,7 +86,7 @@ if node['bcpc']['hadoop']['copylog_enable']
     end
   end
 else
-  service "flume-agent-multi" do
+  service "flume-agent" do
     supports :status => true, :restart => true, :reload => false
     action [:stop, :disable]
   end
