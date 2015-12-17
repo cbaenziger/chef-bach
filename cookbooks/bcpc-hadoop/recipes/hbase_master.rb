@@ -87,6 +87,15 @@ bash "create-hbase-dir" do
   not_if "sudo -u hdfs hadoop fs -test -d /hbase"
 end
 
+bash "create-hbase-user-home" do
+  code <<-EOH
+  hdfs dfs -mkdir -p /user/hbase
+  hdfs dfs -chown hbase:hdfs /user/hbase
+  EOH
+  user "hdfs"
+  not_if "hdfs dfs -test -d /user/hbase", :user => 'hdfs'
+end
+
 directory "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64" do
   recursive true
   action :create
