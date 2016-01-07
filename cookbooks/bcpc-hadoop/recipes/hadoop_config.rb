@@ -14,35 +14,35 @@ bash "update-hadoop-conf-alternatives" do
 end
 
 hadoop_conf_files = %w{capacity-scheduler.xml
-   core-site.xml
-   fair-scheduler.xml
-   hadoop-metrics2.properties
-   hadoop-metrics.properties
-   hadoop-policy.xml
-   hdfs-site.xml
-   log4j.properties
-   mapred-site.xml
-   slaves
-   ssl-client.xml
-   ssl-server.xml
-   yarn-site.xml
-   yarn.exclude
-   dfs.exclude
-}
+                       core-site.xml
+                       fair-scheduler.xml
+                       hadoop-metrics2.properties
+                       hadoop-metrics.properties
+                       hadoop-policy.xml
+                       hdfs-site.xml
+                       log4j.properties
+                       mapred-site.xml
+                       slaves
+                       ssl-client.xml
+                       ssl-server.xml
+                       yarn-site.xml
+                       yarn.exclude
+                       dfs.exclude
+                      }
 node[:bcpc][:hadoop][:hdfs][:HA] == true and hadoop_conf_files.insert(-1,"hdfs-site_HA.xml")
 
 hadoop_conf_files.each do |t|
-   template "/etc/hadoop/conf/#{t}" do
-     source "hdp_#{t}.erb"
-     mode 0644
-     variables(:nn_hosts => node[:bcpc][:hadoop][:nn_hosts],
-               :zk_hosts => node[:bcpc][:hadoop][:zookeeper][:servers],
-               :jn_hosts => node[:bcpc][:hadoop][:jn_hosts],
-               :rm_hosts => node[:bcpc][:hadoop][:rm_hosts],
-               :dn_hosts => node[:bcpc][:hadoop][:dn_hosts],
-               :hs_hosts => node[:bcpc][:hadoop][:hs_hosts],
-               :mounts => node[:bcpc][:hadoop][:mounts])
-   end
+  template "/etc/hadoop/conf/#{t}" do
+    source "hdp_#{t}.erb"
+    mode 0644
+    variables(:nn_hosts => node[:bcpc][:hadoop][:nn_hosts],
+              :zk_hosts => node[:bcpc][:hadoop][:zookeeper][:servers],
+              :jn_hosts => node[:bcpc][:hadoop][:jn_hosts],
+              :rm_hosts => node[:bcpc][:hadoop][:rm_hosts],
+              :dn_hosts => node[:bcpc][:hadoop][:dn_hosts],
+              :hs_hosts => node[:bcpc][:hadoop][:hs_hosts],
+              :mounts => node[:bcpc][:hadoop][:mounts])
+  end
 end
 
 template "/etc/hadoop/conf/topology" do
@@ -52,20 +52,16 @@ template "/etc/hadoop/conf/topology" do
 end
 
 %w{yarn-env.sh
-  hadoop-env.sh}.each do |t|
- template "/etc/hadoop/conf/#{t}" do
-   source "hdp_#{t}.erb"
-   mode 0555
-   variables(:nn_hosts => node[:bcpc][:hadoop][:nn_hosts],
-             :zk_hosts => node[:bcpc][:hadoop][:zookeeper][:servers],
-             :jn_hosts => node[:bcpc][:hadoop][:jn_hosts],
-             :mounts => node[:bcpc][:hadoop][:mounts],
-             :nn_jmx_port => node[:bcpc][:hadoop][:namenode][:jmx][:port],
-             :dn_jmx_port => node[:bcpc][:hadoop][:datanode][:jmx][:port]
-   )
- end
-end
-
-package "openjdk-7-jdk" do
-    action :upgrade
+   hadoop-env.sh}.each do |t|
+  template "/etc/hadoop/conf/#{t}" do
+    source "hdp_#{t}.erb"
+    mode 0555
+    variables(:nn_hosts => node[:bcpc][:hadoop][:nn_hosts],
+              :zk_hosts => node[:bcpc][:hadoop][:zookeeper][:servers],
+              :jn_hosts => node[:bcpc][:hadoop][:jn_hosts],
+              :mounts => node[:bcpc][:hadoop][:mounts],
+              :nn_jmx_port => node[:bcpc][:hadoop][:namenode][:jmx][:port],
+              :dn_jmx_port => node[:bcpc][:hadoop][:datanode][:jmx][:port]
+    )
+  end
 end
