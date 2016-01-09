@@ -26,5 +26,5 @@ service "hadoop-httpfs" do
   supports :status => true, :restart => true, :reload => false
   subscribes :restart, "template[/etc/hadoop-httpfs/conf/httpfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
-  subscribes :restart, "bash[hdp-select hadoop-httpfs]", :immediate
+  subscribes :restart, "link[/etc/init.d/hadoop-httpfs]", :immediate
 end
