@@ -12,7 +12,7 @@
   <% if @rm_hosts.length >= 2 %>
   <property>
     <name>yarn.resourcemanager.cluster-id</name>
-    <value><%="#{node.chef_environment}"%></value>
+    <value><%= node["bcpc"]["hadoop"]["yarn"]["cluster-name"] %></value>
   </property>
 
   <property>
@@ -22,42 +22,42 @@
 
   <property>
     <name>yarn.resourcemanager.ha.rm-ids</name>
-    <value><%=@rm_hosts.map{ |s| "rm#{node.chef_environment}#{s[:node_number]}" }.join(",") %></value>
+    <value><%=@rm_hosts.map{ |s| "rm#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{s[:node_number]}" }.join(",") %></value>
   </property>
 
   <% @rm_hosts.each do |h| %>
   <property>
-    <name>yarn.resourcemanager.hostname.rm<%= "#{node.chef_environment}#{h[:node_number]}" %></name>
+    <name>yarn.resourcemanager.hostname.rm<%= "#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{h[:node_number]}" %></name>
     <value><%=float_host(h[:hostname]) %></value>
   </property>
 
   <property>
-    <name>yarn.resourcemanager.resource-tracker.address.rm<%= "#{node.chef_environment}#{h[:node_number]}" %></name>
+    <name>yarn.resourcemanager.resource-tracker.address.rm<%= "#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{h[:node_number]}" %></name>
     <value><%="#{float_host(h[:hostname])}:8031"%></value>
   </property>
 
   <property>
-    <name>yarn.resourcemanager.address.rm<%= "#{node.chef_environment}#{h[:node_number]}" %></name>
+    <name>yarn.resourcemanager.address.rm<%= "#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{h[:node_number]}" %></name>
     <value><%=float_host(h[:hostname])%>:<%=node["bcpc"]["hadoop"]["yarn"]["resourcemanager"]["port"]%></value>
   </property>
 
   <property>
-    <name>yarn.resourcemanager.scheduler.address.rm<%= "#{node.chef_environment}#{h[:node_number]}" %></name>
+    <name>yarn.resourcemanager.scheduler.address.rm<%= "#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{h[:node_number]}" %></name>
     <value><%="#{float_host(h[:hostname])}:8030"%></value>
   </property>
 
   <property>
-    <name>yarn.resourcemanager.admin.address.rm<%= "#{node.chef_environment}#{h[:node_number]}" %></name>
+    <name>yarn.resourcemanager.admin.address.rm<%= "#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{h[:node_number]}" %></name>
     <value><%="#{float_host(h[:hostname])}:8033"%></value>
   </property>
 
   <property>
-    <name>yarn.resourcemanager.webapp.address.rm<%= "#{node.chef_environment}#{h[:node_number]}" %></name>
+    <name>yarn.resourcemanager.webapp.address.rm<%= "#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{h[:node_number]}" %></name>
     <value><%="#{float_host(h[:hostname])}:8088"%></value>
   </property>
 
   <property>
-    <name>yarn.resourcemanager.webapp.https.address.rm<%= "#{node.chef_environment}#{h[:node_number]}" %></name>
+    <name>yarn.resourcemanager.webapp.https.address.rm<%= "#{node["bcpc"]["hadoop"]["yarn"]["cluster-name"]}#{h[:node_number]}" %></name>
     <value><%="#{float_host(h[:hostname])}:8090"%></value>
   </property>
   <% end # @rm_hosts.each do |h|%>

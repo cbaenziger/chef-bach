@@ -1,4 +1,4 @@
-directory "/etc/hadoop/conf.#{node.chef_environment}" do
+directory "/etc/hadoop/conf.#{node['bcpc']['hadoop']['cluster-name']}" do
   owner "root"
   group "root"
   mode 00755
@@ -8,8 +8,8 @@ end
 
 bash "update-hadoop-conf-alternatives" do
   code %Q{
-    update-alternatives --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.#{node.chef_environment} 50
-    update-alternatives --set hadoop-conf /etc/hadoop/conf.#{node.chef_environment}
+    update-alternatives --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.#{node['bcpc']['hadoop']['cluster-name']} 50
+    update-alternatives --set hadoop-conf /etc/hadoop/conf.#{node['bcpc']['hadoop']['cluster-name']}
   }
 end
 

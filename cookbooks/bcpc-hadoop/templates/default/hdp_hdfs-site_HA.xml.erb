@@ -11,7 +11,7 @@
 
   <property>
     <name>dfs.namenode.shared.edits.dir</name>
-    <value>qjournal://<%= @zk_hosts.map{ |s| float_host(s[:hostname]) + ":8485" }.join(";") %>/<%= node.chef_environment %></value>
+    <value>qjournal://<%= @zk_hosts.map{ |s| float_host(s[:hostname]) + ":8485" }.join(";") %>/<%= node['bcpc']['hadoop']['hdfs']['cluster-name'] %></value>
   </property>
 
   <property>

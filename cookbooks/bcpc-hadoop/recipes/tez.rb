@@ -9,7 +9,7 @@ package hwx_pkg_str('tez', node[:bcpc][:hadoop][:distribution][:release]) do
   action :upgrade
 end
 
-directory "/etc/tez/conf.#{node.chef_environment}" do
+directory "/etc/tez/conf.#{node['bcpc']['hadoop']['cluster-name']}" do
   owner "root"
   group "root"
   mode 00755
@@ -19,8 +19,8 @@ end
 
 bash "update-tez-conf-alternatives" do
   code %Q{
-    update-alternatives --install /etc/tez/conf tez-conf /etc/tez/conf.#{node.chef_environment} 50
-    update-alternatives --set tez-conf /etc/tez/conf.#{node.chef_environment}
+    update-alternatives --install /etc/tez/conf tez-conf /etc/tez/conf.#{node['bcpc']['hadoop']['cluster-name']} 50
+    update-alternatives --set tez-conf /etc/tez/conf.#{node['bcpc']['hadoop']['cluster-name']}
   }
 end
 

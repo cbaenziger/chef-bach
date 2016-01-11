@@ -1,9 +1,12 @@
 ---
 driver:
   name: vagrant
+  driver_config:
+    network:
+    - ["private_network", { type: "dhcp" }]
 
 provisioner:
-  name: chef_zero
+  name: nodes
 
 platforms:
   - name: ubuntu-14.04
@@ -52,3 +55,29 @@ suites:
       - 'recipe[kafka-bcpc::setattr]'
       - 'recipe[kafka::default]'
       - 'recipe[kafka-bcpc::kafka]'
+  - name: hdfs-nn
+    attributes: {
+      bcpc: {
+        management: {
+          cidr: '10.0.2.15/24'
+        },
+        storage: {
+          cidr: '10.0.2.15/24'
+        },
+        floating: {
+          cidr: '10.0.2.15/24'
+        },
+        hadoop: {
+          cluster-name: "test-kitchen",
+          mounts: [0],
+          hdfs: {
+            dfs_replication_factor: 1
+          }
+        }
+      }
+    }
+    run_list:
+      - 'recipe[bcpc::default]'
+      - 'recipe[bcpc-hadoop::configs]'
+      - 'recipe[bcpc-hadoop::hadoop_config]'
+      - 'recipe[bcpc-hadoop::namenode_no_HA]'

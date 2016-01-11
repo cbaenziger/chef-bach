@@ -2,7 +2,7 @@
 # Recipe Name  : httpfs_config
 # Description : To setup hadoop-httpfs related configuration only
 
-directory "/etc/hadoop-httpfs/conf.#{node.chef_environment}" do
+directory "/etc/hadoop-httpfs/conf.#{node['bcpc']['hadoop']['hdfs']['cluster-name']}" do
   owner "root"
   group "root"
   mode 00755
@@ -12,8 +12,8 @@ end
 
 bash "update-hadoop-httpfs-conf-alternatives" do
   code %Q{
-   update-alternatives --install /etc/hadoop-httpfs/conf hadoop-httpfs-conf /etc/hadoop-httpfs/conf.#{node.chef_environment} 50
-   update-alternatives --set hadoop-httpfs-conf /etc/hadoop-httpfs/conf.#{node.chef_environment}
+   update-alternatives --install /etc/hadoop-httpfs/conf hadoop-httpfs-conf /etc/hadoop-httpfs/conf.#{node['bcpc']['hadoop']['hdfs']['cluster-name']} 50
+   update-alternatives --set hadoop-httpfs-conf /etc/hadoop-httpfs/conf.#{node['bcpc']['hadoop']['hdfs']['cluster-name']}
   }
 end
 

@@ -31,11 +31,11 @@
 
   <property>
     <name>dfs.nameservices</name>
-    <value><%= node.chef_environment %></value>
+    <value><%= node['bcpc']['hadoop']['hdfs']['cluster-name'] %></value>
   </property>
 
   <property>
-    <name>dfs.ha.namenodes.<%= node.chef_environment %></name>
+    <name>dfs.ha.namenodes.<%= node['bcpc']['hadoop']['hdfs']['cluster-name'] %></name>
     <value><%=@nn_hosts.map{ |s| "namenode#{s[:node_number]}" }.join(",") %></value>
   </property>
 
@@ -51,27 +51,27 @@
 
   <% @nn_hosts.each do |h| %>	
   <property>
-    <name>dfs.namenode.rpc-address.<%= "#{node.chef_environment}.namenode#{h[:node_number]}" %></name>
-    <value><%=float_host(h[:hostname]) %>:<%= node[:bcpc][:hadoop][:namenode][:rpc][:port] %></value>
+    <name>dfs.namenode.rpc-address.<%= "#{node['bcpc']['hadoop']['hdfs']['cluster-name']}.namenode#{h[:node_number]}" %></name>
+    <value><%=float_host(h[:hostname].strip()) %>:<%= node[:bcpc][:hadoop][:namenode][:rpc][:port] %></value>
   </property>
   <% end %>
 
   <% @nn_hosts.each do |h| %>	
   <property>
-    <name>dfs.namenode.http-address.<%= "#{node.chef_environment}.namenode#{h[:node_number]}" %></name>
-    <value><%=float_host(h[:hostname]) %>:<%= node[:bcpc][:hadoop][:namenode][:http][:port] %></value>
+    <name>dfs.namenode.http-address.<%= "#{node['bcpc']['hadoop']['hdfs']['cluster-name']}.namenode#{h[:node_number]}" %></name>
+    <value><%=float_host(h[:hostname].strip()) %>:<%= node[:bcpc][:hadoop][:namenode][:http][:port] %></value>
   </property>
   <% end %>
 
   <% @nn_hosts.each do |h| %>	
   <property>
-    <name>dfs.namenode.https-address.<%= "#{node.chef_environment}.namenode#{h[:node_number]}" %></name>
-    <value><%=float_host(h[:hostname]) %>:<%= node[:bcpc][:hadoop][:namenode][:https][:port] %></value>
+    <name>dfs.namenode.https-address.<%= "#{node['bcpc']['hadoop']['hdfs']['cluster-name']}.namenode#{h[:node_number]}" %></name>
+    <value><%=float_host(h[:hostname].strip()) %>:<%= node[:bcpc][:hadoop][:namenode][:https][:port] %></value>
   </property>
   <% end %>
 
   <property>
-    <name>dfs.client.failover.proxy.provider.<%= node.chef_environment %></name>
+    <name>dfs.client.failover.proxy.provider.<%= node['bcpc']['hadoop']['hdfs']['cluster-name'] %></name>
     <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
   </property>
 

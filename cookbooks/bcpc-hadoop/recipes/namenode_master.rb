@@ -109,7 +109,7 @@ bash "format-zk-hdfs-ha" do
   user "hdfs"
   notifies :restart, "service[generally run hadoop-hdfs-namenode]", :delayed
   zks = node[:bcpc][:hadoop][:zookeeper][:servers].map{|zkh| "#{zkh[:hostname]}:#{node[:bcpc][:hadoop][:zookeeper][:port]}"}.join(",")
-  not_if { znode_exists?("/hadoop-ha/#{node.chef_environment}", zks) }
+  not_if { znode_exists?("/hadoop-ha/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}", zks) }
 end
 
 link "/etc/init.d/hadoop-hdfs-zkfc" do
@@ -135,7 +135,7 @@ service "bring hadoop-hdfs-namenode down for shared edits and HA transition" do
   action :stop
   supports :status => true
   notifies :run, "bash[initialize-shared-edits]", :immediately
-  only_if { node[:bcpc][:hadoop][:mounts].all? { |d| not File.exists?("/disk/#{d}/dfs/jn/#{node.chef_environment}/current/VERSION") } }
+  only_if { node[:bcpc][:hadoop][:mounts].all? { |d| not File.exists?("/disk/#{d}/dfs/jn/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}/current/VERSION") } }
 end
 
 bash "initialize-shared-edits" do
@@ -168,11 +168,12 @@ end
 ruby_block "create-format-UUID-File" do
   block do
     Dir.chdir("/disk/#{node[:bcpc][:hadoop][:mounts][0]}/dfs/") do
-      system("tar czvf #{Chef::Config[:file_cache_path]}/nn_fmt.tgz nn/current/VERSION jn/#{node.chef_environment}/current/VERSION")
+      system("tar czvf #{Chef::Config[:file_cache_path]}/nn_fmt.tgz nn/current/VERSION jn/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}/current/VERSION")
     end
   end
   action :run
-  only_if { File.exists?("/disk/#{node[:bcpc][:hadoop][:mounts][0]}/dfs/nn/current/VERSION") and  File.exists?("/disk/#{node[:bcpc][:hadoop][:mounts][0]}/dfs/jn/#{node.chef_environment}/current/VERSION") }
+  only_if { File.exists?("/disk/#{node[:bcpc][:hadoop][:mounts][0]}/dfs/nn/current/VERSION") and
+            File.exists?("/disk/#{node[:bcpc][:hadoop][:mounts][0]}/dfs/jn/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}/current/VERSION") }
 end
 
 ruby_block "upload-format-UUID-File" do

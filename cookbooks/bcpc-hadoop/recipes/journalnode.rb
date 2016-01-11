@@ -20,7 +20,7 @@ if get_config("namenode_txn_fmt") then
     group "hdfs"
     user 0644
     content Base64.decode64(get_config("namenode_txn_fmt"))
-    not_if { node[:bcpc][:hadoop][:mounts].all? { |d| File.exists?("/disk/#{d}/dfs/jn/#{node.chef_environment}/current/VERSION") } }
+    not_if { node[:bcpc][:hadoop][:mounts].all? { |d| File.exists?("/disk/#{d}/dfs/jn/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}/current/VERSION") } }
   end
 end
 
@@ -29,7 +29,7 @@ node[:bcpc][:hadoop][:mounts].each do |d|
   # Per chef-documentation for directory resource's recursive attribute:
   # For the owner, group, and mode attributes, the value of this attribute applies only to the leaf directory
   # Hence, we create "/disk/#{d}/dfs/jn/" to have "jn" dir owned by hdfs and then
-  # create "/disk/#{d}/dfs/jn/#{node.chef_environment}" owned by hdfs. 
+  # create "/disk/#{d}/dfs/jn/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}" owned by hdfs. 
   # This way the jn/{environment} dir tree is owned by hdfs
   
   directory "/disk/#{d}/dfs/jn" do
@@ -40,7 +40,7 @@ node[:bcpc][:hadoop][:mounts].each do |d|
     recursive true
   end
 
-  directory "/disk/#{d}/dfs/jn/#{node.chef_environment}" do
+  directory "/disk/#{d}/dfs/jn/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}" do
     owner "hdfs"
     group "hdfs"
     mode 0755
@@ -53,7 +53,7 @@ node[:bcpc][:hadoop][:mounts].each do |d|
     cwd "/disk/#{d}/dfs/"
     code "tar xpzvf #{Chef::Config[:file_cache_path]}/nn_fmt.tgz"
     notifies :restart, "service[hadoop-hdfs-journalnode]"
-    only_if { not get_config("namenode_txn_fmt").nil? and not File.exists?("/disk/#{d}/dfs/jn/#{node.chef_environment}/current/VERSION") }
+    only_if { not get_config("namenode_txn_fmt").nil? and not File.exists?("/disk/#{d}/dfs/jn/#{node['bcpc']['hadoop']['hdfs']['cluster-name']}/current/VERSION") }
   end
 end
 

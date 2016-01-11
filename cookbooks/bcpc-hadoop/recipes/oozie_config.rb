@@ -46,9 +46,9 @@ link "/etc/oozie/conf.#{node.chef_environment}/hive-site.xml" do
 end
 
 link "/etc/oozie/conf.#{node.chef_environment}/core-site.xml" do
-  to "/etc/hadoop/conf.#{node.chef_environment}/core-site.xml"
+  to "/etc/hadoop/conf.#{node['bcpc']['hadoop']['cluster-name']}/core-site.xml"
 end
 
 link "/etc/oozie/conf.#{node.chef_environment}/yarn-site.xml" do
-  to "/etc/hadoop/conf.#{node.chef_environment}/yarn-site.xml"
+  to "/etc/hadoop/conf.#{node['bcpc']['hadoop']['yarn']['cluster-name']}/yarn-site.xml"
 end
