@@ -73,25 +73,31 @@ default['bcpc']['ceph']['vms_mem']['name'] = "vmsmem"
 #  Network settings for the cluster
 #
 ###########################################
-default['bcpc']['management']['vip'] = "10.0.2.5"
-default['bcpc']['management']['netmask'] = "255.255.255.0"
-default['bcpc']['management']['cidr'] = "10.0.2.0/24"
-default['bcpc']['management']['gateway'] = "10.0.2.2"
-default['bcpc']['management']['interface'] = "eth0"
+require 'ipaddr'
+ifs = node[:network][:interfaces].keys
+# create a hash of ipaddresses -- skip interfaces without addresses
+ips= ifs.map{ |a| node[:network][:interfaces][a].attribute?(:addresses) and
+                  node[:network][:interfaces][a][:addresses] or {}}
+pri_netmask = IPAddr.new(ips.map{|i| i.select{|a, net| a == node['ipaddress']}}.reduce({}, :merge).values.first['netmask'])
+pri_net_bits = pri_netmask.to_i.to_s(2).count("1")
 
-default['bcpc']['metadata']['ip'] = "169.254.169.254"
+default['bcpc']['management']['vip'] = "127.0.0.1"
+default
+default['bcpc']['management']['netmask'] = pri_netmask.to_s
+default['bcpc']['management']['cidr'] = "#{node['ipaddress']}/#{pri_net_bits}"
+default['bcpc']['management']['gateway'] = node['network']['default_gateway']
+default['bcpc']['management']['interface'] = node['network']['default_interface']
 
-default['bcpc']['storage']['netmask'] = "255.255.255.0"
-default['bcpc']['storage']['cidr'] = "100.100.0.0/24"
-default['bcpc']['storage']['gateway'] = "100.100.0.1"
-default['bcpc']['storage']['interface'] = "eth1"
+default['bcpc']['storage']['netmask'] = pri_netmask
+default['bcpc']['storage']['cidr'] = "#{node['ipaddress']}/#{pri_net_bits}"
+default['bcpc']['storage']['gateway'] = node['network']['default_gateway']
+default['bcpc']['storage']['interface'] = node['network']['default_interface']
 
-default['bcpc']['floating']['vip'] = "192.168.43.15"
-default['bcpc']['floating']['netmask'] = "255.255.255.0"
-default['bcpc']['floating']['cidr'] = "192.168.43.0/24"
-default['bcpc']['floating']['gateway'] = "192.168.43.2"
-default['bcpc']['floating']['available_subnet'] = "192.168.43.128/25"
-default['bcpc']['floating']['interface'] = "eth2"
+default['bcpc']['floating']['vip'] = "127.0.0.1"
+default['bcpc']['floating']['netmask'] = pri_netmask
+default['bcpc']['floating']['cidr'] = "#{node['ipaddress']}/#{pri_net_bits}"
+default['bcpc']['floating']['gateway'] = node['network']['default_gateway']
+default['bcpc']['floating']['interface'] = node['network']['default_interface']
 
 default['bcpc']['ntp_servers'] = [ "pool.ntp.org" ]
 default['bcpc']['dns_servers'] = [ "8.8.8.8", "8.8.4.4" ]

@@ -21,7 +21,6 @@ require 'pathname'
 require 'rubygems'
 
 gem_path = Pathname.new(Gem.ruby).dirname.join("gem").to_s
-chef_gemspec = "/opt/chef/embedded/lib/ruby/gems/1.9.1/specifications/chef-vault-2.2.4.gemspec"
 
 gem_package "chef-vault" do
   gem_binary gem_path
@@ -30,10 +29,11 @@ gem_package "chef-vault" do
 end.run_action(:install)
 
 # set the gemspec permission
-file chef_gemspec do
+chef_gemspec = $:.map{|p| Dir.glob("#{p}/chef-vault*.gemspec")}.reduce([],:concat)
+file chef_gemspec.first do
   owner 'root'
   mode "644"
   action :nothing
-end.run_action(:create)
+end.run_action(:create) unless chef_gemspec.first.nil?
 
 Gem.clear_paths

@@ -28,7 +28,10 @@ template "/tmp/openssl.cnf" do
 end
 
 node.default[:temp][:value] = ""
-bootstrap = get_all_nodes.select{|s| s.hostname.include? 'bootstrap'}[0].fqdn
+bootstrap_node = get_all_nodes.select{|s| s.has_key?('hostname') and s[:hostname].include? 'bootstrap'}[0]
+bootstrap_fqdn = nil
+bootstrap_fqdn = bootstrap_node['fqdn'] unless bootstrap_node.nil? 
+
 key = OpenSSL::PKey::RSA.new 2048;
 
 results = get_nodes_for("certs").map!{ |x| x['fqdn'] }.join(",")
@@ -54,7 +57,7 @@ end
 chef_vault_secret "ssh" do
   data_bag 'os'
   raw_data({ "private-key" => key.to_pem })
-  admins "#{ nodes },#{ bootstrap }"
+  admins "#{ nodes },#{ bootstrap_fqdn }"
   search '*:*'
   action :create_if_missing
 end
@@ -84,7 +87,7 @@ chef_vault_secret "ssl" do
   end
   data_bag 'os'
   raw_data ({ 'private-key' => ssl_private_key, 'certificate' => ssl_certificate })
-  admins "#{ nodes },#{ bootstrap }"
+  admins "#{ nodes },#{ bootstrap_fqdn }"
   search '*:*'
   action :create_if_missing
 end
