@@ -18,8 +18,7 @@ end
 
 OOZIE_LIB_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie"
 OOZIE_CLIENT_PATH='/usr/hdp/current/oozie-client'
-OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie-server/oozie-server"
-OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie-server"
+OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie"
 OOZIE_SHARELIB_TARBALL_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/oozie-sharelib.tar.gz"
 HDFS_URL=node[:bcpc][:hadoop][:hdfs_url]
 
