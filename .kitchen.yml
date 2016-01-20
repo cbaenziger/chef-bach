@@ -4,6 +4,9 @@ driver:
 
 provisioner:
   name: nodes
+  client_rb: {
+    client_key: "/tmp/kitchen/clients/hdfs-nn-ubuntu-1404.pem"
+  }
 
 platforms:
   - name: ubuntu-14.04
@@ -65,10 +68,12 @@ suites:
       customize:
         memory: 1024
         cpus: 2
-        network:
+      network:
         - ["private_network", { type: "dhcp" }]
     attributes: {
       java: {
+        ark_download_timeout: 1800,
+        ark_timeout: 1800,
         oracle: {
           accept_oracle_download_terms: true,
         }
@@ -94,7 +99,7 @@ suites:
       customize:
         memory: 1024
         network:
-        - ["private_network", { type: "dhcp" }]
+        - "'private_network', { type: 'dhcp' }"
     attributes: {
       bcpc: {
         hadoop: {
@@ -117,12 +122,8 @@ suites:
       customize:
         memory: 1024
         network:
-        - ["private_network", { type: "dhcp" }]
+        - "'private_network', { type: 'dhcp' }"
     attributes: {
-      java: {
-        ark_download_timeout: 1800,
-        ark_timeout: 1800
-      },
       bcpc: {
         hadoop: {
           cluster-name: "test-kitchen",
