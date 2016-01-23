@@ -42,7 +42,7 @@ end
 # Constant string which defines the default attributes which need to be retrieved from node objects
 # The format is hash { key => value , key => value }
 # Key will be used as the key in the search result which is a hash and the value is the node attribute which needs
-# to be included in the result. Attribute hierarchy can be expressed as a dot seperated string. User the following
+# to be included in the result. Attribute hierarchy can be expressed as a dot seperated string. Use the following
 # as an example
 #
 HOSTNAME_MGMT_IP_ATTR_SRCH_KEYS = {'hostname' => 'hostname', 'mgmt_ip' => 'bcpc.management.ip'}
@@ -190,8 +190,8 @@ end
 
 #
 # Library function to retrieve required attributes from a array of node objects passed
-# Takes in an array of node objects and a search hash. Refer to comments for the constant
-# DEFAULT_NODE_ATTR_SRCH_KEYS regarding the format of the hash
+# Takes in an array of node objects and a search hash. Refer to comments for the
+# constants *_ATTR_SRCH_KEYS regarding the format of the hash;
 # returns a array of hash with the requested attributes
 # [ { :node_number => "val", :hostname => "nameval" }, ...]
 #

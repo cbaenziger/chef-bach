@@ -1,3 +1,53 @@
+#
+# Cookbook Name:: bcpc
+# Library:: utils
+#
+# Copyright 2013, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+require 'openssl'
+require 'thread'
+
+#
+# Constant string which defines the default attributes which need to be retrieved from node objects
+# The format is hash { key => value , key => value }
+# Key will be used as the key in the search result which is a hash and the value is the node attribute which needs
+# to be included in the result. Attribute hierarchy can be expressed as a dot seperated string. Use the following
+# as an example
+#
+
+# For Kerberos to work we need FQDN for each host. Changing "HOSTNAME" to "FQDN". 
+# Hadoop breaks principal into 3 parts  (Service, FQDN and REALM)
+
+HOSTNAME_ATTR_SRCH_KEYS = {'hostname' => 'fqdn'}
+HOSTNAME_NODENO_ATTR_SRCH_KEYS = {'hostname' => 'fqdn', 'node_number' => 'bcpc.node_number'}
+MGMT_IP_ATTR_SRCH_KEYS = {'mgmt_ip' => 'bcpc.management.ip'}
+
+def init_config
+  if not Chef::DataBag.list.key?('configs')
+     puts "************ Creating data_bag \"configs\""
+     bag = Chef::DataBag.new
+     bag.name("configs")
+     bag.create
+  end rescue nil
+  begin
+     $dbi = Chef::DataBagItem.load('configs', node.chef_environment)
+     $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['bcpc']['encrypt_data_bag']
+     puts "============ Loaded existing data_bag_item \"configs/#{node.chef_environment}\""
+  rescue
+     $dbi = Chef::DataBagItem.new
      $dbi.data_bag('configs')
      $dbi.raw_data = { 'id' => node.chef_environment }
      $dbi.save
@@ -175,8 +225,8 @@ end
 
 #
 # Library function to retrieve required attributes from a array of node objects passed
-# Takes in an array of node objects and a search hash. Refer to comments for the constant
-# DEFAULT_NODE_ATTR_SRCH_KEYS regarding the format of the hash
+# Takes in an array of node objects and a search hash. Refer to comments for the
+# constants *_ATTR_SRCH_KEYS regarding the format of the hash;
 # returns a array of hash with the requested attributes
 # [ { :node_number => "val", :hostname => "nameval" }, ...]
 #
