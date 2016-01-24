@@ -20,10 +20,12 @@
 include_recipe "bcpc::default"
 include_recipe "bcpc::certs"
 
+HOST_DATA_ATTR_SRCH_KEYS = {'hostname' => 'hostname', 'fqdn' => 'fqdn', 'mgmt_ip' => 'bcpc.management.ip', 'storage_ip' => 'bcpc.storage.ip', 'float_ip' => 'bcpc.floating.ip', 'domain_name' => 'bcpc.domain_name'}
+
 template "/etc/hosts" do
     source "hosts.erb"
     mode 00644
-    variables( :servers => get_all_nodes )
+    variables( :servers => get_req_node_attributes(get_all_nodes, HOST_DATA_ATTR_SRCH_KEYS) )
 end
 
 template "/etc/ssh/sshd_config" do
