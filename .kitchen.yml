@@ -16,15 +16,44 @@ platforms:
       - 'recipe[bcpc-hadoop::hdp_repo]'
     attributes: {
       java: {
+        jdk_version: 8,
+        jdk: {
+          "8": {
+            x86_64: {
+              url: "http://10.0.2.2:9090/jdk-8u65-linux-x64.tar.gz",
+              checksum: "88db2aacdc222c2add4d92822f528b7a2101552272db4487f33b38b0b47826e7"
+            }
+          }
+        },
         oracle: {
           accept_oracle_download_terms: true
         }
       },
       bcpc: {
+        management: {
+          cidr: "172.28.128.0/24",
+          gateway: "172.28.128.1",
+          interface: "eth1"
+        },
+        floating: {
+          cidr: "172.28.128.0/24",
+          gateway: "172.28.128.1",
+          interface: "eth1"
+        },
+        storage: {
+          cidr: "172.28.128.0/24",
+          gateway: "172.28.128.1",
+          interface: "eth1"
+        },
         hadoop: {
           repos: {
             hortonworks: 'http://public-repo-1.hortonworks.com/HDP/ubuntu14/2.x/updates/2.3.2.0/',
             hdp_utils: 'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu14'
+          },
+          cluster-name: "test-kitchen",
+          mounts: [0],
+          hdfs: {
+            dfs_replication_factor: 1
           }
         }
       }
@@ -38,17 +67,15 @@ suites:
       bcpc:
         bin_dir:
           path: "/tmp/"
-  - name: zookeeper
+  - name: kafka-zookeeper
     driver:
-      customize:
-        network:
+      network:
         - ["private_network", { type: "dhcp" }]
     run_list:
       - 'recipe[kafka-bcpc::zookeeper_server]'
-  - name: kafka
+  - name: kafka-server
     driver:
-      customize:
-        network:
+      network:
         - ["private_network", { type: "dhcp" }]
     attributes: {
       kafka: {
@@ -63,6 +90,19 @@ suites:
       - 'recipe[kafka-bcpc::setattr]'
       - 'recipe[kafka::default]'
       - 'recipe[kafka-bcpc::kafka]'
+  - name: hadoop-zookeeper
+    driver:
+      network:
+        - ["private_network", { type: "dhcp" }]
+    attributes: {
+    }
+    run_list:
+      - 'recipe[bcpc::chef_vault_install]'
+      - 'recipe[bcpc::default]'
+      - 'recipe[bcpc::networking]'
+      - 'recipe[bcpc-hadoop::configs]'
+      - 'recipe[bcpc-hadoop::hadoop_config]'
+      - 'recipe[bcpc-hadoop::zookeeper_server]'
   - name: hdfs-nn
     driver:
       customize:
@@ -71,25 +111,10 @@ suites:
       network:
         - ["private_network", { type: "dhcp" }]
     attributes: {
-      java: {
-        ark_download_timeout: 1800,
-        ark_timeout: 1800,
-        oracle: {
-          accept_oracle_download_terms: true,
-        }
-      },
-      bcpc: {
-        hadoop: {
-          cluster-name: "test-kitchen",
-          mounts: [0],
-          hdfs: {
-            dfs_replication_factor: 1
-          }
-        }
-      }
     }
     run_list:
       - 'recipe[bcpc::chef_vault_install]'
+      - 'recipe[bcpc::default]'
       - 'recipe[bcpc::networking]'
       - 'recipe[bcpc-hadoop::configs]'
       - 'recipe[bcpc-hadoop::hadoop_config]'
@@ -98,21 +123,13 @@ suites:
     driver:
       customize:
         memory: 1024
-        network:
+      network:
         - "'private_network', { type: 'dhcp' }"
     attributes: {
-      bcpc: {
-        hadoop: {
-          cluster-name: "test-kitchen",
-          mounts: [0],
-          hdfs: {
-            dfs_replication_factor: 1
-          }
-        }
-      }
     }
     run_list:
       - 'recipe[bcpc::chef_vault_install]'
+      - 'recipe[bcpc::default]'
       - 'recipe[bcpc::networking]'
       - 'recipe[bcpc-hadoop::configs]'
       - 'recipe[bcpc-hadoop::hadoop_config]'
@@ -121,21 +138,13 @@ suites:
     driver:
       customize:
         memory: 1024
-        network:
+      network:
         - "'private_network', { type: 'dhcp' }"
     attributes: {
-      bcpc: {
-        hadoop: {
-          cluster-name: "test-kitchen",
-          mounts: [0],
-          hdfs: {
-            dfs_replication_factor: 1
-          }
-        }
-      }
     }
     run_list:
       - 'recipe[bcpc::chef_vault_install]'
+      - 'recipe[bcpc::default]'
       - 'recipe[bcpc::networking]'
       - 'recipe[bcpc-hadoop::configs]'
       - 'recipe[bcpc-hadoop::hadoop_config]'
