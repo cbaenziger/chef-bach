@@ -12,24 +12,16 @@
 #
 # To use from the command line:
 #
-#  1. If necessary, configure your local rubygems mirror.
-#     Replace 'http://mirror.example.com' with your actual mirror.
-#     ```
-#     bundle config mirror.https://rubygems.org http://mirror.example.com
-#     ```
-#
-#  2. Run 'bundle install --deployment' on a bootstrap node with
+#  1. Run 'bundle install --deployment' on a bootstrap node with
 #     access to a rubygems mirror.
 #
-#  3. If not already using the target bootstrap, sync the updated
+#  2. If not already using the target bootstrap, sync the updated
 #     repository, including 'vendor' directory, to the target
 #     bootstrap.
 #
-#  4. Run 'bundle exec ./repxe_host.rb -m <hostname>' to begin the process.
-#     To run on a brand new node that doesn't need to be shut down first, run:
-#     'bundle exec ./repxe_host.rb -m <hostname> -s'
+#  3. Run 'bundle exec ./repxe_host.rb <hostname>' to begin the process.
 #
-#  5. When prompted, manually reboot the host, then press enter.
+#  4. When prompted, manually reboot the host, then press enter.
 #
 # It is also possible to use methods from this script at a ruby REPL
 # instead of running the script from a UNIX shell.  To load methods
@@ -51,12 +43,11 @@ require 'chef/provisioning/transport/ssh'
 require 'mixlib/shellout'
 require 'pry'
 require 'timeout'
-require 'optparse'
 
 def cluster_assign_roles(environment,type,entry=nil)
-  types = [ 'basic', 'hadoop', 'kafka' ]
-  if(!types.include?(type.to_s.downcase))
-    raise "#{type} is not one of #{types.join(",")} !"
+  if(type.to_s.downcase != 'basic' &&
+     type.to_s.downcase != 'hadoop')
+    raise "#{type} is not one of 'basic', 'hadoop' !"
   end
 
   # We use system() instead of Mixlib::ShellOut specifically so that the
@@ -236,7 +227,7 @@ def restart_host(entry)
   #   raise "IPMI is unimplemented!"
   # end
 
-  puts 'Please reboot ' + entry['hostname'] + ' into pxe-boot mode, then hit enter'
+  puts 'Please reboot ' + entry['hostname'] + ', then hit enter'
   STDIN.gets;
 end
 
@@ -298,197 +289,31 @@ def wait_for_host(entry)
   end
 end  
 
-# Find the Chef environment
-def find_chef_env()
-  require 'json'
-  require 'rubygems'
-  require 'ohai'
-  require 'mixlib/shellout'
-  o = Ohai::System.new
-  o.all_plugins
-
-  env_command =
-    Mixlib::ShellOut.new('sudo', 'knife',
-                         'node', 'show',
-                         o[:fqdn] || o[:hostname], '-E',
-                         '-f', 'json')
-  
-  env_command.run_command
-  
-  if !env_command.status.success?
-    raise 'Could not retrieve Chef environment!\n' +
-      env_command.stdout + '\n' +
-      env_command.stderr
-  end
-  
-  JSON.parse(env_command.stdout)['chef_environment']
-end
-
-   
-def get_mounted_disks(chef_env, vm_entry)
-   c = Mixlib::ShellOut.new('./nodessh.sh', chef_env, vm_entry['hostname'], 'df -h')
-   c.run_command
-   disks=c.stdout.split("\n") 
-   disks = disks[1..disks.length]
-   # return all disks mapped to /disk/#
-   return disks.map{ |disk| disk.split(" ")[-1]  }.map{|disk| /\/disk\/\d+/.match(disk) == nil ? nil : disk}.compact
-end
-   
-def unmount_disks(chef_env, vm_entry)
-   puts 'Unmounting disks.'
-   get_mounted_disks(chef_env, vm_entry).each do |disk|
-      puts 'unmounting ' + disk
-      c = Mixlib::ShellOut.new('./nodessh.sh', chef_env, vm_entry['hostname'], 'umount '+disk, 'sudo')
-      c.run_command
-      if !c.status.success?
-        raise 'Could not unmount ' + disk + ' ' + c.stdout + '\n' + c.stderr
-      else
-        puts 'Unmounted ' + disk
-      end
-   end
-end
-
-def confirm_chef_client_down(chef_env, vm_entry)
-  #
-  # If it takes more than 2 minutes
-  # something is really broken.
-  #
-  # This will make 30 attempts with a 1 minute sleep between attempts,
-  # or timeout after 31 minutes.
-  #
-  command = "ps -ef | grep chef-client | grep -v grep"
-  Timeout::timeout(120) do
-    max = 5
-    1.upto(max) do |idx|
-      c = Mixlib::ShellOut.new('./nodessh.sh', chef_env, vm_entry['hostname'], command )
-      c.run_command
-      if c.exitstatus == 1 and c.stdout == ''
-        puts "chef client is down"
-        return
-      else
-        puts "Waiting for chef to go down (attempt #{idx}/#{max})"
-        sleep 30
-      end
-    end
-  end
-
-end
-
-def kill_chef_client(chef_env, vm_entry)
-  puts 'Stopping chef-client'
-  ['service chef-client stop ',
-   'pkill -f chef-client'].each do |command|
-      c = Mixlib::ShellOut.new('./nodessh.sh', chef_env, vm_entry['hostname'], command, 'sudo')
-      c.run_command
-   end
-   confirm_chef_client_down(chef_env, vm_entry)
-   puts "Chef client is down"
-end
-
-def start_chef_client(chef_env, vm_entry)
-   puts 'Starting chef-client'
-   c = Mixlib::ShellOut.new('./nodessh.sh', chef_env, vm_entry['hostname'], 'service chef-client start', 'sudo')
-   c.run_command
-   if !c.status.success?
-      puts 'Chef client did not start successfully: ' + c.stdout + '\n' + c.stderr
-   else
-      puts 'Chef client started.'
-   end
-end
-
-def stop_all_services(chef_env, vm_entry)
-  puts 'Stopping services.'
-  ['jmxtrans',
-   'hbase-regionserver', 
-   'hbase-master',
-   'hadoop-hdfs-datanode',
-   'hadoop-httpfs',
-   'hadoop-yarn-nodemanager',
-   'hadoop-hdfs-journalnode',
-   'hadoop-hdfs-namenode',
-   'hadoop-hdfs-zkfc',
-   'haproxy'].each do |service|
-      c = Mixlib::ShellOut.new('./nodessh.sh', chef_env, vm_entry['hostname'], 'service ' + service + ' stop', 'sudo')
-      c.run_command
-      if !c.status.success?
-        puts 'Could not stop service ' + service + ' ' + c.stdout + '\n' + c.stderr
-      else
-        puts 'Stopped ' + service
-      end
-   
-   end
-end
-
-def shutdown_box(chef_env, vm_entry)
-   c = Mixlib::ShellOut.new('./nodessh.sh', chef_env, vm_entry['hostname'], 'shutdown -h now', 'sudo')
-   c.run_command
-   if !c.status.success?
-     raise 'Could not shut down host ' + vm_entry['hostname'] + '\n' + c.stdout + '\n' + c.stderr
-   else
-     puts 'Host has been shut down.'
-   end
-end
-
-# Graceful shutdown - bring down all services, unmount disks, shutdown
-def graceful_shutdown(chef_env, vm_entry)
-   puts 'Running graceful shutdown of ' + vm_entry['hostname']
-   kill_chef_client(chef_env, vm_entry)
-   stop_all_services(chef_env, vm_entry)
-   unmount_disks(chef_env, vm_entry)
-   shutdown_box(chef_env, vm_entry)
-end
 #
 # This conditional allows us to use the methods into irb instead of
 # invoking the script from a UNIX shell.
 #
 if __FILE__ == $PROGRAM_NAME
-  options = { :shutdown => true }
-
-  parser = OptionParser.new do|opts|
-	opts.banner = "Usage: repxe_host.rb [options]"
-	opts.on('-s', '--skipShutdown', 'Skip Shutdown') do 
-		options[:shutdown] = false;
-	end
-
-	opts.on('-m', '--machine machine', 'Machine') do |machine|
-		options[:machine] = machine
-                puts 'found an option for machine with value ' + machine
-	end
-
-	opts.on('-h', '--help', 'Displays Help') do
-		puts opts
-		exit
-	end
-  end
- 
-  parser.parse!
-
-  if options[:machine].nil?
-    puts parser
+  if ARGV[0].nil?
+    puts "Usage: bundle exec ./repxe_host.rb <hostname>"
     exit(-1)
   end
 
-  vm_entry = get_entry(options[:machine])
+  vm_entry = get_entry(ARGV[0])
 
   if vm_entry.nil?
-    puts "'#{options[:machine]}' was not found in cluster.txt!"
+    puts "'#{ARGV[0]}' was not found in cluster.txt!"
     exit(-1)
   end
 
-  puts 'Repxe script started for node ' + options[:machine]
-  chef_env = find_chef_env
-  if options[:shutdown]
-  	graceful_shutdown(chef_env, vm_entry)
-  end
-  delete_node_data(vm_entry)
-  rotate_vault_keys
   cobbler_unenroll(vm_entry)
   cobbler_enroll(vm_entry)
   cobbler_sync
+  delete_node_data(vm_entry)
   restart_host(vm_entry)
   wait_for_host(vm_entry)
-  cluster_assign_roles(chef_env, :basic, vm_entry)
+  cluster_assign_roles('Test-Laptop', :basic, vm_entry)
   rotate_vault_keys
-  cluster_assign_roles(chef_env, :hadoop, vm_entry)
-  start_chef_client(chef_env, vm_entry)
+  cluster_assign_roles('Test-Laptop', :hadoop)
+  cluster_assign_roles('Test-Laptop', :hadoop, vm_entry)
 end
