@@ -18,7 +18,6 @@
 #
 
 include_recipe "bcpc::default"
-include_recipe "bcpc::certs"
 
 HOST_DATA_ATTR_SRCH_KEYS = {'hostname' => 'hostname', 'fqdn' => 'fqdn', 'mgmt_ip' => 'bcpc.management.ip', 'storage_ip' => 'bcpc.storage.ip', 'float_ip' => 'bcpc.floating.ip', 'domain_name' => 'bcpc.domain_name'}
 
