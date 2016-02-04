@@ -62,11 +62,6 @@ package "hdp-select" do
   action :upgrade
 end
 
-# Install Java
-include_recipe "bcpc-hadoop::java_config"
-include_recipe "java::default"
-include_recipe "java::oracle_jce"
-
 %w{zookeeper}.each do |pkg|
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
