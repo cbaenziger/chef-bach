@@ -62,25 +62,30 @@ fi
 FILES="jmxtrans-20120525-210643-4e956b1144.zip $FILES"
 
 # Fetch Kafka Tar
-for version in 0.8.1 0.8.1.1; do
-  mkdir -p kafka/${version}/
-  if ! [[ -f kafka/${version}/kafka_2.9.2-${version}.tgz ]]; then
-    pushd kafka/${version}/
-    while ! $(file kafka_2.9.2-${version}.tgz | grep -q 'gzip compressed data'); do
-      $CURL -O -L https://archive.apache.org/dist/kafka/${version}/kafka_2.9.2-${version}.tgz
+for full_ver in 2.9.2-0.8.1.1 2.11-0.9.0.0; do
+  scala_ver=${full_ver%-*}
+  kafka_ver=${full_ver#*-}
+  mkdir -p kafka/${kafka_ver}/
+  if ! [[ -f kafka/${kafka_ver}/kafka_${full_ver}.tgz ]]; then
+    pushd kafka/${full_ver}/
+    while ! $(file kafka_${full_ver}.tgz | grep -q 'gzip compressed data'); do
+      $CURL -O -L https://archive.apache.org/dist/kafka/${kafka_ver}/kafka_${full_ver}.tgz
     done
     popd
   fi
-  FILES="kafka_2.9.2-${version}.tgz $FILES"
+  FILES="kafka_${full_ver}.tgz $FILES"
 done
 
 # Fetch Java Tar
-if ! [[ -f jdk-7u51-linux-x64.tar.gz ]]; then
-  while ! $(file jdk-7u51-linux-x64.tar.gz | grep -q 'gzip compressed data'); do
-    $CURL -O -L -C - -b "oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u51-b13/jdk-7u51-linux-x64.tar.gz   
-  done
-fi
-FILES="jdk-7u51-linux-x64.tar.gz $FILES"
+for ful_ver in 7u51-b13 8u72-b15; do
+  ver=${ful_ver%-*}
+  if ! [[ -f jdk-${ver}-linux-x64.tar.gz ]]; then
+    while ! $(file jdk-${ver}-linux-x64.tar.gz | grep -q 'gzip compressed data'); do
+      $CURL -O -L -C - -b "oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/${ful_ver}/jdk-${ver}-linux-x64.tar.gz   
+    done
+  fi
+  FILES="jdk-${ver}-linux-x64.tar.gz $FILES"
+done
 
 if ! [[ -f UnlimitedJCEPolicyJDK7.zip ]]; then
   while ! $(file UnlimitedJCEPolicyJDK7.zip | grep -q 'Zip archive data'); do
