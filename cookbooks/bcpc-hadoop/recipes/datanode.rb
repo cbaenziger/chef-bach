@@ -74,7 +74,7 @@ end
 
 # Setup datanode and nodemanager bits
 if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
-  Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:disks]} than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]}! See comments of HDFS-4442.")
+  Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:mounts].length} disks than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]} volumes tolerated! See comments of HDFS-4442.")
 end
 
 # Build nodes for HDFS storage
