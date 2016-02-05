@@ -46,18 +46,17 @@ end
 
 bash "create-hive-warehouse" do
   code <<-EOH
-  hdfs dfs -mkdir -p /apps/hive/warehousehadoop
-  hdfs dfs -chmod -R 775 /apps/hive
-  hdfs dfs -chown -R hive:hdfs /apps/hive
+  hdfs dfs -mkdir -p #{node[:bcpc][:hive][:warehousedir]} && \
+  hdfs dfs -chmod 1777 #{node[:bcpc][:hive][:warehousedir]} && \
   EOH
   user "hdfs"
 end
 
 bash "create-hive-scratch" do
   code <<-EOH
-  hdfs dfs -mkdir -p /tmp/scratch
-  hdfs dfs -chmod -R 1777 /tmp/scratch
-  hdfs dfs -chown -R hive:hdfs /tmp/scratch
+  hdfs dfs -mkdir -p /tmp/hive-hive
+  hdfs dfs -chmod 1777 /tmp/hive-hive
+  hdfs dfs -chown hive:hdfs /tmp/hive-hive
   EOH
   user "hdfs"
 end
@@ -73,7 +72,6 @@ ruby_block "hive-metastore-database-creation" do
         GRANT #{privs} ON metastore.* TO 'hive'@'localhost' IDENTIFIED BY '#{get_config('mysql-hive-password')}';
         FLUSH PRIVILEGES;
         USE metastore;
-        SOURCE /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-0.14.0.mysql.sql;
         EOF
       IO.popen("mysql -uroot -p#{get_config!('password','mysql-root','os')}", "r+") do |db|
         db.write code
@@ -84,6 +82,11 @@ ruby_block "hive-metastore-database-creation" do
   end
 end
 
+# XXX need to write a function to check schema_version: DNE -> init; old -> upgrade:
+# $ mysql -u hive -p metastore <<< 'SELECT * FROM VERSION;'
+# Enter password: 
+# VER_ID  SCHEMA_VERSION  VERSION_COMMENT
+# 1       0.14.0  Hive release version 0.14.0
 #bash "create-hive-metastore-db" do
 #  code <<-EOH
 #  /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hive/bin/schematool -initSchema -dbType mysql -verbose

@@ -5,9 +5,11 @@
 
 include_recipe "bcpc-hadoop::hive_config"
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
+# Install Hive Bits
 # workaround for hcatalog dpkg not creating the hcat user it requires
-user "hcat" do
+user "hcat" do 
   username "hcat"
   system true
   shell "/bin/bash"
@@ -16,10 +18,24 @@ user "hcat" do
   not_if { user_exists? "hcat" }
 end
 
-%w{hive hcatalog}.each do |pkg|
+%w{hive hcatalog hive-hcatalog}.each do |pkg|
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
-    action :upgrade
+    action :install
   end
+
+  bash "hdp-select pkg" do
+    code "hdp-select set hive-webhcat #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    action :nothing
+  end
+end
+
+link "/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar" do
+  to "/usr/share/java/mysql-connector-java.jar"
+end
+
+link "/usr/hdp/current/hive-server2/lib/mysql-connector-java.jar" do
+  to "/usr/share/java/mysql-connector-java.jar"
 end
 
 #template "hive-config" do
@@ -29,13 +45,3 @@ end
 #  group "root"
 #  mode "0755"
 #end
-
-bash "create-hive-warehouse" do
-  code "hadoop fs -mkdir -p /user/hive/warehouse && hadoop fs -chmod 1777 /user/hive/warehouse && hadoop fs -chown hive /user/hive"
-  user "hdfs"
-end
-
-bash "create-beeline-scratchroot" do
-  code "hadoop fs -mkdir -p /tmp/hive-hive && hadoop fs -chmod 1777 /tmp/hive-hive && hadoop fs -chown hive /tmp/hive-hive"
-  user "hdfs"
-end

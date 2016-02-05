@@ -1,5 +1,4 @@
 include_recipe 'bcpc-hadoop::hadoop_config'
-include_recipe 'bcpc-hadoop::hive_config'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
@@ -20,14 +19,6 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
   end
 end
 
-hdp_select_pkgs.each do |pkg|
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[pkg]", :immediate
-    action :nothing
-  end
-end
-
 user_ulimit "root" do
   filehandle_limit 32769
   process_limit 65536
@@ -37,6 +28,11 @@ user_ulimit "hdfs" do
   filehandle_limit 32769
   process_limit 65536
 end
+
+# need to ensure hdfs user is in hadoop and hdfs
+# groups. Packages will not add hdfs if it
+# is already created at install time (e.g. if
+# machine is using LDAP for users).
 
 # Create all the resources to add them in resource collection
 node[:bcpc][:hadoop][:os][:group].keys.each do |group_name|
@@ -72,6 +68,11 @@ directory "/var/run/hadoop-hdfs" do
   group "root"
 end
 
+link "/etc/init.d/hadoop-hdfs-datanode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-datanode"
+end
+
+# Setup datanode and nodemanager bits
 if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]
   Chef::Application.fatal!("You have fewer #{node[:bcpc][:hadoop][:disks]} than #{node[:bcpc][:hadoop][:hdfs][:failed_volumes_tolerated]}! See comments of HDFS-4442.")
 end

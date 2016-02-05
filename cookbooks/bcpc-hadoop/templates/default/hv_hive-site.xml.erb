@@ -94,7 +94,7 @@
 
 <property>
   <name>hive.metastore.warehouse.dir</name>
-  <value><%= "#{node['bcpc']['hadoop']['hdfs_url']}/user/hive/warehouse" %></value>
+  <value><%= node[:bcpc][:hive][:warehousedir] %></value>
 </property>
 
 <property>
