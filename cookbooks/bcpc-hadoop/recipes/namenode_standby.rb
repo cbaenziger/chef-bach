@@ -17,18 +17,14 @@ node.default['bcpc']['hadoop']['copylog']['namenode_standby_out'] = {
 }
 
 # shortcut to the desired HDFS command version
-hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
+hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/bin/hdfs"
 
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :install
   end
 end
-bash "hdp-select hadoop-hdfs-namenode" do
-  command "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+hdp_select('hadoop-hdfs-namenode', node[:bcpc][:hadoop][:distribution][:active_release])
 
 # need to ensure hdfs user is in hadoop and hdfs
 # groups. Packages will not add hdfs if it
@@ -99,13 +95,26 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
     not_if { node[:bcpc][:hadoop][:mounts].all? { |d| Dir.entries("/disk/#{d}/dfs/nn/").include?("current") } }
   end  
 
+  # Work around Hortonworks Case #00071808
+  link "/usr/hdp/current/hadoop-hdfs-zkfc" do
+    to "/usr/hdp/current/hadoop-hdfs-namenode"
+  end
+
   link "/etc/init.d/hadoop-hdfs-zkfc" do
-    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+    notifies :run, 'bash[kill hdfs-zkfc]', :immediate
+  end
+
+  bash "kill hdfs-zkfc" do
+    code "pkill -u hdfs -f zkfc"
+    action :nothing
+    returns [0, 1]
   end
 
   service "hadoop-hdfs-zkfc" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
+    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-zkfc]", :immediate
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
@@ -113,11 +122,20 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
 
   link "/etc/init.d/hadoop-hdfs-namenode" do
     to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+    notifies :run, 'bash[kill hdfs-namenode]', :immediate
   end
+
+  bash "kill hdfs-namenode" do
+    code "pkill -u hdfs -f namenode"
+    action :nothing
+    returns [0, 1]
+  end
+
 
   service "hadoop-hdfs-namenode" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
+    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :immediate
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed

@@ -52,11 +52,9 @@ node.normal['bcpc']['hadoop']['graphite']['service_queries']['hbase_master'] = {
   }
 }
 
-[
-hwx_pkg_str("hbase", node[:bcpc][:hadoop][:distribution][:release]),
-"libsnappy1",
-hwx_pkg_str("phoenix", node[:bcpc][:hadoop][:distribution][:release])
-].each do |p|
+%W(#{hwx_pkg_str('hbase', node[:bcpc][:hadoop][:distribution][:release])}
+   #{hwx_pkg_str('phoenix', node[:bcpc][:hadoop][:distribution][:release])}
+   libsnappy1).each do |p|
   package p do
     action :upgrade
   end
@@ -66,11 +64,7 @@ end
 hbase-client
 phoenix-client
 }.each do |p|
-  bash "hdp-select #{p}" do
-    code "hdp-select set #{p} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(p, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 user_ulimit "hbase" do
@@ -87,12 +81,12 @@ bash "create-hbase-dir" do
   not_if "sudo -u hdfs hadoop fs -test -d /hbase"
 end
 
-directory "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64" do
+directory "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hbase/lib/native/Linux-amd64-64" do
   recursive true
   action :create
 end
 
-link "/usr/hdp/current/hbase-master/lib/native/Linux-amd64-64/libsnappy.so" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hbase/lib/native/Linux-amd64-64/libsnappy.so" do
   to "/usr/lib/libsnappy.so.1"
 end
 

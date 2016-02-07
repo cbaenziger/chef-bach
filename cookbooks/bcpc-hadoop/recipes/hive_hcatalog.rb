@@ -6,33 +6,24 @@ include_recipe "bcpc-hadoop::hive_table_stat"
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 ::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-%W{#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}
-   hadoop-lzo
-   libmysql-java}.each do |pkg|
+
+hwx_package = %w{hadooplzo hadooplzo-native hive-hcatalog}
+
+(hwx_package.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])} +
+  %W{#{node['bcpc']['mysql']['connector']['package']['short_name']}
+                     }).each do |pkg|
   package pkg do
-    action :upgrade
+    action :install
   end
 end
-
-bash "hdp-select hive-metastore" do
-  code "hdp-select set hive-metastore #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
-
-bash "hdp-select hive-server2" do
-  code "hdp-select set hive-server2 #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
+  
+(["hive-webhcat", "hive-metastore", "hive-server2"]).each do |pkg|
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 user_ulimit "hive" do
   filehandle_limit 32769
   process_limit 65536
-end
-
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
-  to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end
 
 bash "create-hive-user-home" do
@@ -86,7 +77,7 @@ end
 
 #bash "create-hive-metastore-db" do
 #  code <<-EOH
-#  /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hive/bin/schematool -initSchema -dbType mysql -verbose
+#  /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hive/bin/schematool -initSchema -dbType mysql -verbose
 #  EOH
 #end
 
@@ -110,7 +101,7 @@ service "hive-metastore" do
   action [:enable, :start]
   subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-log4j.properties]", :delayed
-  subscribes :restart, "bash[hdp-select hive-hcatalog]", :delayed
+  subscribes :restart, "bash[hdp-select hive-metastore]", :delayed
   subscribes :restart, "directory[/var/log/hive/gc]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
@@ -119,6 +110,7 @@ end
 service "hive-server2" do
   action [:enable, :start]
   supports :status => true, :restart => true, :reload => false
+  subscribes :restart, "bash[hdp-select hive-server2]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-site.xml]", :delayed
   subscribes :restart, "template[/etc/hive/conf/hive-log4j.properties]", :delayed
   subscribes :restart, "directory[/var/log/hive/gc]", :delayed

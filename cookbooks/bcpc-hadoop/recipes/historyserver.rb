@@ -7,14 +7,7 @@ include_recipe 'bcpc-hadoop::hadoop_config'
     action :install
   end
 
-  bash "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}" do
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
-end
-
-link "/etc/init.d/hadoop-mapreduce-historyserver" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 template "/etc/hadoop/conf/mapred-env.sh" do
@@ -31,9 +24,21 @@ bash "create-hdfs-history-dir" do
   not_if "hdfs dfs -test -d /var/log/hadoop-yarn/apps", :user => "hdfs"
 end
 
+link "/etc/init.d/hadoop-mapreduce-historyserver" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
+  notifies :run, 'bash[kill mapred-historyserver]', :immediate
+end
+
+bash "kill mapred-historyserver" do
+  code "pkill -u mapred -f historyserver"
+  action :nothing
+  returns [0, 1]
+end
+
 service "hadoop-mapreduce-historyserver" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
+  subscribes :restart, "link[/etc/init.d/hadoop-mapreduce-historyserver]", :immediate
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/mapred-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-site.xml]", :delayed

@@ -39,23 +39,3 @@ end
               :hive_hosts => node[:bcpc][:hadoop][:hive_hosts])
   end
 end
-
-directory "/etc/oozie/conf.#{node.chef_environment}/action-conf" do
-  mode '0755'
-end
-
-directory "/etc/oozie/conf.#{node.chef_environment}/action-conf/hive" do
-  mode '0755'
-end
-
-link "/etc/oozie/conf.#{node.chef_environment}/action-conf/hive/hive-site.xml" do
-  to "/etc/hive/conf.#{node.chef_environment}/hive-site.xml"
-end
-
-link "/etc/oozie/conf.#{node.chef_environment}/core-site.xml" do
-  to "/etc/hadoop/conf.#{node.chef_environment}/core-site.xml"
-end
-
-link "/etc/oozie/conf.#{node.chef_environment}/yarn-site.xml" do
-  to "/etc/hadoop/conf.#{node.chef_environment}/yarn-site.xml"
-end

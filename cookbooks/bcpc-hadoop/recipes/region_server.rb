@@ -20,23 +20,19 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
 end
 
 %w{hbase-client hbase-regionserver phoenix-client}.each do |pkg|
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 user_ulimit "hbase" do
   filehandle_limit 32769
 end
 
-directory "/usr/hdp/current/hbase-regionserver/lib/native/Linux-amd64-64" do
+directory "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hbase/lib/native/Linux-amd64-64" do
   recursive true
   action :create
 end
 
-link "/usr/hdp/current/hbase-regionserver/lib/native/Linux-amd64-64/libsnappy.so" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hbase/lib/native/Linux-amd64-64/libsnappy.so" do
   to "/usr/lib/libsnappy.so.1"
 end
 
@@ -48,6 +44,13 @@ end
 
 #link "/etc/init.d/hbase-regionserver" do
 #  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/init.d/hbase-regionserver"
+#  notifies :run, 'bash[kill hbase-regionserver]', :immediate
+#end
+#
+#bash "kill hbase-regionserver" do
+#  code "pkill -u hbase -f regionserver"
+#  action :nothing
+#  returns [0, 1]
 #end
 
 template "/etc/init.d/hbase-regionserver" do

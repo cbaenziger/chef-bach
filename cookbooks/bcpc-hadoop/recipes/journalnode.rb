@@ -7,11 +7,7 @@ include_recipe 'bcpc-hadoop::hadoop_config'
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :install
   end
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{pkg}]", :immediate
-    action :nothing
-  end
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 if get_config("namenode_txn_fmt") then
@@ -24,7 +20,7 @@ if get_config("namenode_txn_fmt") then
   end
 end
 
-node[:bcpc][:hadoop][:mounts].each do |d|
+[node[:bcpc][:hadoop][:mounts].first].each do |d|
 
   # Per chef-documentation for directory resource's recursive attribute:
   # For the owner, group, and mode attributes, the value of this attribute applies only to the leaf directory
@@ -92,14 +88,22 @@ ruby_block 'create_or_manage_groups' do
 end
 
 link "/etc/init.d/hadoop-hdfs-journalnode" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-journalnode"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-journalnode"
+  notifies :run, 'bash[kill hdfs-journalnode]', :immediate
+end
+
+bash "kill hdfs-journalnode" do
+  code "pkill -u hdfs -f journalnode"
+  action :nothing
+  returns [0, 1]
 end
 
 service "hadoop-hdfs-journalnode" do
   action [:start, :enable]
   supports :status => true, :restart => true, :reload => false
+  subscribes :restart, "link[/etc/init.d/hadoop-hdfs-journalnode]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site_HA.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
-  subscribes :restart, "bash[hdp-select hadoop-hdfs-journalnode]", :delayed
 end
+

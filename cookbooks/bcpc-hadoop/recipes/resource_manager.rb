@@ -35,29 +35,23 @@ bash "create-hdfs-yarn-log" do
 end
 
 # list hdp packages to install
-%w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce}.each do |pkg|
+%w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce-historyserver}.each do |pkg|
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :install
   end
 
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{pkg}]", :immediate
-    action :nothing
-  end
-end
-
-# list of hdp-select values from packages above
-%w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce-server}.each do |pkg|
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 link "/etc/init.d/hadoop-yarn-resourcemanager" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/init.d/hadoop-yarn-resourcemanager"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-yarn/etc/init.d/hadoop-yarn-resourcemanager"
+  notifies :run, 'bash[kill yarn-resourcemanager]', :immediate
+end
+
+bash "kill yarn-resourcemanager" do
+  code "pkill -u yarn -f resourcemanager"
+  action :nothing
+  returns [0, 1]
 end
 
 bash "setup-mapreduce-app" do
@@ -70,12 +64,12 @@ bash "setup-mapreduce-app" do
   EOH
   user "hdfs"
   not_if "hdfs dfs -test -f /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/mapreduce/mapreduce.tar.gz", :user => "hdfs" 
-  only_if "echo 'test' | hdfs dfs -copyFromLocal - /tmp/mapred-test", :user => "hdfs"
+  only_if "echo 'test' | hdfs dfs -copyFromLocal - /user/hdfs/chef-mapred-test", :user => "hdfs"
 end
 
 bash "delete-temp-file" do
   code <<-EOH
-  hdfs dfs -rm /tmp/mapred-test
+  hdfs dfs -rm /user/hdfs/chef-mapred-test
   EOH
   user "hdfs"
   action :nothing

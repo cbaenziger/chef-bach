@@ -7,18 +7,10 @@ end
 
 include_recipe 'bcpc-hadoop::zookeeper_config'
 
-bash "hdp-select zookeeper-server" do
-  code "hdp-select set zookeeper-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+hdp_select('zookeeper-server', node[:bcpc][:hadoop][:distribution][:active_release])
 
 user_ulimit "zookeeper" do
   filehandle_limit 32769
-end
-
-link '/etc/init.d/zookeeper-server' do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/etc/init.d/zookeeper-server"
 end
 
 directory "/var/run/zookeeper" do 
@@ -45,12 +37,25 @@ directory node[:bcpc][:hadoop][:zookeeper][:data_dir] do
   mode 0755
 end
 
-template "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh" do
+template "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zookeeper/bin/zkServer.sh" do
   source "zk_zkServer.sh.erb"
+end
+
+link '/etc/init.d/zookeeper-server' do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zookeeper/etc/init.d/zookeeper-server"
+  notifies :run, 'bash[kill zookeeper-org-apache-zookeeper-server-quorum-QuorumPeerMain]', :immediate
+end
+
+bash "kill zookeeper-org-apache-zookeeper-server-quorum-QuorumPeerMain" do
+  code "pkill -u zookeeper -f org.apache.zookeeper.server.quorum.QuorumPeerMain"
+  action :nothing
+  returns [0, 1]
 end
 
 bash "init-zookeeper" do
   code "service zookeeper-server init --myid=#{node[:bcpc][:node_number]}"
+  # race immediate run of restarting ZK on initial stand-up
+  subscribes :run, "link[/etc/init.d/zookeeper-server]", :immediate
   not_if { ::File.exists?("#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid") }
 end
 
@@ -59,11 +64,14 @@ file "#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid" do
   owner node[:bcpc][:hadoop][:zookeeper][:owner]
   group node[:bcpc][:hadoop][:zookeeper][:group]
   mode 0644
+  # race immediate run of restarting ZK on initial stand-up
+  subscribes :create, "bash[init-zookeeper]", :immediate
 end
 
 service "zookeeper-server" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
+  subscribes :restart, "link[/etc/init.d/zookeeper-server]", :immediate
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zoo.cfg]", :delayed
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zookeeper-env.sh]", :delayed
   subscribes :restart, "link[/usr/lib/zookeeper/bin/zkServer.sh]", :delayed

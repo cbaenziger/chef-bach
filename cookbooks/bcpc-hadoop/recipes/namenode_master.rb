@@ -21,18 +21,15 @@ node.default['bcpc']['hadoop']['copylog']['namenode_master_out'] = {
 }
 
 # shortcut to the desired HDFS command version
-hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
+hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/bin/hdfs"
 
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :install
   end
 end
-bash "hdp-select hadoop-hdfs-namenode" do
-  code "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+
+hdp_select('hadoop-hdfs-namenode', node[:bcpc][:hadoop][:distribution][:active_release])
 
 # need to ensure hdfs user is in hadoop and hdfs
 # groups. Packages will not add hdfs if it
@@ -112,21 +109,30 @@ bash "format-zk-hdfs-ha" do
   not_if { znode_exists?("/hadoop-ha/#{node.chef_environment}", zks) }
 end
 
+# Work around Hortonworks Case #00071808
+link "/usr/hdp/current/hadoop-hdfs-zkfc" do
+  to "/usr/hdp/current/hadoop-hdfs-namenode"
+end
+
 link "/etc/init.d/hadoop-hdfs-zkfc" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+  notifies :run, 'bash[kill hdfs-zkfc]', :immediate
+end
+
+bash "kill hdfs-zkfc" do
+  code "pkill -u hdfs -f zkfc"
+  action :nothing
+  returns [0, 1]
 end
 
 service "hadoop-hdfs-zkfc" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
+  subscribes :restart, "link[/etc/init.d/hadoop-hdfs-zkfc]", :immediate
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site_HA.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
-end
-
-link "/etc/init.d/hadoop-hdfs-namenode" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
 end
 
 # need to bring the namenode down to initialize shared edits
@@ -134,20 +140,32 @@ service "bring hadoop-hdfs-namenode down for shared edits and HA transition" do
   service_name "hadoop-hdfs-namenode"
   action :stop
   supports :status => true
-  notifies :run, "bash[initialize-shared-edits]", :immediately
+  notifies :run, "bash[initialize shared edits]", :immediately
   only_if { node[:bcpc][:hadoop][:mounts].all? { |d| not File.exists?("/disk/#{d}/dfs/jn/#{node.chef_environment}/current/VERSION") } }
 end
 
-bash "initialize-shared-edits" do
+bash "initialize shared edits" do
   code "#{hdfs_cmd} namenode -initializeSharedEdits"
   user "hdfs"
   action :nothing
+end
+
+link "/etc/init.d/hadoop-hdfs-namenode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+  notifies :run, 'bash[kill hdfs-namenode]', :immediate
+end
+
+bash "kill hdfs-namenode" do
+  code "pkill -u hdfs -f namenode"
+  action :nothing
+  returns [0, 1]
 end
 
 service "generally run hadoop-hdfs-namenode" do
   action [:enable, :start]
   supports :status => true, :restart => true, :reload => false
   service_name "hadoop-hdfs-namenode"
+  subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :immediate
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
@@ -187,16 +205,14 @@ ruby_block "upload-format-UUID-File" do
     cmd.error!
     Chef::Log.debug("Total number of version lines : #{cmd.stdout}") 
     if cmd.stdout.to_i != 2
-      Chef::Log.fatal("Couldn't find required number of layoutVersion records");
-      raise
+      raise("Couldn't find required number of layoutVersion records");
     end
 
     cmd = Mixlib::ShellOut.new(cmdStrUnqCount, :timeout => 10).run_command
     cmd.error!
     Chef::Log.debug("Total number of unique version lines : #{cmd.stdout}")
     if cmd.stdout.to_i != 1
-      Chef::Log.fatal("Mismatched layoutVersion records between JN and NN in local file");
-      raise
+      raise("Mismatched layoutVersion records between JN and NN in local file");
     end
     
     node_layout_version = 0
@@ -209,13 +225,12 @@ ruby_block "upload-format-UUID-File" do
     Chef::Log.debug("layoutVersion stored in node is : #{node_layout_version}")
     Chef::Log.debug("layoutVersion stored in the file is #{cmd.stdout.to_i}")
 
-    if ( get_config("namenode_txn_fmt").nil? ) || ( cmd.stdout.to_i < node_layout_version )
+    if ( get_config("namenode_txn_fmt").nil? ) || ( cmd.stdout.to_i > node_layout_version )
       make_config!("namenode_txn_fmt", Base64.encode64(IO.read("#{Chef::Config[:file_cache_path]}/nn_fmt.tgz")));
       node.set[:bcpc][:hadoop][:hdfs][:layoutVersion] = cmd.stdout.to_i
       node.save
-    elsif cmd.stdout.to_i > node_layout_version
-      Chef::Log.fatal("New HDFS layoutVersion is higher than old HDFS layoutVersion")
-      raise
+    elsif cmd.stdout.to_i < node_layout_version
+      raise("New HDFS layoutVersion is higher than old HDFS layoutVersion: #{cmd.stdout.to_i} > #{node_layout_version}")
     end
 
   end

@@ -8,15 +8,11 @@ include_recipe 'bcpc-hadoop::hadoop_config'
   end
 end
 
+hdp_select('hadoop-mapreduce-historyserver', node[:bcpc][:hadoop][:distribution][:active_release])
+
 service "hadoop-yarn-proxyserver" do 
   action [:enable, :restart]
   supports :status => true, :restart => true, :reload => false
-end
-
-bash "hdp-select hadoop-yarn-historyserver" do
-  code "hdp-select set hadoop-yarn-historyserver #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hadoop-yarn-historyserver", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
 end
 
 service "hadoop-yarn-historyserver" do 

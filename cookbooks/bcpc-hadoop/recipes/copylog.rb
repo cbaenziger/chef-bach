@@ -18,23 +18,24 @@
   end
 end
 
-bash "hdp-select flume-server" do
-  code "hdp-select set flume-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("flume-agent", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+hdp_select('flume-server', node[:bcpc][:hadoop][:distribution][:active_release])
 
 link "/etc/init.d/flume-agent-multi" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent"
-  subscribes :create, "package[#{hwx_pkg_str('flume-agent', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/flume/etc/init.d/flume-agent"
+  notifies :run, "bash[kill flume-java]", :immediate
+end
+
+bash "kill flume-java" do
+  code "pkill -u flume -f java"
   action :nothing
+  returns [0, 1]
 end
 
 bash "make_shared_logs_dir" do
-  code <<EOH
+  code <<-EOH
   hdfs dfs -mkdir -p #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/logs/ && \
   hdfs dfs -chown -R flume #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/
-EOH
+  EOH
   user "hdfs"
   not_if "hdfs dfs -test -d #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/logs/", :user => "hdfs"
 end

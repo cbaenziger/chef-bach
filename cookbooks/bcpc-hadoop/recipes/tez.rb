@@ -47,13 +47,13 @@ bash "make_dir_to_copy_tez_targz" do
 EOH
   user "hdfs"
   not_if "hdfs dfs -test -f /hdp/apps/#{node[:bcpc][:hadoop][:distribution][:release]}/tez/tez.tar.gz", :user => "hdfs"
-  only_if "echo 'test'|sudo -u hdfs hdfs dfs -copyFromLocal - /tmp/tez-test"
+  only_if "echo 'test'| hdfs dfs -copyFromLocal - /user/hdfs/chef-tez-test", :user => "hdfs"
   notifies :run,"bash[delete-tez-temp-file]",:immediately
 end
 
 bash "delete-tez-temp-file" do
   code <<-EOH
-  hdfs dfs -rm /tmp/tez-test
+  hdfs dfs -rm /user/hdfs/chef-tez-test
   EOH
   user "hdfs"
   action :nothing

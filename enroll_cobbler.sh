@@ -30,7 +30,7 @@ KEYFILE=bootstrap_chef.id_rsa
 
 subnet=10.0.100
 node=11
-for i in bcpc-vm1 bcpc-vm2 bcpc-vm3 bcpc-vm4 bcpc-vm5 bcpc-vm6; do
+for i in bcpc-vm1 bcpc-vm2 bcpc-vm3; do
   MAC=`$VBM showvminfo --machinereadable $i | grep macaddress1 | cut -d \" -f 2 | sed 's/.\{2\}/&:/g;s/:$//'`
   if [ -z "$MAC" ]; then 
     echo "***ERROR: Unable to get MAC address for $i"

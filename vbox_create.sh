@@ -196,7 +196,7 @@ function create_cluster_VMs {
   VBN2="${bootstrap_interfaces[2]}"
 
   # Create each VM
-  for vm in bcpc-vm1 bcpc-vm2 bcpc-vm3 bcpc-vm4 bcpc-vm5 bcpc-vm6; do
+  for vm in bcpc-vm1 bcpc-vm2 bcpc-vm3; do
       # Only if VM doesn't exist
       if ! $VBM list vms | grep "^\"${vm}\"" ; then
           $VBM createvm --name $vm --ostype Ubuntu_64 --basefolder $P --register

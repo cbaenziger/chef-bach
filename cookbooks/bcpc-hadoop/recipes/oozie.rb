@@ -2,24 +2,20 @@ include_recipe 'bcpc-hadoop::oozie_config'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 ::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-(%w{libmysql-java zip unzip extjs hadoop-lzo} +
+(%W{#{node['bcpc']['mysql']['connector']['package']['short_name']} zip unzip extjs hadooplzo hadooplzo-native} +
  %w{oozie-server oozie-client}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
   package pkg do
     action :upgrade
   end
 end
 %w{oozie-server oozie-client}.each do |pkg|
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
-OOZIE_LIB_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie"
+OOZIE_LIB_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie"
 OOZIE_CLIENT_PATH='/usr/hdp/current/oozie-client'
-OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/oozie-server"
-OOZIE_SHARELIB_TARBALL_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/oozie-sharelib.tar.gz"
+OOZIE_SERVER_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie/oozie-server"
+OOZIE_SHARELIB_TARBALL_PATH="/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie/oozie-sharelib.tar.gz"
 HDFS_URL=node[:bcpc][:hadoop][:hdfs_url]
 
 directory "#{OOZIE_LIB_PATH}/libext" do
@@ -50,21 +46,20 @@ end
 
 ["/usr/share/HDP-oozie/ext-2.2.zip",
  "/usr/share/java/mysql-connector-java.jar",
- "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"].each do |path|
+ "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop/lib/hadoop-lzo-0.6.0.#{node[:bcpc][:hadoop][:distribution][:active_release]}.jar"].each do |path|
   link "#{OOZIE_LIB_PATH}/libext/#{File.basename(path)}" do
     to path
   end
 end
 
-bash "copy" do
-  code "cp -r /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/tomcat-deployment/conf/ssl /usr/hdp/current/oozie-server/conf/"
+bash "copy ssl configuration" do
+  code "cp -r /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie/tomcat-deployment/conf/ssl /etc/oozie/conf/"
 end
 
-service "stop-oozie-for-war-setup" do
+service "stop oozie for war setup" do
   action :stop
   supports :status => true, :restart => true, :reload => false
   service_name "oozie"
-  supports :status => true, :restart => true, :reload => false
   only_if {
     not File.exists?("#{OOZIE_SERVER_PATH}/webapps/oozie.war") or
     File.mtime("#{OOZIE_CLIENT_PATH}/libext/") >
@@ -72,9 +67,8 @@ service "stop-oozie-for-war-setup" do
   }
 end
 
-bash "oozie_setup_war" do
+bash "oozie setup war" do
   code "#{OOZIE_CLIENT_PATH}/bin/oozie-setup.sh prepare-war"
-  returns [0]
   only_if {
     not File.exists?("#{OOZIE_SERVER_PATH}/webapps/oozie.war") or
     File.mtime("#{OOZIE_CLIENT_PATH}/libext/") >
@@ -90,6 +84,10 @@ directory "/etc/oozie/conf.#{node.chef_environment}/action-conf" do
   recursive true
 end
 
+directory "/etc/oozie/conf.#{node.chef_environment}/action-conf/hive" do
+  mode '0755'
+end
+
 directory "/etc/oozie/conf.#{node.chef_environment}/hadoop-conf" do
   owner "root"
   group "root"
@@ -98,7 +96,19 @@ directory "/etc/oozie/conf.#{node.chef_environment}/hadoop-conf" do
   recursive true
 end
 
-bash "make_oozie_user_dir" do
+link "/etc/oozie/conf.#{node.chef_environment}/action-conf/hive/hive-site.xml" do
+  to "/etc/hive/conf.#{node.chef_environment}/hive-site.xml"
+end
+
+link "/etc/oozie/conf.#{node.chef_environment}/core-site.xml" do
+  to "/etc/hadoop/conf.#{node.chef_environment}/core-site.xml"
+end
+
+link "/etc/oozie/conf.#{node.chef_environment}/yarn-site.xml" do
+  to "/etc/hadoop/conf.#{node.chef_environment}/yarn-site.xml"
+end
+
+bash "make oozie user dir" do
   code <<-EOH
     hdfs dfs -mkdir -p #{HDFS_URL}/user/oozie && \
     hdfs dfs -chown -R oozie #{HDFS_URL}/user/oozie
@@ -107,7 +117,7 @@ bash "make_oozie_user_dir" do
   not_if "hdfs dfs -test -d #{HDFS_URL}/user/oozie", :user => "hdfs"
 end
 
-bash "oozie_create_shared_libs" do
+bash "oozie create shared libs" do
   code "#{OOZIE_CLIENT_PATH}/bin/oozie-setup.sh sharelib create -fs #{HDFS_URL} -locallib #{OOZIE_SHARELIB_TARBALL_PATH}"
   user "oozie"
   not_if {
@@ -116,20 +126,20 @@ bash "oozie_create_shared_libs" do
     not chksum.nil? and Digest::MD5.hexdigest(File.read(OOZIE_SHARELIB_TARBALL_PATH)) == chksum
   } 
   only_if "echo 'test'| hdfs dfs -copyFromLocal - /tmp/oozie-test && hdfs dfs -rm -skipTrash /tmp/oozie-test", :user => "hdfs"
-  notifies :run, "ruby_block[update_sharelib_checksum]", :immediately
+  notifies :run, "ruby_block[update sharelib checksum]", :immediately
 end
 
-ruby_block "update_sharelib_checksum" do
+ruby_block "update sharelib checksum" do
   block do
     require 'digest'
     node.set[:bcpc][:hadoop][:oozie][:sharelib_checksum] = 
       Digest::MD5.hexdigest(File.read(OOZIE_SHARELIB_TARBALL_PATH))
   end
   action :nothing
-  notifies :run, "ruby_block[notify_sharelib_update]", :immediately
+  notifies :run, "ruby_block[notify sharelib update]", :immediately
 end
 
-ruby_block "notify_sharelib_update" do
+ruby_block "notify sharelib update" do
   block do
     node[:bcpc][:hadoop][:oozie_hosts].each do |oozie_host|
       update_oozie_sharelib(float_host(oozie_host[:hostname]))
@@ -148,7 +158,7 @@ file "#{OOZIE_CLIENT_PATH}/oozie.sql" do
   group "oozie"
 end
 
-ruby_block "oozie-database-creation" do
+ruby_block "oozie database creation" do
   cmd = "mysql -uroot -p#{get_config!('password','mysql-root','os')} -e"
   privs = "CREATE,INDEX,SELECT,INSERT,UPDATE,DELETE,LOCK TABLES,EXECUTE"
   block do
@@ -162,20 +172,28 @@ ruby_block "oozie-database-creation" do
       IO.popen("mysql -uroot -p#{get_config!('password','mysql-root','os')}", "r+") do |db|
         db.write code
       end
-      system "sudo -u oozie /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/bin/ooziedb.sh create -sqlfile /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/oozie.sql -run Validate DB Connection"
+      system "sudo -u oozie /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie/bin/ooziedb.sh create -sqlfile /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie/oozie.sql -run Validate DB Connection"
       self.resolve_notification_references
     end
   end
 end
 
 link '/etc/init.d/oozie' do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/etc/init.d/oozie-server"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie/etc/init.d/oozie-server"
+  notifies :run, 'bash[kill oozie-oozie]', :immediate
+end
+
+bash "kill oozie-oozie" do
+  code "pkill -u oozie -f oozie"
+  action :nothing
+  returns [0, 1]
 end
 
 service "generally run oozie" do
   action [:enable, :start]
   service_name "oozie"
   supports :status => true, :restart => true, :reload => false
+  subscribes :restart, "link[/etc/init.d/oozie]", :immediate
   subscribes :restart, "template[/etc/oozie/conf/oozie-env.sh]", :delayed
   subscribes :restart, "template[/etc/oozie/conf/oozie-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
@@ -184,7 +202,7 @@ service "generally run oozie" do
   subscribes :restart, "bash[hdp-select oozie-server]", :delayed
 end
 
-ruby_block "Oozie Down" do
+ruby_block "chek if oozie running" do
   i = 0
   block do
     while not oozie_running?(float_host(node[:fqdn])) 
