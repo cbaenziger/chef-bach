@@ -1,7 +1,7 @@
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 ::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-package "libmysql-java" do
+package node['bcpc']['mysql']['connector']['package']['short_name'] do
   action :upgrade
 end
 

@@ -167,5 +167,5 @@ default['bcpc']['gem_source'] = 'https://rubygems.org/downloads'
 default['bcpc']['mysql']['connector']['version'] = '5.1.37'
 default['bcpc']['mysql']['connector']['tarball_md5sum'] = '9ef584d3328735db51bd5dde3f602c22'
 default['bcpc']['mysql']['connector']['url'] = "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-#{node['bcpc']['mysql']['connector']['version']}.tar.gz"
-default['bcpc']['mysql']['connector']['package']['short_name'] = 'libmysql-java'
+default['bcpc']['mysql']['connector']['package']['short_name'] = 'mysql-connector-java'
 default['bcpc']['mysql']['connector']['package']['name'] = "#{node['bcpc']['mysql']['connector']['package']['short_name']}_#{node['bcpc']['mysql']['connector']['version']}_all.deb"

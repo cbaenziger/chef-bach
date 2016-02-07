@@ -14,10 +14,10 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      }
 
 (hdp_select_pkgs.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])} +
-                  %w{hadoop-mapreduce
+                  %W{hadoop-mapreduce
                      sqoop
                      lzop
-                     libmysql-java
+                     #{node['bcpc']['mysql']['connector']['package']['short_name']}
                      cgroup-bin
                      hadoop-lzo}).each do |pkg|
   package pkg do

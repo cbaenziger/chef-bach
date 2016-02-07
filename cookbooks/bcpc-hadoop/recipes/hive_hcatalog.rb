@@ -8,7 +8,7 @@ include_recipe "bcpc-hadoop::hive_table_stat"
 
 %W{#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}
    hadoop-lzo
-   libmysql-java}.each do |pkg|
+   #{node['bcpc']['mysql']['connector']['package']['short_name']}}.each do |pkg|
   package pkg do
     action :upgrade
   end

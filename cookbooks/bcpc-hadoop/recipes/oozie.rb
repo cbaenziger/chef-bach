@@ -2,7 +2,7 @@ include_recipe 'bcpc-hadoop::oozie_config'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 ::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-(%w{libmysql-java zip unzip extjs hadoop-lzo} +
+(%W{#{node['bcpc']['mysql']['connector']['package']['short_name']} zip unzip extjs hadoop-lzo} +
  %w{oozie-server oozie-client}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
   package pkg do
     action :upgrade
