@@ -10,16 +10,15 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
 
 hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      hadoop-hdfs-datanode
-                     hadoop-client
-                     }
+                     hadoop-client}
 
 (hdp_select_pkgs.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])} +
                   %W{hadoop-mapreduce
                      sqoop
-                     lzop
+                     hadooplzo
+                     hadooplzo-native
                      #{node['bcpc']['mysql']['connector']['package']['short_name']}
-                     cgroup-bin
-                     hadoop-lzo}).each do |pkg|
+                     cgroup-bin}).each do |pkg|
   package pkg do
     action :install
   end

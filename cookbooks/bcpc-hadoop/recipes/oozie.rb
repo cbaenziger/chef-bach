@@ -2,13 +2,13 @@ include_recipe 'bcpc-hadoop::oozie_config'
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 ::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-(%W{#{node['bcpc']['mysql']['connector']['package']['short_name']} zip unzip extjs hadoop-lzo} +
+(%W{#{node['bcpc']['mysql']['connector']['package']['short_name']} zip unzip extjs hadooplzo hadooplzo-native} +
  %w{oozie-server oozie-client}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
   package pkg do
     action :upgrade
   end
 end
-%w{oozie-server oozie-client}.each do |pkg|
+%w{hadooplzo hadooplzo-native oozie-server oozie-client}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
     subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate

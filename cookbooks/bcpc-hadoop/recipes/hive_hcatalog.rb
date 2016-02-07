@@ -6,33 +6,30 @@ include_recipe "bcpc-hadoop::hive_table_stat"
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 ::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-%W{#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}
-   hadoop-lzo
-   #{node['bcpc']['mysql']['connector']['package']['short_name']}}.each do |pkg|
+
+hdp_select_pkgs = %w{hive-hcatalog}
+
+(hdp_select_pkgs.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])} +
+                  %W{#{node['bcpc']['mysql']['connector']['package']['short_name']}
+                     hadooplzo
+                     hadooplzo-native
+                     }).each do |pkg|
   package pkg do
-    action :upgrade
+    action :install
   end
 end
-
-bash "hdp-select hive-metastore" do
-  code "hdp-select set hive-metastore #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
-
-bash "hdp-select hive-server2" do
-  code "hdp-select set hive-server2 #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
+  
+(hdp_select_pkgs.each + ["hive-metastore", "hive-server2"]).each do |pkg|
+  bash "hdp-select #{pkg}" do
+    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    action :nothing
+  end
 end
 
 user_ulimit "hive" do
   filehandle_limit 32769
   process_limit 65536
-end
-
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
-  to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end
 
 bash "create-hive-user-home" do
