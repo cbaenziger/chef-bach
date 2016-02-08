@@ -25,4 +25,3 @@ cookbooks/*/
 cookbooks/*/coverage
 cookbooks/*/vendor
 *.lock
->>>>>>> Include Bloomberg BFD and Cobbler cookbooks
