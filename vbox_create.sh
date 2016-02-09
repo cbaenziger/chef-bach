@@ -18,17 +18,17 @@ if [[ -z "$CURL" ]]; then
 fi
 
 # Bootstrap VM Defaults (these need to be exported for Vagrant's Vagrantfile)
-export BOOTSTRAP_VM_MEM=${BOOTSTRAP_VM_MEM-2048}
-export BOOTSTRAP_VM_CPUs=${BOOTSTRAP_VM_CPUs-1}
+export BOOTSTRAP_VM_MEM=${BOOTSTRAP_VM_MEM-4048}
+export BOOTSTRAP_VM_CPUs=${BOOTSTRAP_VM_CPUs-4}
 # Use this if you intend to make an apt-mirror in this VM (see the
 # instructions on using an apt-mirror towards the end of bootstrap.md)
 # -- Vagrant VMs do not use this size --
 #BOOTSTRAP_VM_DRIVE_SIZE=120480
 
 # Cluster VM Defaults
-CLUSTER_VM_MEM=${CLUSTER_VM_MEM-2048}
-CLUSTER_VM_CPUs=${CLUSTER_VM_CPUs-1}
-CLUSTER_VM_DRIVE_SIZE=${CLUSTER_VM_DRIVE_SIZE-20480}
+CLUSTER_VM_MEM=${CLUSTER_VM_MEM-20048}
+CLUSTER_VM_CPUs=${CLUSTER_VM_CPUs-4}
+CLUSTER_VM_DRIVE_SIZE=${CLUSTER_VM_DRIVE_SIZE-200480}
 
 VBOX_DIR="`dirname ${BASH_SOURCE[0]}`/vbox"
 P=`python -c "import os.path; print os.path.abspath(\"${VBOX_DIR}/\")"`
@@ -196,7 +196,7 @@ function create_cluster_VMs {
   VBN2="${bootstrap_interfaces[2]}"
 
   # Create each VM
-  for vm in bcpc-vm1 bcpc-vm2 bcpc-vm3; do
+  for vm in bcpc-vm1 bcpc-vm2 bcpc-vm3 bcpc-vm4 bcpc-vm5 bcpc-vm6; do
       # Only if VM doesn't exist
       if ! $VBM list vms | grep "^\"${vm}\"" ; then
           $VBM createvm --name $vm --ostype Ubuntu_64 --basefolder $P --register
