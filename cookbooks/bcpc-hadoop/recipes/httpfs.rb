@@ -7,24 +7,20 @@ package hwx_pkg_str("hadoop-httpfs", node[:bcpc][:hadoop][:distribution][:releas
   action :install
 end
 
-bash "hdp-select hadoop-httpfs" do
-  code "hdp-select set hadoop-httpfs #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hadoop-httpfs", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+hdp_select('hadoop-httpfs', node[:bcpc][:hadoop][:distribution][:active_release])
 
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-httpfs/conf" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/etc/hadoop-httpfs/tomcat-deployment.dist/conf"
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-httpfs/conf" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/etc/hadoop-httpfs/tomcat-deployment.dist/conf"
 end
 
 link '/etc/init.d/hadoop-httpfs' do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-httpfs/etc/init.d/hadoop-httpfs"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-httpfs/etc/init.d/hadoop-httpfs"
 end
 
 service "hadoop-httpfs" do
   action [:enable, :start]
   supports :status => true, :restart => true, :reload => false
-  subscribes :restart, "template[/etc/hadoop-httpfs/conf/httpfs-site.xml]", :delayed
-  subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   subscribes :restart, "link[/etc/init.d/hadoop-httpfs]", :immediate
+  subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
+  subscribes :restart, "template[/etc/hadoop-httpfs/conf/httpfs-site.xml]", :delayed
 end

@@ -21,6 +21,28 @@ module Bcpc_Hadoop
       package.index('-').nil? ? package.dup + '-' + version_hyphenated : package.dup.insert(package.index('-'), "-#{version_hyphenated}")
     end
 
+    # Verify Hortonworks hdp-selected component version
+    #
+    # release - String dotted Hortonworks release (e.g. 2.2.0-2041)
+    # package name - String for component name
+    #
+    # Raises RuntimeError on any unspecified error
+    # Returns - bash_resource to run hdp-select
+    # (should be called only in the compile phase)
+    #
+    def hdp_select(package, version)
+      resource = bash "hdp-select #{package}" do
+                   command "hdp-select set #{package} #{version}"
+                   subscribes :run, "package[#{hwx_pkg_str(package, version)}]", :immediate
+                   not_if { ::File.readlink("/usr/hdp/current/#{package}").start_with?("/usr/hdp/#{version}/") }
+                 end
+      resource
+    end
+
+    # Verify an HDFS directory exists or create it
+    #
+    # hdfs - String HDFS URI (e.g. hdfs://FOO1)
+    # path - String path of directory
     # Verify an HDFS directory exists or create it
     #
     # hdfs - String HDFS URI (e.g. hdfs://FOO1)

@@ -15,11 +15,7 @@ end
   end
 end
 %w{hive-metastore hive-webhcat hive-server2}.each do |comp|
-  bash "hdp-select #{comp}" do
-    code "hdp-select set #{comp} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(comp, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(comp, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 %w{hive-hcatalog-server}.each do |s|

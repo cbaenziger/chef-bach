@@ -7,14 +7,11 @@ include_recipe 'bcpc-hadoop::hadoop_config'
     action :install
   end
 
-  bash "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}" do
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 link "/etc/init.d/hadoop-mapreduce-historyserver" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
 end
 
 template "/etc/hadoop/conf/mapred-env.sh" do
@@ -34,6 +31,7 @@ end
 service "hadoop-mapreduce-historyserver" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
+  subscribes :restart, "link[/etc/init.d/hadoop-mapreduce-historyserver]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/mapred-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-site.xml]", :delayed

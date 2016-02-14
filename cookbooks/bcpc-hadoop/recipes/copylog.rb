@@ -18,15 +18,11 @@
   end
 end
 
-bash "hdp-select flume-server" do
-  code "hdp-select set flume-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("flume-agent", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+hdp_select('flume-server', node[:bcpc][:hadoop][:distribution][:active_release])
 
 link "/etc/init.d/flume-agent-multi" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent"
-  subscribes :create, "package[#{hwx_pkg_str('flume-agent', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/flume/etc/init.d/flume-agent"
+  subscribes :run, "bash[hdp-select flume-server]", :immediate
   action :nothing
 end
 
