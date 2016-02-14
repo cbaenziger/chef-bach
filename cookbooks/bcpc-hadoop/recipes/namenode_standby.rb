@@ -1,6 +1,7 @@
-include_recipe 'dpkg_autostart'
 include_recipe 'bcpc-hadoop::hadoop_config'
 require "base64"
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
+::Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 #
 # Updating node attributes to copy namenode log files to centralized location (HDFS)
@@ -15,14 +16,15 @@ node.default['bcpc']['hadoop']['copylog']['namenode_standby_out'] = {
     'docopy' => true
 }
 
+# shortcut to the desired HDFS command version
+hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/bin/hdfs"
+
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
-  dpkg_autostart pkg do
-    allow false
-  end
-  package pkg do
-    action :upgrade
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+    action :install
   end
 end
+hdp_select('hadoop-hdfs-namenode', node[:bcpc][:hadoop][:distribution][:active_release])
 
 # need to ensure hdfs user is in hadoop and hdfs
 # groups. Packages will not add hdfs if it
@@ -84,36 +86,36 @@ node[:bcpc][:hadoop][:mounts].each do |d|
   end
 end
 
-template "/etc/init.d/hadoop-hdfs-namenode" do
-  source "hdp_hadoop-hdfs-namenode-initd.erb"
-  mode 0655
-end
-
-template "/etc/init.d/hadoop-hdfs-zkfc" do
-  source "hdp_hadoop-hdfs-zkfc-initd.erb"
-  mode 0655
-end
-
 if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
-  bash "hdfs namenode -bootstrapStandby -force -nonInteractive" do
-    code "hdfs namenode -bootstrapStandby -force -nonInteractive"
+  bash "#{hdfs_cmd} namenode -bootstrapStandby -force -nonInteractive" do
+    code "#{hdfs_cmd} namenode -bootstrapStandby -force -nonInteractive"
     user "hdfs"
     cwd  "/var/lib/hadoop-hdfs"
     action :run
     not_if { node[:bcpc][:hadoop][:mounts].all? { |d| Dir.entries("/disk/#{d}/dfs/nn/").include?("current") } }
   end  
 
+  link "/etc/init.d/hadoop-hdfs-zkfc" do
+    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+  end
+
   service "hadoop-hdfs-zkfc" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
+    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-zkfc]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   end
 
+  link "/etc/init.d/hadoop-hdfs-namenode" do
+    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+  end
+
   service "hadoop-hdfs-namenode" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
+    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
@@ -121,6 +123,7 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
     subscribes :restart, "template[/etc/hadoop/conf/topology]", :delayed
     subscribes :restart, "user_ulimit[hdfs]", :delayed
     subscribes :restart, "directory[/var/log/hadoop-hdfs/gc/]", :delayed
+    subscribes :restart, "bash[hdp-select hadoop-hdfs-namenode]", :delayed
   end
 else
   Chef::Log.info "Not running standby namenode services yet -- HA disabled!"
@@ -133,7 +136,7 @@ else
 end
 
 bash "reload hdfs nodes" do
-  code "hdfs dfsadmin -refreshNodes"
+  code "#{hdfs_cmd} dfsadmin -refreshNodes"
   user "hdfs"
   action :nothing
   subscribes :run, "template[/etc/hadoop/conf/dfs.exclude]", :delayed

@@ -4,6 +4,7 @@
 # Description : To install hive/hcatalog core packages
 
 include_recipe "bcpc-hadoop::hive_config"
+::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 
 # workaround for hcatalog dpkg not creating the hcat user it requires
 user "hcat" do
@@ -16,7 +17,7 @@ user "hcat" do
 end
 
 %w{hive hcatalog}.each do |pkg|
-  package pkg do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :upgrade
   end
 end
