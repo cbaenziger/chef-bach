@@ -7,18 +7,14 @@ end
 
 include_recipe 'bcpc-hadoop::zookeeper_config'
 
-bash "hdp-select zookeeper-server" do
-  code "hdp-select set zookeeper-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+hdp_select('zookeeper-server', node[:bcpc][:hadoop][:distribution][:active_release])
 
 user_ulimit "zookeeper" do
   filehandle_limit 32769
 end
 
 link '/etc/init.d/zookeeper-server' do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/etc/init.d/zookeeper-server"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zookeeper/etc/init.d/zookeeper-server"
 end
 
 directory "/var/run/zookeeper" do 
@@ -45,7 +41,7 @@ directory node[:bcpc][:hadoop][:zookeeper][:data_dir] do
   mode 0755
 end
 
-template "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/bin/zkServer.sh" do
+template "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zookeeper/bin/zkServer.sh" do
   source "zk_zkServer.sh.erb"
 end
 
@@ -64,6 +60,7 @@ end
 service "zookeeper-server" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
+  subscribes :restart, "link[/etc/init.d/zookeeper-server]", :delayed
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zoo.cfg]", :delayed
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zookeeper-env.sh]", :delayed
   subscribes :restart, "link[/usr/lib/zookeeper/bin/zkServer.sh]", :delayed

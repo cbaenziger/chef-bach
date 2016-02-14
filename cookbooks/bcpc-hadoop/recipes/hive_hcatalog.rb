@@ -20,11 +20,7 @@ hdp_select_pkgs = %w{hive-hcatalog}
 end
   
 (hdp_select_pkgs.each + ["hive-metastore", "hive-server2"]).each do |pkg|
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 user_ulimit "hive" do
@@ -83,7 +79,7 @@ end
 
 #bash "create-hive-metastore-db" do
 #  code <<-EOH
-#  /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hive/bin/schematool -initSchema -dbType mysql -verbose
+#  /usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hive/bin/schematool -initSchema -dbType mysql -verbose
 #  EOH
 #end
 

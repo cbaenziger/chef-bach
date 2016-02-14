@@ -52,11 +52,9 @@ node.normal['bcpc']['hadoop']['graphite']['service_queries']['hbase_master'] = {
   }
 }
 
-[
-hwx_pkg_str("hbase", node[:bcpc][:hadoop][:distribution][:release]),
-"libsnappy1",
-hwx_pkg_str("phoenix", node[:bcpc][:hadoop][:distribution][:release])
-].each do |p|
+%W(#{hwx_pkg_str('hbase', node[:bcpc][:hadoop][:distribution][:release])}
+   #{hwx_pkg_str('phoenix', node[:bcpc][:hadoop][:distribution][:release])}
+   libsnappy1).each do |p|
   package p do
     action :upgrade
   end
@@ -66,11 +64,7 @@ end
 hbase-client
 phoenix-client
 }.each do |p|
-  bash "hdp-select #{p}" do
-    code "hdp-select set #{p} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(p, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 user_ulimit "hbase" do

@@ -25,11 +25,7 @@ hdp_select_pkgs = %w{hadoop-yarn-nodemanager
 end
 
 (hdp_select_pkgs + ['sqoop-client', 'sqoop-server']).each do |pkg|
-  bash "hdp-select #{pkg}" do
-    code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-    action :nothing
-  end
+  hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
 user_ulimit "root" do
@@ -107,26 +103,26 @@ execute "chown hadoop-yarn cgroup tree to yarn" do
 end
 
 link "/etc/init.d/hadoop-hdfs-datanode" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-datanode"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-datanode"
 end
 
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
    to "/usr/lib/hadoop/lib/hadoop-lzo-0.6.0.jar"
 end
  
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/libgplcompression.la" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop/lib/native/libgplcompression.la" do
    to "/usr/lib/hadoop/lib/native/Linux-amd64-64/libgplcompression.la"
  end
  
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/libgplcompression.a" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop/lib/native/libgplcompression.a" do
    to "/usr/lib/hadoop/lib/native/Linux-amd64-64/libgplcompression.a"
  end
  
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/libgplcompression.so" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop/lib/native/libgplcompression.so" do
    to "/usr/lib/hadoop/lib/native/Linux-amd64-64/libgplcompression.so.0.0.0"
 end
  
-link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop/lib/native/liblzo2.so" do
+link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop/lib/native/liblzo2.so" do
   to "/usr/lib/x86_64-linux-gnu/liblzo2.so.2.0.0"
 end
 
@@ -170,11 +166,7 @@ package hwx_pkg_str('hive-hcatalog', node[:bcpc][:hadoop][:distribution][:releas
   action :install
 end
 
-bash "hdp-select hive-webhcat" do
-  code "hdp-select set hive-webhcat #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+hdp_select('hive-webhcat', node[:bcpc][:hadoop][:distribution][:active_release])
 
 link "/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar" do
   to "/usr/share/java/mysql-connector-java.jar"
@@ -190,7 +182,7 @@ if node[:bcpc][:hadoop][:mounts].length <= node[:bcpc][:hadoop][:hdfs][:failed_v
 end
 
 link "/etc/init.d/hadoop-yarn-nodemanager" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/init.d/hadoop-yarn-nodemanager"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-yarn/etc/init.d/hadoop-yarn-nodemanager"
 end
 
 # Build nodes for HDFS storage
@@ -282,6 +274,7 @@ ruby_block "acquire_lock_to_restart_datanode" do
     end
   end
   action :nothing
+  subscribes :create, "link[/etc/init.d/hadoop-hdfs-datanode]", :delayed
   subscribes :create, "template[/etc/hadoop/conf/hdfs-site.xml]", :immediate
   subscribes :create, "template[/etc/hadoop/conf/hadoop-env.sh]", :immediate
   subscribes :create, "template[/etc/hadoop/conf/topology]", :immediate
@@ -326,6 +319,7 @@ end
 service "hadoop-yarn-nodemanager" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
+  subscribes :create, "link[/etc/init.d/hadoop-yarn-nodemanager]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-site.xml]", :delayed

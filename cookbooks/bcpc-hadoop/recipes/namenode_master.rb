@@ -21,18 +21,15 @@ node.default['bcpc']['hadoop']['copylog']['namenode_master_out'] = {
 }
 
 # shortcut to the desired HDFS command version
-hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
+hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/bin/hdfs"
 
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :install
   end
 end
-bash "hdp-select hadoop-hdfs-namenode" do
-  code "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
-  action :nothing
-end
+
+hdp_select('hadoop-hdfs-namenode', node[:bcpc][:hadoop][:distribution][:active_release])
 
 # need to ensure hdfs user is in hadoop and hdfs
 # groups. Packages will not add hdfs if it
@@ -113,20 +110,17 @@ bash "format-zk-hdfs-ha" do
 end
 
 link "/etc/init.d/hadoop-hdfs-zkfc" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
 end
 
 service "hadoop-hdfs-zkfc" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
+  subscribes :restart, "link[/etc/init.d/hadoop-hdfs-zkfc]", :immediate
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site_HA.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
-end
-
-link "/etc/init.d/hadoop-hdfs-namenode" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
 end
 
 # need to bring the namenode down to initialize shared edits
@@ -134,20 +128,25 @@ service "bring hadoop-hdfs-namenode down for shared edits and HA transition" do
   service_name "hadoop-hdfs-namenode"
   action :stop
   supports :status => true
-  notifies :run, "bash[initialize-shared-edits]", :immediately
+  notifies :run, "bash[initialize shared edits]", :immediately
   only_if { node[:bcpc][:hadoop][:mounts].all? { |d| not File.exists?("/disk/#{d}/dfs/jn/#{node.chef_environment}/current/VERSION") } }
 end
 
-bash "initialize-shared-edits" do
+bash "initialize shared edits" do
   code "#{hdfs_cmd} namenode -initializeSharedEdits"
   user "hdfs"
   action :nothing
+end
+
+link "/etc/init.d/hadoop-hdfs-namenode" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
 end
 
 service "generally run hadoop-hdfs-namenode" do
   action [:enable, :start]
   supports :status => true, :restart => true, :reload => false
   service_name "hadoop-hdfs-namenode"
+  subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :immediate
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
