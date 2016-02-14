@@ -105,7 +105,7 @@ end
 service "hadoop-hdfs-namenode" do
   supports :restart => true, :status => true, :reload => false
   action [:enable, :start]
-  subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :delayed
+  subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :immediate
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed

@@ -10,10 +10,6 @@ include_recipe 'bcpc-hadoop::hadoop_config'
   hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
-link "/etc/init.d/hadoop-mapreduce-historyserver" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
-end
-
 template "/etc/hadoop/conf/mapred-env.sh" do
   source "hdp_mapred-env.sh.erb"
   mode 0655
@@ -28,10 +24,14 @@ bash "create-hdfs-history-dir" do
   not_if "hdfs dfs -test -d /var/log/hadoop-yarn/apps", :user => "hdfs"
 end
 
+link "/etc/init.d/hadoop-mapreduce-historyserver" do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
+end
+
 service "hadoop-mapreduce-historyserver" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
-  subscribes :restart, "link[/etc/init.d/hadoop-mapreduce-historyserver]", :delayed
+  subscribes :restart, "link[/etc/init.d/hadoop-mapreduce-historyserver]", :immediate
   subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/mapred-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/yarn-site.xml]", :delayed
