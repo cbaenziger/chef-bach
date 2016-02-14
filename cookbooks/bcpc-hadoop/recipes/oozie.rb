@@ -187,7 +187,7 @@ service "generally run oozie" do
   action [:enable, :start]
   service_name "oozie"
   supports :status => true, :restart => true, :reload => false
-  subscribes :restart, "link[/etc/init.d/oozie]", :delayed
+  subscribes :restart, "link[/etc/init.d/oozie]", :immediate
   subscribes :restart, "template[/etc/oozie/conf/oozie-env.sh]", :delayed
   subscribes :restart, "template[/etc/oozie/conf/oozie-site.xml]", :delayed
   subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed

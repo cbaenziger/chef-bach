@@ -13,10 +13,6 @@ user_ulimit "zookeeper" do
   filehandle_limit 32769
 end
 
-link '/etc/init.d/zookeeper-server' do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zookeeper/etc/init.d/zookeeper-server"
-end
-
 directory "/var/run/zookeeper" do 
   owner "zookeeper"
   group "zookeeper"
@@ -45,8 +41,14 @@ template "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zooke
   source "zk_zkServer.sh.erb"
 end
 
+link '/etc/init.d/zookeeper-server' do
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zookeeper/etc/init.d/zookeeper-server"
+end
+
 bash "init-zookeeper" do
   code "service zookeeper-server init --myid=#{node[:bcpc][:node_number]}"
+  # race immediate run of restarting ZK on initial stand-up
+  subscribes :run, "link[/etc/init.d/zookeeper-server]", :immediate
   not_if { ::File.exists?("#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid") }
 end
 
@@ -55,12 +57,14 @@ file "#{node[:bcpc][:hadoop][:zookeeper][:data_dir]}/myid" do
   owner node[:bcpc][:hadoop][:zookeeper][:owner]
   group node[:bcpc][:hadoop][:zookeeper][:group]
   mode 0644
+  # race immediate run of restarting ZK on initial stand-up
+  subscribes :create, "bash[init-zookeeper]", :immediate
 end
 
 service "zookeeper-server" do
   supports :status => true, :restart => true, :reload => false
   action [:enable, :start]
-  subscribes :restart, "link[/etc/init.d/zookeeper-server]", :delayed
+  subscribes :restart, "link[/etc/init.d/zookeeper-server]", :immediate
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zoo.cfg]", :delayed
   subscribes :restart, "template[#{node[:bcpc][:hadoop][:zookeeper][:conf_dir]}/zookeeper-env.sh]", :delayed
   subscribes :restart, "link[/usr/lib/zookeeper/bin/zkServer.sh]", :delayed

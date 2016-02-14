@@ -102,7 +102,7 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
   service "hadoop-hdfs-zkfc" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
-    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-zkfc]", :delayed
+    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-zkfc]", :immediate
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hadoop-env.sh]", :delayed
@@ -115,7 +115,7 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
   service "hadoop-hdfs-namenode" do
     action [:enable, :start]
     supports :status => true, :restart => true, :reload => false
-    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :delayed
+    subscribes :restart, "link[/etc/init.d/hadoop-hdfs-namenode]", :immediate
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/core-site.xml]", :delayed
     subscribes :restart, "template[/etc/hadoop/conf/hdfs-policy.xml]", :delayed
