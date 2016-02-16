@@ -50,23 +50,13 @@
   </property>
 
   <property>
-    <name>hbase.regionserver.dns.interface</name>
-    <value><%= node["bcpc"]["floating"]["interface"] %></value> 
+    <name>hbase.master.hostname</name>
+    <value><%="#{float_host(node[:fqdn])}"%></value> 
   </property>
 
   <property>
-    <name>hbase.master.dns.interface</name>
-    <value><%= node["bcpc"]["floating"]["interface"] %></value> 
-  </property>
-
-  <property>
-    <name>hbase.regionserver.ipc.address</name>
-    <value><%= node["bcpc"]["floating"]["ip"] %></value> 
-  </property>
-
-  <property>
-    <name>hbase.master.ipc.address</name>
-    <value><%= node["bcpc"]["floating"]["ip"] %></value> 
+    <name>hbase.regionserver.hostname</name>
+    <value><%="#{float_host(node[:fqdn])}"%></value> 
   </property>
 
   <property>
