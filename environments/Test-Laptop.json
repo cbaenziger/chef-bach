@@ -36,6 +36,10 @@
         "dhcp_range" : "10.0.100.14 10.0.100.250"
       },
       "dns_servers" : [ "8.8.8.8", "8.8.4.4" ],
+      "repos" : {
+        "hortonworks": "http://public-repo-1.hortonworks.com/HDP/ubuntu14/2.x/updates/2.3.4.0",
+        "hdp_utils": "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu14"
+      },
       "hadoop" : {
         "yarn" : {
           "resourcemanager" : {
@@ -43,14 +47,14 @@
           }
         },
         "hdfs" : {
-          "dfs_replication_factor" : 1
+          "dfs_replication_factor" : 3
         },
         "disks" : ["sdb" , "sdc", "sdd", "sde"],
         "head_disks" : ["sdb" , "sdc", "sdd"],
         "distribution": {
           "version": "HDP",
           "key": "hortonworks.key",
-          "release": "2.3.2.0-2950"
+          "release": "2.3.4.0-3485"
         },
         "hbase": {
           "bucketcache": {
