@@ -32,7 +32,7 @@ module Bcpc_Hadoop
     #
     def hdp_select(package, version)
       bash "hdp-select #{package}" do
-        command "hdp-select set #{package} #{version}"
+        code "hdp-select set #{package} #{version}"
         subscribes :run, "package[#{hwx_pkg_str(package, version)}]", :immediate
         not_if { ::File.readlink("/usr/hdp/current/#{package}").start_with?("/usr/hdp/#{version}/") }
       end
