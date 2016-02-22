@@ -47,7 +47,7 @@
           }
         },
         "hdfs" : {
-          "dfs_replication_factor" : 3
+          "dfs_replication_factor" : 1
         },
         "disks" : ["sdb" , "sdc", "sdd", "sde"],
         "head_disks" : ["sdb" , "sdc", "sdd"],
