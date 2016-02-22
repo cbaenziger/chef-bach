@@ -35,7 +35,7 @@ bash "create-hdfs-yarn-log" do
 end
 
 # list hdp packages to install
-%w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce}.each do |pkg|
+%w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce-historyserver}.each do |pkg|
   package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
     action :install
   end
@@ -45,6 +45,13 @@ end
 
 link "/etc/init.d/hadoop-yarn-resourcemanager" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-yarn/etc/init.d/hadoop-yarn-resourcemanager"
+  notifies :run, 'bash[kill yarn-resourcemanager]', :immediate
+end
+
+bash "kill yarn-resourcemanager" do
+  code "pkill -u yarn -f resourcemanager"
+  action :nothing
+  returns [0, 1]
 end
 
 bash "setup-mapreduce-app" do

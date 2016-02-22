@@ -109,8 +109,20 @@ bash "format-zk-hdfs-ha" do
   not_if { znode_exists?("/hadoop-ha/#{node.chef_environment}", zks) }
 end
 
+# Work around Hortonworks Case #00071808
+link "/usr/hdp/current/hadoop-hdfs-zkfc" do
+  to "/usr/hdp/current/hadoop-hdfs-namenode"
+end
+
 link "/etc/init.d/hadoop-hdfs-zkfc" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+  notifies :run, 'bash[kill hdfs-zkfc]', :immediate
+end
+
+bash "kill hdfs-zkfc" do
+  code "pkill -u hdfs -f zkfc"
+  action :nothing
+  returns [0, 1]
 end
 
 service "hadoop-hdfs-zkfc" do
@@ -140,6 +152,13 @@ end
 
 link "/etc/init.d/hadoop-hdfs-namenode" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+  notifies :run, 'bash[kill hdfs-namenode]', :immediate
+end
+
+bash "kill hdfs-namenode" do
+  code "pkill -u hdfs -f namenode"
+  action :nothing
+  returns [0, 1]
 end
 
 service "generally run hadoop-hdfs-namenode" do
@@ -185,16 +204,14 @@ ruby_block "upload-format-UUID-File" do
     cmd.error!
     Chef::Log.debug("Total number of version lines : #{cmd.stdout}") 
     if cmd.stdout.to_i != 2
-      Chef::Log.fatal("Couldn't find required number of layoutVersion records");
-      raise
+      raise("Couldn't find required number of layoutVersion records");
     end
 
     cmd = Mixlib::ShellOut.new(cmdStrUnqCount, :timeout => 10).run_command
     cmd.error!
     Chef::Log.debug("Total number of unique version lines : #{cmd.stdout}")
     if cmd.stdout.to_i != 1
-      Chef::Log.fatal("Mismatched layoutVersion records between JN and NN in local file");
-      raise
+      raise("Mismatched layoutVersion records between JN and NN in local file");
     end
     
     node_layout_version = 0
@@ -207,13 +224,12 @@ ruby_block "upload-format-UUID-File" do
     Chef::Log.debug("layoutVersion stored in node is : #{node_layout_version}")
     Chef::Log.debug("layoutVersion stored in the file is #{cmd.stdout.to_i}")
 
-    if ( get_config("namenode_txn_fmt").nil? ) || ( cmd.stdout.to_i < node_layout_version )
+    if ( get_config("namenode_txn_fmt").nil? ) || ( cmd.stdout.to_i > node_layout_version )
       make_config!("namenode_txn_fmt", Base64.encode64(IO.read("#{Chef::Config[:file_cache_path]}/nn_fmt.tgz")));
       node.set[:bcpc][:hadoop][:hdfs][:layoutVersion] = cmd.stdout.to_i
       node.save
-    elsif cmd.stdout.to_i > node_layout_version
-      Chef::Log.fatal("New HDFS layoutVersion is higher than old HDFS layoutVersion")
-      raise
+    elsif cmd.stdout.to_i < node_layout_version
+      raise("New HDFS layoutVersion is higher than old HDFS layoutVersion: #{cmd.stdout.to_i} > #{node_layout_version}")
     end
 
   end

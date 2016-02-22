@@ -8,7 +8,7 @@ include_recipe 'bcpc-hadoop::oozie_config'
     action :upgrade
   end
 end
-%w{hadooplzo hadooplzo-native oozie-server oozie-client}.each do |pkg|
+%w{oozie-server oozie-client}.each do |pkg|
   hdp_select(pkg, node[:bcpc][:hadoop][:distribution][:active_release])
 end
 
@@ -69,7 +69,6 @@ end
 
 bash "oozie setup war" do
   code "#{OOZIE_CLIENT_PATH}/bin/oozie-setup.sh prepare-war"
-  returns [0]
   only_if {
     not File.exists?("#{OOZIE_SERVER_PATH}/webapps/oozie.war") or
     File.mtime("#{OOZIE_CLIENT_PATH}/libext/") >
@@ -181,6 +180,13 @@ end
 
 link '/etc/init.d/oozie' do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/oozie/etc/init.d/oozie-server"
+  notifies :run, 'bash[kill oozie-oozie]', :immediate
+end
+
+bash "kill oozie-oozie" do
+  code "pkill -u oozie -f oozie"
+  action :nothing
+  returns [0, 1]
 end
 
 service "generally run oozie" do

@@ -15,6 +15,13 @@ end
 
 link '/etc/init.d/hadoop-httpfs' do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-httpfs/etc/init.d/hadoop-httpfs"
+  notifies :run, 'bash[kill hdfs-httpfs]', :immediate
+end
+
+bash "kill hdfs-httpfs" do
+  code "pkill -u hdfs -f httpfs"
+  action :nothing
+  returns [0, 1]
 end
 
 service "hadoop-httpfs" do

@@ -26,6 +26,13 @@ end
 
 link "/etc/init.d/hadoop-mapreduce-historyserver" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
+  notifies :run, 'bash[kill mapred-historyserver]', :immediate
+end
+
+bash "kill mapred-historyserver" do
+  code "pkill -u mapred -f historyserver"
+  action :nothing
+  returns [0, 1]
 end
 
 service "hadoop-mapreduce-historyserver" do

@@ -100,6 +100,13 @@ end
 
 link "/etc/init.d/hadoop-hdfs-namenode" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+  notifies :run, 'bash[kill hdfs-namenode]', :immediate
+end
+
+bash "kill hdfs-namenode" do
+  code "pkill -u hdfs -f namenode"
+  action :nothing
+  returns [0, 1]
 end
 
 service "hadoop-hdfs-namenode" do

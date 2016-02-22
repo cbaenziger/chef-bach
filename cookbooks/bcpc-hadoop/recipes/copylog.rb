@@ -22,15 +22,20 @@ hdp_select('flume-server', node[:bcpc][:hadoop][:distribution][:active_release])
 
 link "/etc/init.d/flume-agent-multi" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/flume/etc/init.d/flume-agent"
-  subscribes :run, "bash[hdp-select flume-server]", :immediate
+  notifies :run, "bash[kill flume-flume-agent]", :immediate
+end
+
+bash "kill flume-flume-agent" do
+  code "pkill -u flume -f flume-agent"
   action :nothing
+  returns [0, 1]
 end
 
 bash "make_shared_logs_dir" do
-  code <<EOH
+  code <<-EOH
   hdfs dfs -mkdir -p #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/logs/ && \
   hdfs dfs -chown -R flume #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/
-EOH
+  EOH
   user "hdfs"
   not_if "hdfs dfs -test -d #{node['bcpc']['hadoop']['hdfs_url']}/user/flume/logs/", :user => "hdfs"
 end

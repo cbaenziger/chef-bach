@@ -44,6 +44,13 @@ end
 
 #link "/etc/init.d/hbase-regionserver" do
 #  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/init.d/hbase-regionserver"
+#  notifies :run, 'bash[kill hbase-regionserver]', :immediate
+#end
+#
+#bash "kill hbase-regionserver" do
+#  code "pkill -u hbase -f regionserver"
+#  action :nothing
+#  returns [0, 1]
 #end
 
 template "/etc/init.d/hbase-regionserver" do

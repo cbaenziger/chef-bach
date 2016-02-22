@@ -43,6 +43,13 @@ end
 
 link '/etc/init.d/zookeeper-server' do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/zookeeper/etc/init.d/zookeeper-server"
+  notifies :run, 'bash[kill zookeeper-zookeeper-server]', :immediate
+end
+
+bash "kill zookeeper-zookeeper-server" do
+  code "pkill -u zookeeper -f zookeeper-server"
+  action :nothing
+  returns [0, 1]
 end
 
 bash "init-zookeeper" do

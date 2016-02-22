@@ -95,8 +95,20 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
     not_if { node[:bcpc][:hadoop][:mounts].all? { |d| Dir.entries("/disk/#{d}/dfs/nn/").include?("current") } }
   end  
 
+  # Work around Hortonworks Case #00071808
+  link "/usr/hdp/current/hadoop-hdfs-zkfc" do
+    to "/usr/hdp/current/hadoop-hdfs-namenode"
+  end
+
   link "/etc/init.d/hadoop-hdfs-zkfc" do
     to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+    notifies :run, 'bash[kill hdfs-zkfc]', :immediate
+  end
+
+  bash "kill hdfs-zkfc" do
+    code "pkill -u hdfs -f zkfc"
+    action :nothing
+    returns [0, 1]
   end
 
   service "hadoop-hdfs-zkfc" do
@@ -110,7 +122,15 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
 
   link "/etc/init.d/hadoop-hdfs-namenode" do
     to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+    notifies :run, 'bash[kill hdfs-namenode]', :immediate
   end
+
+  bash "kill hdfs-namenode" do
+    code "pkill -u hdfs -f namenode"
+    action :nothing
+    returns [0, 1]
+  end
+
 
   service "hadoop-hdfs-namenode" do
     action [:enable, :start]

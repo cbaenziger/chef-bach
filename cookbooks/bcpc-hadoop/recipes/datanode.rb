@@ -104,6 +104,13 @@ end
 
 link "/etc/init.d/hadoop-hdfs-datanode" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-datanode"
+  notifies :run, "bash[kill hdfs-hdfs-datanode]", :immediate
+end
+
+bash "kill hdfs-hdfs-datanode" do
+  code "pkill -u hdfs -f hdfs-datanode"
+  action :nothing
+  returns [0, 1]
 end
 
 link "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop/lib/hadoop-lzo-0.6.0.jar" do
@@ -138,10 +145,11 @@ template "/etc/hadoop/conf/container-executor.cfg" do
 end
 
 bash "verify-container-executor" do
-  code "/usr/lib/hadoop-yarn/bin/container-executor --checksetup"
+  code "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-yarn/bin/container-executor --checksetup"
+  user "yarn"
   group "yarn"
   action :nothing
-  only_if { File.exists?("/usr/lib/hadoop-yarn/bin/container-executor") }
+  only_if { File.exists?("/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-yarn/bin/container-executor") }
 end
 
 # Install Sqoop Bits
@@ -183,6 +191,13 @@ end
 
 link "/etc/init.d/hadoop-yarn-nodemanager" do
   to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:active_release]}/hadoop-yarn/etc/init.d/hadoop-yarn-nodemanager"
+  notifies :run, "bash[kill yarn-yarn-nodemanager]", :immediate
+end
+
+bash "kill yarn-yarn-nodemanager" do
+  code "pkill -u yarn -f yarn-nodemanager"
+  action :nothing
+  returns [0, 1]
 end
 
 # Build nodes for HDFS storage
