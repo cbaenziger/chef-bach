@@ -30,6 +30,14 @@ default['bcpc']['bootstrap']['admin_users'] = []
 
 ###########################################
 #
+#  Flags to enable/disable BCPC cluster features
+#
+###########################################
+# Toggle to enable apport for debugging process crashes
+default['bcpc']['enabled']['apport'] = true
+
+###########################################
+#
 #  Host-specific defaults for the cluster
 #
 ###########################################
