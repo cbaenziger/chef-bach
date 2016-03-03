@@ -130,6 +130,7 @@ default['java']['install_flavor'] = "oracle"
 default['java']['accept_license_agreement'] = true
 default['java']['jdk_version'] = 8
 default['java']['oracle']['jce']['enabled'] = true
+default['java']['jdk']['8']['x86_64']['checksum'] = '0bfd5d79f776d448efc64cb47075a52618ef76aabb31fde21c5c1018683cdddd'
 
 # Set the JAVA_HOME for Hadoop components
-default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/java-8-oracle-amd64"
+default['bcpc']['hadoop']['java'] = '/usr/lib/jvm/java-8-oracle-amd64'
