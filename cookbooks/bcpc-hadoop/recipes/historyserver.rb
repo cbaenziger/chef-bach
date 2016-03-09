@@ -3,18 +3,18 @@ include_recipe 'bcpc-hadoop::hadoop_config'
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 %w{hadoop-mapreduce-historyserver}.each do |pkg|
-  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
   end
 
   bash "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}" do
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
     action :nothing
   end
 end
 
 link "/etc/init.d/hadoop-mapreduce-historyserver" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-mapreduce/etc/init.d/hadoop-mapreduce-historyserver"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-mapreduce/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-mapreduce-historyserver"
 end
 
 template "/etc/hadoop/conf/mapred-env.sh" do

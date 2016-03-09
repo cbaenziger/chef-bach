@@ -120,8 +120,13 @@ default['bcpc']['repos']['ceph-fcgi'] = "http://gitbuilder.ceph.com/libapache-mo
 default['bcpc']['repos']['gridcentric'] = "http://downloads.gridcentric.com/packages/%s/%s/ubuntu"
 default['bcpc']['repos']['ubuntu-tools'] = "http://ppa.launchpad.net/canonical-support/support-tools/ubuntu"
 default['bcpc']['ubuntu']['version'] = "precise"
-default["bcpc"]["repos"]["hortonworks"] = 'http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.2.0'
-default["bcpc"]["repos"]["hdp_utils"] = 'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12'
+default['bcpc']['repos']['apt']['hortonworks'] = 'http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.2.0'
+default['bcpc']['repos']['apt']['hdp_utils'] = 'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu12'
+default['bcpc']['repos']['hdp_utils']['version'] = 'HDP-UTILS-1.1.0.20'
+default['bcpc']['repos']['yum']['hortonworks']['url'] = 'http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.4.0.0'
+default['bcpc']['repos']['yum']['hortonworks']['key_url'] = 'http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.4.0.0/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins'
+default['bcpc']['repos']['yum']['hdp_utils']['url'] = "http://public-repo-1.hortonworks.com/#{node['bcpc']['repos']['hdp_utils']['version']}/repos/centos7"
+default['bcpc']['repos']['yum']['hdp_utils']['key_url'] = 'http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.4.0.0/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins'
 
 ###########################################
 #

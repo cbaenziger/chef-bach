@@ -11,7 +11,7 @@ node.default['bcpc']['hadoop']['copylog']['nodemanager'] = {
 hdp_select_pkgs = %w{hadoop-yarn-nodemanager
                      hadoop-client}
 
-(hdp_select_pkgs.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])} +
+(hdp_select_pkgs.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])} +
                   %w{hadoop-mapreduce
                      sqoop
                      lzop
@@ -25,7 +25,7 @@ end
 (hdp_select_pkgs + ['sqoop-client', 'sqoop-server']).each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
     action :nothing
   end
 end
@@ -148,7 +148,7 @@ end
 
 # Setup nodemanager bits
 link "/etc/init.d/hadoop-yarn-nodemanager" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/init.d/hadoop-yarn-nodemanager"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-yarn-nodemanager"
 end
 
 # Build nodes for YARN log storage

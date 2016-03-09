@@ -13,7 +13,7 @@ node.default['bcpc']['hadoop']['copylog']['region_server_out'] = {
 }
 
 (%w{libsnappy1} +
- %w{hbase hbase-regionserver phoenix}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
+ %w{hbase hbase-regionserver phoenix}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}).each do |pkg|
   package pkg do
     action :upgrade
   end
@@ -22,7 +22,7 @@ end
 %w{hbase-client hbase-regionserver phoenix-client}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
     action :nothing
   end
 end
@@ -47,7 +47,7 @@ template "/etc/default/hbase" do
 end
 
 #link "/etc/init.d/hbase-regionserver" do
-#  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/init.d/hbase-regionserver"
+#  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hbase/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hbase-regionserver"
 #end
 
 template "/etc/init.d/hbase-regionserver" do

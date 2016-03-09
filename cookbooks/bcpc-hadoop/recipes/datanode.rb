@@ -14,7 +14,7 @@ node.default['bcpc']['hadoop']['copylog']['datanode'] = {
 
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
     action :nothing
   end
 end
@@ -69,7 +69,7 @@ directory "/var/run/hadoop-hdfs" do
 end
 
 link "/etc/init.d/hadoop-hdfs-datanode" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-datanode"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-hdfs-datanode"
 end
 
 # Setup datanode and nodemanager bits

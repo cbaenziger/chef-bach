@@ -5,7 +5,7 @@
 #
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 
-package hwx_pkg_str('tez', node[:bcpc][:hadoop][:distribution][:release]) do
+package hwx_pkg_str('tez', node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
   action :upgrade
 end
 

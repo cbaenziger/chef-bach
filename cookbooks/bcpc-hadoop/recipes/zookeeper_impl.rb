@@ -1,7 +1,7 @@
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-package  hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release]) do
+package  hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
   action :upgrade
 end
 
@@ -9,7 +9,7 @@ include_recipe 'bcpc-hadoop::zookeeper_config'
 
 bash "hdp-select zookeeper-server" do
   code "hdp-select set zookeeper-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str('zookeeper-server', node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
   action :nothing
 end
 
@@ -18,7 +18,7 @@ user_ulimit "zookeeper" do
 end
 
 link '/etc/init.d/zookeeper-server' do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/etc/init.d/zookeeper-server"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/zookeeper/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/zookeeper-server"
 end
 
 directory "/var/run/zookeeper" do 

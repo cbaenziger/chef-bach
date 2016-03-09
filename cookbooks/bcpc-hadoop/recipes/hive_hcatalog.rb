@@ -6,7 +6,7 @@ include_recipe "bcpc-hadoop::hive_table_stat"
 ::Chef::Recipe.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
-%W{#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}
+%W{#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}
    hadoop-lzo
    libmysql-java}.each do |pkg|
   package pkg do
@@ -16,13 +16,13 @@ end
 
 bash "hdp-select hive-metastore" do
   code "hdp-select set hive-metastore #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
   action :nothing
 end
 
 bash "hdp-select hive-server2" do
   code "hdp-select set hive-server2 #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hive-hcatalog", node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
   action :nothing
 end
 

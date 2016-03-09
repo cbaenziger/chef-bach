@@ -22,7 +22,7 @@ node.default['bcpc']['hadoop']['copylog']['namenode_out'] = {
 hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
 
 %w{hadoop-hdfs-namenode hadoop-mapreduce}.each do |pkg|
-  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
     timeout 1800
   end
@@ -35,7 +35,7 @@ end
 
 bash "hdp-select hadoop-hdfs-namenode" do
   code "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
   action :nothing
 end
 
@@ -76,6 +76,7 @@ end
 directory "/var/log/hadoop-hdfs/gc/" do
   user "hdfs"
   group "hdfs"
+  recursive true
   action :create
   notifies :restart, "service[hadoop-hdfs-namenode]", :delayed
 end
@@ -109,7 +110,7 @@ bash "format namenode" do
 end
 
 link "/etc/init.d/hadoop-hdfs-namenode" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-hdfs-namenode"
 end
 
 service "hadoop-hdfs-namenode" do

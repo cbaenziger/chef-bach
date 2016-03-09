@@ -20,13 +20,13 @@ node.default['bcpc']['hadoop']['copylog']['namenode_standby_out'] = {
 hdfs_cmd = "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/bin/hdfs"
 
 %w{hadoop-hdfs-namenode hadoop-hdfs-zkfc hadoop-mapreduce}.each do |pkg|
-  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
   end
 end
 bash "hdp-select hadoop-hdfs-namenode" do
   code "hdp-select set hadoop-hdfs-namenode #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("hadoop-hdfs-namenode", node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
   action :nothing
 end
 
@@ -67,6 +67,7 @@ end
 directory "/var/log/hadoop-hdfs/gc/" do
   user "hdfs"
   group "hdfs"
+  recursive true
   action :create
 end
 
@@ -100,7 +101,7 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
   end  
 
   link "/etc/init.d/hadoop-hdfs-zkfc" do
-    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-zkfc"
+    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-hdfs-zkfc"
   end
 
   service "hadoop-hdfs-zkfc" do
@@ -112,7 +113,7 @@ if @node['bcpc']['hadoop']['hdfs']['HA'] == true then
   end
 
   link "/etc/init.d/hadoop-hdfs-namenode" do
-    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-namenode"
+    to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-hdfs-namenode"
   end
 
   service "hadoop-hdfs-namenode" do

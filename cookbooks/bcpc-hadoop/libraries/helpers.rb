@@ -11,14 +11,27 @@ module Bcpc_Hadoop
     # package name - String for base package name
     #
     # Raises RuntimeError on any unspecified error
-    # Returns - string to use in a Hortonworks debian package name
+    # Returns - string to use in a Hortonworks package name:
+    # debian package name
     # (i.e. 2.2.0.2041 for a release and package like
     #  hadoop-hdfs-datanode to something akin to
     #  hadoop-2-2-0-2041-hdfs-datanode)
+    # rhel package name
+    # rhel package name
+    # (i.e. 2.2.0.2041 for a release and package like
+    #  hadoop-hdfs-datanode to something akin to
+    #  hadoop_2_2_0_2041
     #
-    def hwx_pkg_str(package, version)
-      version_hyphenated = version.gsub('.', '-')
-      package.index('-').nil? ? package.dup + '-' + version_hyphenated : package.dup.insert(package.index('-'), "-#{version_hyphenated}")
+    def hwx_pkg_str(package, version, platform_type = 'debian')
+      if platform_type == 'debian'
+        version_hyphenated = version.gsub('.', '-')
+        package.index('-').nil? ? package.dup + '-' + version_hyphenated : package.dup.insert(package.index('-'), "-#{version_hyphenated}")
+      elsif platform_type == 'rhel'
+        version_underscore = version.gsub('.', '_').gsub('-','_')
+        package.index('-').nil? ? package.dup + '_' + version_underscore : package.dup.insert(package.index('-'), "_#{version_underscore}")
+      else
+        raise "Unhandled package type: #{pkg_type}"
+      end
     end
 
     # Verify an HDFS directory exists or create it

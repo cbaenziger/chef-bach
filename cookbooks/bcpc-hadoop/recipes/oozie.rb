@@ -3,7 +3,7 @@ include_recipe 'bcpc-hadoop::oozie_config'
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 (%w{libmysql-java zip unzip extjs hadoop-lzo} +
- %w{oozie-server oozie-client}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release])}).each do |pkg|
+ %w{oozie-server oozie-client}.map{|p| hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}).each do |pkg|
   package pkg do
     action :upgrade
   end
@@ -11,7 +11,7 @@ end
 %w{oozie-server oozie-client}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
     action :nothing
   end
 end
@@ -170,7 +170,7 @@ ruby_block "oozie-database-creation" do
 end
 
 link '/etc/init.d/oozie' do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/etc/init.d/oozie-server"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/oozie/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/oozie-server"
 end
 
 service "generally run oozie" do

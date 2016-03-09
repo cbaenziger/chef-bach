@@ -13,20 +13,20 @@ Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 Chef::Resource::Link.send(:include, Bcpc_Hadoop::Helper)
 
 %w{flume flume-agent}.each do |p|
-  package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
   end
 end
 
 bash "hdp-select flume-server" do
   code "hdp-select set flume-server #{node[:bcpc][:hadoop][:distribution][:release]}"
-  subscribes :run, "package[#{hwx_pkg_str("flume-agent", node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  subscribes :run, "package[#{hwx_pkg_str("flume-agent", node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
   action :nothing
 end
 
 link "/etc/init.d/flume-agent-multi" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/init.d/flume-agent"
-  subscribes :create, "package[#{hwx_pkg_str('flume-agent', node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/flume/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/flume-agent"
+  subscribes :create, "package[#{hwx_pkg_str('flume-agent', node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
   action :nothing
 end
 

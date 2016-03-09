@@ -4,7 +4,7 @@ include_recipe 'bcpc-hadoop::hadoop_config'
 Chef::Resource::Bash.send(:include, Bcpc_Hadoop::Helper)
 
 %w{hadoop-hdfs-namenode hadoop-hdfs-journalnode}.each do |pkg|
-  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
   end
   bash "hdp-select #{pkg}" do
@@ -92,7 +92,7 @@ ruby_block 'create_or_manage_groups' do
 end
 
 link "/etc/init.d/hadoop-hdfs-journalnode" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/init.d/hadoop-hdfs-journalnode"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-hdfs/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-hdfs-journalnode"
 end
 
 service "hadoop-hdfs-journalnode" do

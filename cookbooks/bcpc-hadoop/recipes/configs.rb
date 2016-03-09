@@ -16,7 +16,7 @@ case node["platform_family"]
 end
 
 # ensure we use /etc/security/limits.d to allow ulimit overriding
-if not node.has_key?('pam_d') or not node['pam_d'].has_key?('services') or not node['pam_d']['services'].has_key?('common-session')
+if not node.has_key?('pam_d')
   node.default['pam_d']['services'] = {
     'common-session' => {
       'main' => {
@@ -63,7 +63,7 @@ package "hdp-select" do
 end
 
 %w{zookeeper}.each do |pkg|
-  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
   end
 end

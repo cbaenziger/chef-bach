@@ -10,14 +10,14 @@ link "/usr/lib/hive/lib/mysql.jar" do
 end
 
 %w{hive-hcatalog hive-hcatalog-server hive-webhcat}.each do |p|
-  package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(p, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
   end
 end
 %w{hive-metastore hive-webhcat hive-server2}.each do |comp|
   bash "hdp-select #{comp}" do
     code "hdp-select set #{comp} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(comp, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(comp, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
     action :nothing
   end
 end

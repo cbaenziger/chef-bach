@@ -36,7 +36,7 @@ end
 
 # list hdp packages to install
 %w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce}.each do |pkg|
-  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release]) do
+  package hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family]) do
     action :upgrade
   end
 
@@ -51,13 +51,13 @@ end
 %w{hadoop-yarn-resourcemanager hadoop-client hadoop-mapreduce-server}.each do |pkg|
   bash "hdp-select #{pkg}" do
     code "hdp-select set #{pkg} #{node[:bcpc][:hadoop][:distribution][:release]}"
-    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release])}]", :immediate
+    subscribes :run, "package[#{hwx_pkg_str(pkg, node[:bcpc][:hadoop][:distribution][:release], node[:platform_family])}]", :immediate
     action :nothing
   end
 end
 
 link "/etc/init.d/hadoop-yarn-resourcemanager" do
-  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/init.d/hadoop-yarn-resourcemanager"
+  to "/usr/hdp/#{node[:bcpc][:hadoop][:distribution][:release]}/hadoop-yarn/etc/#{node["platform_family"] == 'rhel' ? "rc.d/" : ""}init.d/hadoop-yarn-resourcemanager"
 end
 
 bash "setup-mapreduce-app" do
