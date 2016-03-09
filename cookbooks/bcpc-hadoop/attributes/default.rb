@@ -26,7 +26,6 @@ default["bcpc"]["hadoop"]["yarn"]["scheduler"]["minimum-allocation-mb"] = 256
 default['bcpc']['hadoop']['yarn']['historyserver']['heap']["size"] = 128
 default['bcpc']['hadoop']['yarn']['historyserver']['heap']["ratio"] = 0
 # Set the JAVA_HOME for Hadoop components
-default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/java-7-oracle-amd64"
 default["bcpc"]["hadoop"]["yarn"]["resourcemanager"]["port"] = 8032
 default['bcpc']['hadoop']['yarn']['aux_services']['mapreduce_shuffle']['class'] = 'org.apache.hadoop.mapred.ShuffleHandler'
 default["bcpc"]["hadoop"]["hdfs"]["HA"] = false
@@ -153,8 +152,8 @@ default[:bcpc][:hadoop][:os][:group][:mapred][:members]=["yarn"]
 # Override defaults for the Java cookbook
 default['java']['install_flavor'] = "oracle"
 default['java']['accept_license_agreement'] = true
-default['java']['jdk_version'] = 7
+default['java']['jdk_version'] = 8
 default['java']['oracle']['jce']['enabled'] = true
 
 # Set the JAVA_HOME for Hadoop components
-default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/java-7-oracle-amd64"
+default['bcpc']['hadoop']['java'] = "/usr/lib/jvm/default-java/"
