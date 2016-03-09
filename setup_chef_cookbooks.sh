@@ -27,7 +27,7 @@ cat << EOF > .chef/knife.rb
 require 'rubygems'
 require 'ohai'
 o = Ohai::System.new
-o.all_plugins
+o.all_plugins(['fqdn','hostname','ipaddress'])
  
 log_level                :info
 node_name                o[:fqdn]
@@ -52,6 +52,10 @@ https_proxy ENV['https_proxy']
 no_proxy no_proxy_string
 ENV['GIT_SSL_NO_VERIFY'] = 'true'
 File.umask(0007)
+
+if ENV['https_proxy']
+  ssl_verify_mode :verify_none
+end
 EOF
 cd cookbooks
 
