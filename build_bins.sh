@@ -62,7 +62,7 @@ fi
 FILES="jmxtrans-20120525-210643-4e956b1144.zip $FILES"
 
 # Fetch Kafka Tar
-for version in 0.9.0.1; do
+for version in 0.9.0.0; do
   mkdir -p kafka/${version}/
   if ! [[ -f kafka/${version}/kafka_2.11-${version}.tgz ]]; then
     pushd kafka/${version}/
@@ -114,6 +114,15 @@ FILES="jce_policy-8.zip $FILES"
 
 # Pull all the gems required for the cluster 
 for i in patron wmi-lite simple-graphite ruby-augeas; do
+  if ! [[ -f gems/${i}.gem ]]; then
+    gem fetch ${i}
+    ln -s ${i}-*.gem ${i}.gem || true
+  fi
+  FILES="${i}*.gem $FILES"
+done
+
+# Pull all the gems required for pdns
+for i in sequel sqlite3; do
   if ! [[ -f gems/${i}.gem ]]; then
     gem fetch ${i}
     ln -s ${i}-*.gem ${i}.gem || true
