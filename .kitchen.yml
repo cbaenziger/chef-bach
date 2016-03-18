@@ -12,17 +12,18 @@ platforms:
   - name: ubuntu-14.04
     run_list:
       - 'recipe[apt::default]'
-      - 'recipe[java::oracle]'
+      - 'recipe[java::default]'
       - 'recipe[bcpc-hadoop::hdp_repo]'
     attributes: {
       java: {
         jdk_version: 8,
+        install_flavor: "oracle",
         jdk: {
-          "8": {
-            x86_64: {
-              url: "http://10.0.2.2:9090/jdk-8u65-linux-x64.tar.gz",
-              checksum: "88db2aacdc222c2add4d92822f528b7a2101552272db4487f33b38b0b47826e7"
-            }
+         "8": {
+           x86_64: {
+             url: "http://10.0.2.2:9191/jdk-8u65-linux-x64.tar.gz",
+             checksum: "88db2aacdc222c2add4d92822f528b7a2101552272db4487f33b38b0b47826e7"
+           }
           }
         },
         oracle: {
@@ -45,10 +46,15 @@ platforms:
           gateway: "172.28.128.1",
           interface: "eth1"
         },
-        hadoop: {
-          repos: {
-            hortonworks: 'http://public-repo-1.hortonworks.com/HDP/ubuntu14/2.x/updates/2.3.2.0/',
+        repos: {
+          apt: {
+            hortonworks: 'http://public-repo-1.hortonworks.com/HDP/ubuntu14/2.x/updates/2.4.0.0/',
             hdp_utils: 'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/ubuntu14'
+          }
+        },
+        hadoop: {
+          distribution: {
+            release: "2.4.0.0-169"
           },
           cluster-name: "test-kitchen",
           mounts: [0],
@@ -59,14 +65,6 @@ platforms:
       }
     }
 suites:
-  - name: mysql_connector
-    run_list:
-      - 'recipe[bcpc::mysql_connector]' 
-      - 'recipe[bcpc::test_mysql_connector]' 
-    attributes:
-      bcpc:
-        bin_dir:
-          path: "/tmp/"
   - name: kafka-zookeeper
     driver:
       network:
@@ -116,6 +114,7 @@ suites:
       - 'recipe[bcpc::chef_vault_install]'
       - 'recipe[bcpc::default]'
       - 'recipe[bcpc::networking]'
+      - 'recipe[openssh::default]'
       - 'recipe[bcpc-hadoop::configs]'
       - 'recipe[bcpc-hadoop::hadoop_config]'
       - 'recipe[bcpc-hadoop::namenode_no_HA]'
@@ -124,7 +123,7 @@ suites:
       customize:
         memory: 1024
       network:
-        - "'private_network', { type: 'dhcp' }"
+        - ["private_network", { type: "dhcp" }]
     attributes: {
     }
     run_list:
@@ -139,13 +138,32 @@ suites:
       customize:
         memory: 1024
       network:
-        - "'private_network', { type: 'dhcp' }"
+        - ["private_network", { type: "dhcp" }]
     attributes: {
     }
     run_list:
       - 'recipe[bcpc::chef_vault_install]'
       - 'recipe[bcpc::default]'
       - 'recipe[bcpc::networking]'
+      - 'recipe[openssh::default]'
       - 'recipe[bcpc-hadoop::configs]'
       - 'recipe[bcpc-hadoop::hadoop_config]'
       - 'recipe[bcpc-hadoop::datanode]'
+  - name: spark
+    driver:
+      customize:
+        memory: 1024
+      network:
+        - ["private_network", { type: "dhcp" }]
+    attributes: {
+      spark: {
+        package: {
+          version: "1.6.0.2.4.0.0-169"
+        }
+      },
+      bcpc: {
+        bin_dir: {
+          path: "/tmp/"
+        }
+      }
+    }
