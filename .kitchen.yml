@@ -58,8 +58,10 @@ platforms:
           },
           cluster-name: "test-kitchen",
           mounts: [0],
+          skip_restart_coordination: true,
           hdfs: {
-            dfs_replication_factor: 1
+            dfs_replication_factor: 1,
+            failed_volumes_tolerated: 0
           }
         }
       }
