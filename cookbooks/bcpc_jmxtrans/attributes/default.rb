@@ -67,6 +67,14 @@ default['jmxtrans']['default_queries']['kafka'] = [
       ]
   },
   {
+    'obj' => "kafka.controller:type=KafkaController,name=*",
+    'result_alias' => "kafka.KafkaController",
+    'attr' => 
+      [ 
+        "Value" 
+      ]
+  },
+  {
     'typeNames' => ["name","topic"],
     'obj' => "kafka.server:type=BrokerTopicMetrics,name=*, topic=*",
     'result_alias' => "kafka.BrokerTopicMetrics.perTopic",
@@ -79,10 +87,9 @@ default['jmxtrans']['default_queries']['kafka'] = [
         "FifteenMinuteRate"
       ]
   },
-
   {
     'obj' => "kafka.server:type=ReplicaManager,name=*",
-    'result_alias' => "kafka.server.ReplicaManager",
+    'result_alias' => "kafka.ReplicaManager",
     'attr' => 
       [ 
         "Value" 
