@@ -117,34 +117,3 @@ default[:bcpc][:hadoop][:yarn][:site_xml].tap do |site_xml|
 
   site_xml['yarn.timeline-service.client.max-retries'] = 0
 end
-
-### Delete these. (start) ###
-
-#
-# These properties are used exactly once in generated values, so they've been
-# replaced by constants in yarn_config.rb
-#
-default["bcpc"]["hadoop"]["yarn"]["resourcemanager"]["yarn.client.failover-sleep-base-ms"] = 150
-default["bcpc"]["hadoop"]["yarn"]["resourcemanager"]["recovery"]["enabled"] = true
-default["bcpc"]["hadoop"]["yarn"]["resourcemanager"]["store"]["class"] = "org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore"
-default["bcpc"]["hadoop"]["yarn"]["client"]["failover-proxy-provider"] = "org.apache.hadoop.yarn.client.ConfiguredRMFailoverProxyProvider"
-
-#
-# All of these properties are used exactly once, but can be replaced
-# by defaults in [:bcpc][:hadoop][:yarn][:site_xml]
-#
-default["bcpc"]["hadoop"]["yarn"]["nodemanager"]["remote-app-log-dir"] = "/var/log/hadoop-yarn/apps"
-default["bcpc"]["hadoop"]["yarn"]["log-aggregation-enable"] = true
-default["bcpc"]["hadoop"]["yarn"]["log-aggregation_retain-seconds"] = 60*60*24*31
-default["bcpc"]["hadoop"]["yarn"]["nodemanager"]["log-aggregation"]["roll-monitoring-interval-seconds"] = 1800
-default["bcpc"]["hadoop"]["yarn"]["nodemanager"]["log-aggregation"]["compression-type"] = "gz"
-default["bcpc"]["hadoop"]["yarn"]["nodemanager"]["container-executor"]["class"] = "org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor"
-default["bcpc"]["hadoop"]["yarn.nodemanager.linux-container-executor.group"] = "yarn"
-default["bcpc"]["hadoop"]["yarn"]["nodemanager"]["linux-container-executor"]["nonsecure-mode"]["limit-users"] = false
-default["bcpc"]["hadoop"]["yarn"]["nodemanager"]["linux-container-executor"]["resources-handler"]["class"] = "org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler"
-default["bcpc"]["hadoop"]["yarn"]["nodemanager"]["linux-container-executor"]["cgroups"]["mount-path"] = "/sys/fs/cgroup/"
-default['bcpc']['hadoop']['yarn']['nodemanager']['vmem-check-enabled'] = false
-default["bcpc"]["hadoop"]["yarn"]["resourcemanager"]["nodes"]["exclude-path"] = "/etc/hadoop/conf/yarn.exclude"
-default["bcpc"]["hadoop"]["yarn"]["scheduler"]["class"] = "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler"
-default["bcpc"]["hadoop"]["yarn"]["scheduler"]["fair"]["preemption"] = true
-default['bcpc']['hadoop']['yarn']['timeline-service']['client']['max-retries'] = 0
