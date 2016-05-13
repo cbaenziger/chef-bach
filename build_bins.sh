@@ -192,15 +192,15 @@ if ! [[ -f python-carbon_0.9.10_all.deb && \
   tar zxf carbon-0.9.10.tar.gz
   tar zxf whisper-0.9.10.tar.gz
   tar zxf graphite-web-0.9.10.tar.gz
-  fpm --python-install-bin /opt/graphite/bin -s python -t deb carbon-0.9.10/setup.py
-  fpm --python-install-bin /opt/graphite/bin  -s python -t deb whisper-0.9.10/setup.py
-  fpm --python-install-lib /opt/graphite/webapp -s python -t deb graphite-web-0.9.10/setup.py
+  fpm --deb-no-default-config-files --python-install-bin /opt/graphite/bin -s python -t deb carbon-0.9.10/setup.py 
+  fpm --deb-no-default-config-files --python-install-bin /opt/graphite/bin  -s python -t deb whisper-0.9.10/setup.py 
+  fpm --deb-no-default-config-files --python-install-lib /opt/graphite/webapp -s python -t deb graphite-web-0.9.10/setup.py 
 fi
 FILES="python-carbon_0.9.10_all.deb python-whisper_0.9.10_all.deb python-graphite-web_0.9.10_all.deb $FILES"
 
 # Download Python requests-aws for Zabbix monitoring
 if ! [[ -f python-requests-aws_0.1.5_all.deb ]]; then
-  fpm -s python -t deb -v 0.1.5 requests-aws
+  fpm  --deb-no-default-config-files -s python -t deb -v 0.1.5 requests-aws
 fi
 FILES="python-requests-aws_0.1.5_all.deb $FILES"
 
