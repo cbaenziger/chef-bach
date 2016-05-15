@@ -55,27 +55,21 @@ bucketcache_combinedcache_percent = bucketcache_size.to_f/(node["bcpc"]["hadoop"
 default[:bcpc][:hadoop][:hbase][:site_xml].tap do |site_xml|
   site_xml['hbase.rootdir'] = "#{node['bcpc']['hadoop']['hbase']['root_dir']}"
   site_xml['hbase.bulkload.staging.dir'] = "#{node['bcpc']['hadoop']['hbase']['bulkload_staging_dir']}"
-  # the below value will be defined in recipe and merged in 
-  #site_xml['hbase.zookeeper.quorum'] = #{@zk_hosts.map{ |s| float_host(s[:hostname])}.join(",")}
-  # the below value will be defined in recipe and merged in 
-  #site_xml['hbase.zookeeper.property.clientPort'] = "#{node[:bcpc][:hadoop][:zookeeper][:port]}"
   site_xml['hbase.cluster.distributed'] = "#{node["bcpc"]["hadoop"]["hbase"]["cluster"]["distributed"]}"
   site_xml['hbase.hregion.majorcompaction'] = "#{node["bcpc"]["hadoop"]["hbase"]["major_compact"]["time"]}"
-  # the below value will be defined in recipe and merged in 
-  #site_xml['fail.fast.expired.active.master'] = "#{@master_hosts.length > 1 ? "true" : "false"}"
-  # the below value will be defined in recipe and merged in 
-  #site_xml['hbase.master.wait.on.regionservers.mintostart'] = "#{@rs_hosts.length/2+1}"
   site_xml['hbase.regionserver.ipc.address'] = "#{node["bcpc"]["floating"]["ip"]}"
   site_xml['hbase.master.ipc.address'] = "#{node["bcpc"]["floating"]["ip"]}"
-  # the below value will be defined in recipe and merged in 
-  #site_xml['hbase.regionserver.dns.nameserver'] = "#{@dns_server}"
-  # the below value will be defined in recipe and merged in 
-  #site_xml['hbase.master.dns.nameserver'] = "#{@dns_server}"
   site_xml['hbase.defaults.for.version.skip'] = "#{node["bcpc"]["hadoop"]["hbase"]["defaults"]["for"]["version"]["skip"]}"
   site_xml['hbase.regionserver.wal.codec'] = 'org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec'
   site_xml['hbase.region.server.rpc.scheduler.factory.class'] = 'org.apache.hadoop.hbase.ipc.PhoenixRpcSchedulerFactory'
   site_xml['hbase.rpc.controllerfactory.class'] =  'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
   # the below value will be defined in recipe and merged in 
+  #site_xml['hbase.zookeeper.quorum'] = #{@zk_hosts.map{ |s| float_host(s[:hostname])}.join(",")}
+  #site_xml['hbase.zookeeper.property.clientPort'] = "#{node[:bcpc][:hadoop][:zookeeper][:port]}"
+  #site_xml['fail.fast.expired.active.master'] = "#{@master_hosts.length > 1 ? "true" : "false"}"
+  #site_xml['hbase.master.wait.on.regionservers.mintostart'] = "#{@rs_hosts.length/2+1}"
+  #site_xml['hbase.regionserver.dns.nameserver'] = "#{@dns_server}"
+  #site_xml['hbase.master.dns.nameserver'] = "#{@dns_server}"
   #if node[:bcpc][:hadoop][:kerberos][:enable] == true then
   #  site_xml['hbase.security.authorization'] = 'true'
   #  site_xml['hbase.superuser'] = node[:bcpc][:hadoop][:hbase][:superusers].join(',')
