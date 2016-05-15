@@ -23,7 +23,6 @@ default[:hannibal][:user] = 'nobody'
 default[:hannibal][:owner] = 'root'
 default[:hannibal][:group] = 'root'
 default[:hannibal][:file_mode] = '0644'
-default[:hannibal][:exec_mode] = '0655'
 
 default[:hannibal][:checksum]["0.90"] = '32183556dc5423b84655f7ef57b06ad910b2ec69f10809d359a5a813b7cb6ad2'
 default[:hannibal][:checksum]["0.92"] = '9255ff08605f917018848da437465df76a54a458cc109d1d9454352d40227974'
