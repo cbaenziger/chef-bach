@@ -27,15 +27,8 @@ define :configure_kerberos do
 
     princ_host = srvdat['princhost'] == "_HOST" ? float_host(node[:fqdn]) : srvdat['princhost']
 
-    execute "kdestroy-for-#{srvdat['owner']}" do
-      command "kdestroy"
-      user "#{srvdat['owner']}"
-      action :run
-      only_if { user_exists?("#{srvdat['owner']}") }
-    end
-
     execute "kinit-for-#{srvdat['owner']}" do
-      command "kinit -kt #{keytab_dir}/#{keytab_file} #{srvdat['principal']}/#{princ_host}"
+      command "k5start -f #{keytab_dir}/#{keytab_file} -u #{srvdat['principal']}/#{princ_host} -H 60"
       action :run
       user "#{srvdat['owner']}"
       only_if { user_exists?("#{srvdat['owner']}") }
