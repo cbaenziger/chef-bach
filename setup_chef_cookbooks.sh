@@ -37,9 +37,11 @@ validation_key           '/etc/chef-server/chef-validator.pem'
 chef_server_url          'https://${BOOTSTRAP_IP}'
 syntax_check_cache_path  '$(pwd)/.chef/syntax_check_cache'
 cookbook_path '$(pwd)/cookbooks'
+ssl_verify_mode          :verify_none
+verify_api_cert          false
  
 # Disable the Ohai password module which explodes on a Single-Sign-On-joined system
-Ohai::Config[:disabled_plugins] = [ "passwd" ]
+ohai.disabled_plugins = [ "passwd" ]
 no_proxy_array = ["localhost", o[:ipaddress], o[:hostname], o[:fqdn], "${BOOTSTRAP_IP}", "${binary_server_host}"]
 no_proxy_array.insert("*#{o[:domain]}") unless o[:domain].nil?
 no_proxy_string = no_proxy_array.uniq * ","
