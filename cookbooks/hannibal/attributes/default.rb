@@ -60,3 +60,4 @@ default[:hannibal][:logfile][:date_format] = '"yyyy-MM-dd HH:mm:ss,SSS"'
 default[:hannibal][:logfile][:fetch_timeout] = 120
 default[:hannibal][:akka][:loglevel] = '"INFO"'
 
+default[:hannibal][:hbase_site_xml_additions] = nil

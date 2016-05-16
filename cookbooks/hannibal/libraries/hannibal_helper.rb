@@ -38,7 +38,7 @@ module Hannibal
           p.name 'hbase.zookeeper.quorum'
           p.value node[:hannibal][:zookeeper_quorum].map{ |s|
             float_host(s[:hostname]) +
-                       ":#{node[:bcpc][:hadoop][:zookeeper][:port]}"
+            ":#{node[:bcpc][:hadoop][:zookeeper][:port]}"
           }.join(',')
         end
         c.property do |p|
@@ -48,6 +48,12 @@ module Hannibal
         c.property do |p|
           p.name 'hbase.regionserver.info.port'
           p.value node[:hannibal][:hbase_rs][:info_port]
+        end
+        node[:hannibal][:hbase_site_xml_additions].each do |key, value|
+          c.property do |p|
+            p.name key.to_s
+            p.value value.to_s
+          end
         end
       end
     end
