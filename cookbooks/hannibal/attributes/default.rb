@@ -61,3 +61,5 @@ default[:hannibal][:logfile][:fetch_timeout] = 120
 default[:hannibal][:akka][:loglevel] = '"INFO"'
 
 default[:hannibal][:hbase_site_xml_additions] = nil
+default[:hannibal][:java_opts] = ''
+default[:hannibal][:wrapper_command] = '%s'

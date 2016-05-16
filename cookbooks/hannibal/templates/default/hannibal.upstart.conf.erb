@@ -25,9 +25,9 @@ end script
 script
    chdir <%= node[:hannibal][:working_dir] %>
 <% if node[:hannibal][:local_tarball] %>
-   exec sudo -u <%= node[:hannibal][:user] %> java -Xmx<%= node[:hannibal][:max_memory] %> -Dhttp.port=<%= node[:hannibal][:port] %> -cp <%= "#{node[:hannibal][:install_dir]}/hannibal/conf:#{node[:hannibal][:install_dir]}/hannibal/lib/*" %> play.core.server.NettyServer > <%= node[:hannibal][:log_dir] %>/service.log 2>&1
+   exec <%= node[:hannibal][:wrapper_command] %> % "sudo -u <%= node[:hannibal][:user] %> java <%= node[:hannibal][:java_opts] %> -Xmx<%= node[:hannibal][:max_memory] %> -Dhttp.port=<%= node[:hannibal][:port] %> -cp <%= "#{node[:hannibal][:install_dir]}/hannibal/conf:#{node[:hannibal][:install_dir]}/hannibal/lib/*" %> play.core.server.NettyServer > <%= node[:hannibal][:log_dir] %>/service.log 2>&1"
 <% else %>
-   exec sudo -u <%= node[:hannibal][:user] %> java -Xmx<%= node[:hannibal][:max_memory] %> -Dhttp.port=<%= node[:hannibal][:port] %> -cp <%= "#{node[:hannibal][:install_dir]}/hannibal/conf:#{node[:hannibal][:install_dir]}/hannibal/target/staged/*" %> play.core.server.NettyServer > <%= node[:hannibal][:log_dir] %>/service.log 2>&1
+   exec <%= node[:hannibal][:wrapper_command] %> % "sudo -u <%= node[:hannibal][:user] %> java <%= node[:hannibal][:java_opts] %> -Xmx<%= node[:hannibal][:max_memory] %> -Dhttp.port=<%= node[:hannibal][:port] %> -cp <%= "#{node[:hannibal][:install_dir]}/hannibal/conf:#{node[:hannibal][:install_dir]}/hannibal/target/staged/*" %> play.core.server.NettyServer > <%= node[:hannibal][:log_dir] %>/service.log 2>&1"
 <% end %>
 end script
 
