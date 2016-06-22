@@ -193,7 +193,7 @@ if ! [[ -f python-pyparsing_2.0.6_all.deb ]]; then
     $CURL -O -L https://pypi.python.org/packages/source/p/pyparsing/pyparsing-2.0.6.zip
   done
   unzip -o pyparsing-2.0.6.zip; rm pyparsing-2.0.6.zip
-  fpm --deb-no-default-config-files --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb pyparsing-2.0.6/setup.py
+  fpm --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb pyparsing-2.0.6/setup.py
 fi
 FILES="python-pyparsing_2.0.6_all.deb $FILES"
 
@@ -202,7 +202,7 @@ if ! [[ -f python-pytz_2015.6_all.deb ]]; then
     $CURL -O -L https://pypi.python.org/packages/source/p/pytz/pytz-2015.6.zip
   done
   unzip -o pytz-2015.6.zip; rm pytz-2015.6.zip
-  fpm --deb-no-default-config-files --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb pytz-2015.6/setup.py
+  fpm --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb pytz-2015.6/setup.py
 fi
 FILES="python-pytz_2015.6_all.deb $FILES"
 
@@ -212,7 +212,7 @@ if ! [[ -f python-django_1.5.4_all.deb ]]; then
     $CURL -O -L https://pypi.python.org/packages/source/D/Django/Django-1.5.4.tar.gz
   done
   tar -xzvf Django-1.5.4.tar.gz; rm Django-1.5.4.tar.gz
-  fpm --deb-no-default-config-files --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb Django-1.5.4/setup.py
+  fpm --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb Django-1.5.4/setup.py
 fi
 FILES="python-django_1.5.4_all.deb $FILES"
 
@@ -238,11 +238,11 @@ if ! [[ -f python-carbon_0.9.10_all.deb  && \
   done
   unzip -o whisper_master.zip
   # build with FPM
-  fpm --deb-no-default-config-files --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb carbon-master/setup.py
-  fpm --deb-no-default-config-files --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin  -f -s python -t deb whisper-master/setup.py
+  fpm --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin -f -s python -t deb carbon-master/setup.py
+  fpm --epoch $EPOCH --log info --python-install-bin /opt/graphite/bin  -f -s python -t deb whisper-master/setup.py
   # until PR https://github.com/graphite-project/graphite-web/pull/1320 is merged 
-  #fpm --deb-no-default-config-files --epoch $EPOCH --log info --python-install-lib /opt/graphite/webapp -f -s python -t deb graphite-web-master/setup.py
-  fpm --deb-no-default-config-files --epoch $EPOCH --log info --python-install-lib /opt/graphite/webapp -f -s python -t deb graphite-web-https_intracluster/setup.py
+  #fpm --epoch $EPOCH --log info --python-install-lib /opt/graphite/webapp -f -s python -t deb graphite-web-master/setup.py
+  fpm --epoch $EPOCH --log info --python-install-lib /opt/graphite/webapp -f -s python -t deb graphite-web-https_intracluster/setup.py
   rm -rf carbon-master
   rm -rf whisper-master
   rm -rf graphite-web-https_intracluster
@@ -253,7 +253,7 @@ FILES="python-carbon_0.9.10_all.deb python-whisper_0.9.10_all.deb python-graphit
 
 # Download Python requests-aws for Zabbix monitoring
 if ! [[ -f python-requests-aws_0.1.5_all.deb ]]; then
-  fpm --deb-no-default-config-files --log info -s python -t deb -v 0.1.5 requests-aws
+  fpm --log info -s python -t deb -v 0.1.5 requests-aws
 fi
 FILES="python-requests-aws_0.1.5_all.deb $FILES"
 

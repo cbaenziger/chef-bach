@@ -11,27 +11,35 @@ ip = ips.select {|ip,v| v['family'] == "inet" and v['scope'] == "Global"}.first
 
 name "BCPC-OpenStack-Client"
 description "Role for BCPC Cluster Machines Running on OpenStack"
-override_attributes "bcpc" => {
+run_list(
+  'recipe[bcpc::openstack]'
+)
+override_attributes(
+    "bcpc" => {
       "domain_name" => o["domain"],
-      "management" => {
-        "vip" => false,
-        "interface" => "eth0",
-        "netmask" => ip[1]["netmask"],
-        "cidr" => "#{(IPAddr.new "#{ip[0]}/#{ip[1]["prefixlen"]}").to_range().first.to_string()}/#{ip[1]["prefixlen"]}",
-        "gateway" => o["network"]["default_gateway"]
-      },
-      "storage" => {
-        "interface" => "eth0",
-        "netmask" => ip[1]["netmask"],
-        "cidr" => "#{(IPAddr.new "#{ip[0]}/#{ip[1]["prefixlen"]}").to_range().first.to_string()}/#{ip[1]["prefixlen"]}",
-        "gateway" => o["network"]["default_gateway"]
-      },
-      "floating" => {
-        "vip" => false,
-        "interface" => "eth0",
-        "netmask" => ip[1]["netmask"],
-        "cidr" => "#{(IPAddr.new "#{ip[0]}/#{ip[1]["prefixlen"]}").to_range().first.to_string()}/#{ip[1]["prefixlen"]}",
-        "gateway" => o["network"]["default_gateway"]
+      "networks" => {
+        "subnet1" => {
+          "management" => {
+            "vip" => false,
+            "interface" => "eth0",
+            "netmask" => ip[1]["netmask"],
+            "cidr" => "#{(IPAddr.new "#{ip[0]}/#{ip[1]["prefixlen"]}").to_range().first.to_string()}/#{ip[1]["prefixlen"]}",
+            "gateway" => o["network"]["default_gateway"]
+          },
+          "storage" => {
+            "interface" => "eth0",
+            "netmask" => ip[1]["netmask"],
+            "cidr" => "#{(IPAddr.new "#{ip[0]}/#{ip[1]["prefixlen"]}").to_range().first.to_string()}/#{ip[1]["prefixlen"]}",
+            "gateway" => o["network"]["default_gateway"]
+          },
+          "floating" => {
+            "vip" => false,
+            "interface" => "eth0",
+            "netmask" => ip[1]["netmask"],
+            "cidr" => "#{(IPAddr.new "#{ip[0]}/#{ip[1]["prefixlen"]}").to_range().first.to_string()}/#{ip[1]["prefixlen"]}",
+            "gateway" => o["network"]["default_gateway"]
+          }
+        }
       },
       "bootstrap" => {
         "admin_users" => [],
@@ -46,3 +54,4 @@ override_attributes "bcpc" => {
     "chef_client" => {
       "server_url" => "http://#{ip[0]}:4000"
     }
+)

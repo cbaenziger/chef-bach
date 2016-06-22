@@ -7,6 +7,7 @@ require 'uri'
 require 'vagrant-openstack-plugin'
 
 OS_TENANTNAME=ENV["OS_TENANT_NAME"]
+raise ArgumentError, "Need OS_AUTH_URL to be set" if not ENV["OS_AUTH_URL"]
 OS_ENDPOINT=URI.parse(ENV["OS_AUTH_URL"]).host
 DNS_DOMAIN=""
 
@@ -14,7 +15,7 @@ raise ArgumentError, "DNS_DOMAIN not set. DNS_DOMAIN should be the DNS domain of
 
 # load Chef environment
 base_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
-json_file = Dir[File.join(File.join(base_dir, 'environments'), '*.json')]
+json_file = Dir[File.join(File.join(base_dir, 'stub-environment/environments'), '*.json')]
 if json_file.empty?
   puts "No environment file found to parse. Please make sure at least one environment file exists."
   exit
@@ -46,7 +47,7 @@ FLOATING_IPS=["1.2.3.4", "1.2.3.5", "1.2.3.6", "1.2.3.7"]
 CLUSTER_NAME=""
 
 # cluster disk size
-DISK_SIZE=10
+DISK_SIZE=20
 
 # these rules come from bcpc::powerdns SQL function dns_name
 def munge_domainname(domainname)
@@ -69,8 +70,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vm_settings = Proc.new { |os|
      os.username     = ENV["OS_USERNAME"]          # e.g. "#{ENV['OS_USERNAME']}"
      os.api_key      = ENV["OS_PASSWORD"]           # e.g. "#{ENV['OS_PASSWORD']}"
-     os.flavor       = /m1.large/                # Regex or String
-     os.image        = /Ubuntu 12.04.2 LTS/                 # Regex or String
+     os.flavor       = /m1.xlarge/                # Regex or String
+     os.image        = /Ubuntu 12.04.5 LTS/                 # Regex or String
      os.endpoint     = "https://#{OS_ENDPOINT}:5000/v2.0/tokens"      # e.g. "#{ENV['OS_AUTH_URL']}/tokens"
      os.keypair_name = "Vagrant-Test"      # as stored in Nova
      os.ssh_username = "ubuntu"           # login for the VM
@@ -124,7 +125,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ips = openstack_compute.servers.get(id).private_ip_addresses
       if not ips.length() == 1
         nil
-        puts "Unable to find IP for #{CLUSTER_NAME}bcpc-#{idx} found #{ips.length()} IPs"
+        puts "Unable to find IP for #{CLUSTER_NAME}bcpc-#{id} found #{ips.length()} IPs"
       end
       vm1_fixed_ip = ips.first
     end
