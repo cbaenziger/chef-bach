@@ -2,7 +2,6 @@
   "name": "Test-Laptop",
   "override_attributes": {
     "bcpc": {
-      "domain_name" : "bcpc.example.com",
       "management": {
         "vip" : "10.0.100.5"
       },
@@ -25,7 +24,8 @@
         "hostname" : "bcpc-bootstrap",
         "server" : "10.0.100.3",
         "dhcp_subnet" : "10.0.100.0",
-        "dhcp_range" : "10.0.100.14 10.0.100.250"
+        "dhcp_range" : "10.0.100.14 10.0.100.250",
+        "proxy" : "http://devproxy.bloomberg.com:82"
       },
       "repos" : {
         "hortonworks": "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.4.0",
