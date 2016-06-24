@@ -5,9 +5,9 @@ default["bcpc"]["hadoop"]["hive"]["hive_table_stats_db_user"] =
 default["bcpc"]["hadoop"]["hive"]["server2"]["authentication"] =
   'KERBEROS'
 default["bcpc"]["hadoop"]["hive"]["server2"]["ldap_url"] =
-  'ldap://bcpc.example.com'
+  "ldap://#{node[:bcpc][:domain_name]}"
 default["bcpc"]["hadoop"]["hive"]["server2"]["ldap_domain"] =
-  'bcpc.example.com'
+  node[:bcpc][:domain_name]
 default["bcpc"]["hadoop"]["hive"]["server2"]["port"] = '10000'
 
 # These will become key/value pairs in 'hive_site.xml'
