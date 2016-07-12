@@ -2,19 +2,14 @@
   "name": "Test-Laptop",
   "override_attributes": {
     "bcpc": {
-      "management": {
-        "vip" : "10.0.100.5"
-      },
-      "floating": {
-        "vip" : "192.168.100.5"
-      },
+      "domain_name": "bcpc.example.com.",
       "networks": {
         "subnet1": {
           "management": {
-            "vip" : "10.0.100.5"
+            "vip" : ""
           },
           "floating": {
-            "vip" : "192.168.100.5"
+            "vip" : ""
           }
         }
       },
@@ -24,8 +19,7 @@
         "hostname" : "bcpc-bootstrap",
         "server" : "10.0.100.3",
         "dhcp_subnet" : "10.0.100.0",
-        "dhcp_range" : "10.0.100.14 10.0.100.250",
-        "proxy" : "http://devproxy.bloomberg.com:82"
+        "dhcp_range" : "10.0.100.14 10.0.100.250"
       },
       "repos" : {
         "hortonworks": "http://public-repo-1.hortonworks.com/HDP/ubuntu12/2.x/updates/2.3.4.0",
@@ -35,6 +29,9 @@
           "profile" : ""
       },
       "hadoop" : {
+        "kerberos": {
+          "enable": false
+        },
         "yarn" : {
           "resourcemanager" : {
             "yarn.client.failover-sleep-base-ms": 30000
