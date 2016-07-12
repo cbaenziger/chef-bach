@@ -19,7 +19,7 @@
 
 include_recipe "bcpc::default"
 
-bootstrap = get_all_nodes.select{|s| s.hostname.include? 'bootstrap'}[0].fqdn
+bootstrap = get_all_nodes.select{|s| s.hostname.include? node[:bcpc][:bootstrap][:hostpattern]}[0].fqdn
 
 nodes = get_nodes_for("mysql").map!{ |x| x['fqdn'] }.join(",")
 

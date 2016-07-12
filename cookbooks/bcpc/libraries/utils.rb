@@ -34,7 +34,7 @@ end
 # memrize function to bootstrap info
 def get_bootstrap
   return $bootstrap if defined? $bootstrap
-  $bootstrap = get_all_nodes.select{|s| s.hostname.include? 'bootstrap'}[0].fqdn
+  $bootstrap = get_all_nodes.select{|s| s.hostname.include? node[:bcpc][:bootstrap][:hostpattern]}[0].fqdn
   return $bootstrap
 end
 

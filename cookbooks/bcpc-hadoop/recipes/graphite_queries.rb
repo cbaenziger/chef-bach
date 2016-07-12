@@ -1,5 +1,5 @@
 # Get a list of cluster nodes to monitor
-monitored_nodes_objs = get_all_nodes.select { |n| not n.hostname =~ /bootstrap/ }.compact
+monitored_nodes_objs = get_all_nodes.select { |n| not n.hostname.include? node[:bcpc][:bootstrap][:hostpattern] }.compact
 
 # Graphite queries which specify property to query and alarming trigger,
 # severity(maps to zabbix's api -> trigger -> priority)and owner who the
@@ -11,12 +11,12 @@ monitored_nodes_objs = get_all_nodes.select { |n| not n.hostname =~ /bootstrap/ 
 # By default items, triggers actions are disabled and won't be monitored.
 # To enable them, set "enable=true" in the json structure
 triggers = {
-  'bcpc-bootstrap' => {
-    'chef.bcpc-bootstrap.success' => {
+  node[:bcpc][:bootstrap][:hostpattern] => {
+    "chef.#{node[:bcpc][:bootstrap][:hostpattern]}.success" => {
       'query' => "chef.*.success",
       'trigger_val' => "max(30m)",
       'trigger_cond' => "=0",
-      'trigger_name' => "bcpc-bootstrap_ChefClientNotRun",
+      'trigger_name' => "#{node[:bcpc][:bootstrap][:hostpattern]}_ChefClientNotRun",
       'enable' => true,
       'trigger_desc' => "Chef-client hasn't run in 30m",
       'severity' => 2,

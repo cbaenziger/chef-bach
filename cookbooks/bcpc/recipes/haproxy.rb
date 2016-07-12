@@ -27,7 +27,7 @@ if haproxy_stats_password.nil?
   haproxy_stats_password = secure_password
 end
 
-bootstrap = get_all_nodes.select{|s| s.hostname.include? 'bootstrap'}[0].fqdn
+bootstrap = get_all_nodes.select{|s| s.hostname.include? node[:bcpc][:bootstrap][:hostpattern]}[0].fqdn
 
 nodes = get_nodes_for("haproxy").map!{ |x| x['fqdn'] }.join(",")
 
