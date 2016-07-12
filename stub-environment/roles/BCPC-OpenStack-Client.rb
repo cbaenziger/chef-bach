@@ -11,6 +11,11 @@ ip = ips.select {|ip,v| v['family'] == "inet" and v['scope'] == "Global"}.first
 
 name "BCPC-OpenStack-Client"
 description "Role for BCPC Cluster Machines Running on OpenStack"
+
+run_list(
+  "recipe[bcpc::openstack]"
+)
+
 override_attributes(
     "bcpc" => {
       "domain_name" => o["domain"],
@@ -43,7 +48,8 @@ override_attributes(
         "admin" => {
           "user" => "ubuntu",
           "group" => "ubuntu"
-        }
+        },
+        "hostpattern" => "bcpc-chef"
       },
       "dns_servers" => [ o["network"]["default_gateway"] ],
       "ntp_servers" => [ o["network"]["default_gateway"] ]
