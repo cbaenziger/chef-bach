@@ -112,6 +112,7 @@ generated_values =
    '&password=' + hive_site_vars[:stats_sql_password],
 }
 
+hs2_auth_values = {}
 if hive_site_vars[:kerberos_enabled] &&
   hive_site_vars[:hs2_auth] == 'KERBEROS'
   hs2_auth_values = {
