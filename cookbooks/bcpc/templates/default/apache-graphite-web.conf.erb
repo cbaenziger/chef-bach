@@ -5,10 +5,10 @@
 ################################################
 
 Listen <%="#{node[:bcpc][:graphite][:ip]}"%>:<%="#{node[:bcpc][:graphite][:web_port]}"%>
-Listen <%="#{node[:bcpc][:management][:ip]}"%>:<%="#{node[:bcpc][:graphite][:web_port]}"%>
+<%= "Listen #{node[:bcpc][:management][:ip]}:#{node[:bcpc][:graphite][:web_port]}" if node[:bcpc][:graphite][:ip] != node[:bcpc][:management][:ip] %>
 NameVirtualHost <%="#{node[:bcpc][:management][:ip]}"%>:443
 
-<VirtualHost <%="#{node[:bcpc][:graphite][:ip]}"%>:<%="#{node[:bcpc][:graphite][:web_port]}"%> <%="#{node[:bcpc][:management][:ip]}"%>:443 <%="#{node[:bcpc][:management][:ip]}"%>:<%="#{node[:bcpc][:graphite][:web_port]}"%>>
+<VirtualHost <%= "#{node[:bcpc][:graphite][:ip]}" %>:<%= "#{node[:bcpc][:graphite][:web_port]}"%> <%= "#{node[:bcpc][:management][:ip]}"%>:443 <%= "#{node[:bcpc][:management][:ip]}:#{node[:bcpc][:graphite][:web_port]}" if node[:bcpc][:graphite][:ip] != node[:bcpc][:management][:ip] %>>
     ServerName "graphite.<%="#{node[:bcpc][:domain_name]}"%>"
 
     DocumentRoot "/opt/graphite/webapp"
