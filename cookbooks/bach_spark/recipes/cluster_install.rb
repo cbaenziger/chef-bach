@@ -5,8 +5,8 @@ hdfs_url = node['spark']['hdfs_url']
 bash "create-hdfs-spark-history-dir" do
   code <<-EOH
   hdfs dfs -mkdir -p #{hdfs_url}/spark-history/
-  hdfs dfs -chmod -R 1777 #{hdfs_url}/spark-history/
-  hdfs dfs -chown -R hdfs:hdfs #{hdfs_url}/spark-history
+  hdfs dfs -chmod 1777 #{hdfs_url}/spark-history/
+  hdfs dfs -chown hdfs:hdfs #{hdfs_url}/spark-history
   EOH
   user "hdfs"
   not_if "hdfs dfs -test -d #{hdfs_url}/spark-history", :user => 'hdfs'
