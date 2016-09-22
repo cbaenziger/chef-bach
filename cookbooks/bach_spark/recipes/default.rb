@@ -1,5 +1,5 @@
 spark_pkg_version = node[:spark][:package][:version]
-spark_bin_dir = node[:spark][:bin][:dir]
+spark_install_dir = node[:spark][:install][:dir]
 
 if node[:spark][:package][:install_meta] == true
   package 'spark' do
@@ -11,7 +11,7 @@ else
   end
 end
 
-template "#{spark_bin_dir}/conf/spark-env.sh" do
+template "#{spark_install_dir}/conf/spark-env.sh" do
   source 'spark-env.sh.erb'
   mode 0755
   helper :config do
@@ -20,7 +20,7 @@ template "#{spark_bin_dir}/conf/spark-env.sh" do
   helpers(Spark::Configuration)
 end
 
-template "#{spark_bin_dir}/conf/spark-defaults.conf" do
+template "#{spark_install_dir}/conf/spark-defaults.conf" do
   source 'spark-defaults.conf.erb'
   mode 0755
   helper :config do
@@ -29,12 +29,12 @@ template "#{spark_bin_dir}/conf/spark-defaults.conf" do
   helpers(Spark::Configuration)
 end
 
-link "/#{spark_bin_dir}/lib/spark-yarn-shuffle.jar" do
-  to "#{spark_bin_dir}/lib/spark-#{spark_pkg_version}-yarn-shuffle.jar"
+link "/#{spark_install_dir}/lib/spark-yarn-shuffle.jar" do
+  to "#{spark_install_dir}/lib/spark-#{spark_pkg_version}-yarn-shuffle.jar"
 end
 
 link '/usr/spark/current' do
-  to "#{spark_bin_dir}"
+  to "#{spark_install_dir}"
 end
 
 # install fortran libs needed by some jobs

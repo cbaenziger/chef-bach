@@ -7,11 +7,11 @@ spark_pkg_prefix = node[:spark][:package][:prefix]
 spark_pkg_version = node[:spark][:package][:version]
 spark_extract_dir = "/tmp"
 
-gem_package "fpm" do
+gem_package 'fpm' do
    action :install
 end
 
-package "equivs" do
+package 'equivs' do
     action :install
 end
 
@@ -20,12 +20,12 @@ remote_file "#{spark_download_dir}/#{spark_tar_file}" do
   not_if { File.exists?("#{spark_download_dir}/#{spark_tar_file}") || File.exists?("#{spark_download_dir}/#{spark_pkg_prefix}_#{spark_pkg_version}_amd64.deb") }
 end
 
-execute "extract spark tar" do
+execute 'extract spark tar' do
   command "tar xvf #{spark_tar_file} -C #{spark_extract_dir}"
   cwd spark_download_dir
 end
 
-bash "build_spark_package" do
+bash 'build_spark_package' do
   cwd "#{spark_extract_dir}/#{spark_file_name}"
   user 'root'
   group 'root'
@@ -34,12 +34,12 @@ bash "build_spark_package" do
   }
   umask 0002
   not_if { File.exists?("#{spark_download_dir}/#{spark_pkg_prefix}-#{spark_pkg_version}_#{spark_pkg_version}_amd64.deb") } 
-  notifies :run, "bash[build_bins]", :delayed
+  notifies :run, 'bash[build_bins]', :delayed
 end
 
 if node[:spark][:package][:install_meta] == true then
-  template "/home/vagrant/chef-bcpc/bins/spark-metapkg" do
-  source "spark-metapackage.erb"
+  template '/home/vagrant/chef-bcpc/bins/spark-metapkg' do
+  source 'spark-metapackage.erb'
   variables(
     :meta_version => spark_pkg_version,
     :package_name => "#{spark_pkg_prefix}-#{spark_pkg_version}",
