@@ -53,11 +53,18 @@ package 'debconf-utils'
   'root_password',
   'root_password_again'
 ].each do |preseed_item|
-  execute "percona-preseed-#{preseed_item}" do
-    command 'echo "percona-xtradb-cluster-server-5.6 ' \
-      "percona-xtradb-cluster-server/#{preseed_item} " \
-      "password #{root_password}\" | debconf-set-selections"
+  deb_conf_password_file = ::File.join(Chef::Config.file_cache_path,
+                                       "percona-preseed-#{preseed_item}_file")
+  file deb_conf_password_file do
+    content 'percona-xtradb-cluster-server-5.6 ' \
+            "percona-xtradb-cluster-server/#{preseed_item} "\
+            "password #{root_password}"
+    mode 0400
     sensitive true if respond_to?(:sensitive)
+  end
+
+  execute "percona-preseed-#{preseed_item}" do
+    command "debconf-set-selections #{deb_conf_password_file}"
   end
 end
 
@@ -76,6 +83,7 @@ end
 template '/etc/mysql/debian.cnf' do
   source 'mysql/my-debian.cnf.erb'
   mode 00644
+  sensitive true if respond_to?(:sensitive)
   notifies :reload, 'service[mysql]', :delayed
 end
 
