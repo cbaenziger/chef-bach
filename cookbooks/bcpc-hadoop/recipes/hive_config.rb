@@ -35,13 +35,14 @@ hive_site_vars = {
   :zk_hosts => node[:bcpc][:hadoop][:zookeeper][:servers],
   :hive_hosts => node[:bcpc][:hadoop][:hive_hosts],
   :stats_user => stats_user,
-  :warehouse => "#{node['bcpc']['hadoop']['hdfs_url']}/user/hive/warehouse",
+  :warehouse => node[:bcpc][:hadoop][:hive][:warehouse][:dir],
+  :scratch => node[:bcpc][:hadoop][:hive][:scratch][:dir],
   :metastore_keytab => "#{node[:bcpc][:hadoop][:kerberos][:keytab][:dir]}/#{node[:bcpc][:hadoop][:kerberos][:data][:hive][:keytab]}",
   :server_keytab => "#{node[:bcpc][:hadoop][:kerberos][:keytab][:dir]}/#{node[:bcpc][:hadoop][:kerberos][:data][:hive][:keytab]}",
   :kerberos_enabled => node[:bcpc][:hadoop][:kerberos][:enable],
-  :hs2_auth => node["bcpc"]["hadoop"]["hive"]["server2"]["authentication"],
-  :hs2_ldap_url => node["bcpc"]["hadoop"]["hive"]["server2"]["ldap_url"],
-  :hs2_ldap_domain => node["bcpc"]["hadoop"]["hive"]["server2"]["ldap_domain"]
+  :hs2_auth => node[:bcpc][:hadoop][:hive][:server2][:authentication],
+  :hs2_ldap_url => node[:bcpc][:hadoop][:hive][:server2][:ldap_url],
+  :hs2_ldap_domain => node[:bcpc][:hadoop][:hive][:server2][:ldap_domain]
 }
 
 hive_site_vars[:hive_sql_password] = \
@@ -103,6 +104,9 @@ generated_values =
 
  'hive.metastore.warehouse.dir' =>
    hive_site_vars[:warehouse],
+
+ 'hive.exec.scratchdir' =>
+   hive_site_vars[:scratch],
 
  'hive.stats.dbconnectionstring' =>
    'jdbc:mysql:loadbalance://' + hive_site_vars[:mysql_hosts].join(',') +
