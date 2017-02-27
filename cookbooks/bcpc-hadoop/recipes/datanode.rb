@@ -272,14 +272,14 @@ locking_resource "hadoop-hdfs-datanode-restart" do
   action :serialize_process
   subscribes :serialize, "link[/etc/init.d/hadoop-hdfs-datanode]", :delayed
   subscribes :serialize, "template[/etc/hadoop/conf/hdfs-site.xml]", :immediate
-  subscribes :serialize, "template[/etc/hadoop/conf/hadoop-metrics2.properties]", :immediate
+  subscribes :serialize,
+    "template[/etc/hadoop/conf/hadoop-metrics2.properties]", :immediate
   subscribes :serialize, "template[/etc/hadoop/conf/hadoop-env.sh]", :immediate
   subscribes :serialize, "template[/etc/hadoop/conf/topology]", :immediate
   subscribes :serialize, "user_ulimit[hdfs]", :immediate
   subscribes :serialize, "user_ulimit[root]", :immediate
   subscribes :serialize, "bash[hdp-select hadoop-hdfs-datanode]", :immediate
   subscribes :serialize, "log[jdk-version-changed]", :immediate
->>>>>>> locking resource and Chef12
 end
 
 service "hadoop-yarn-nodemanager" do
