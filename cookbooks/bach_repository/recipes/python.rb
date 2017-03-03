@@ -27,17 +27,17 @@ end
 if node[:bach][:repository][:pypi_mirror]
   require 'uri'
   uri = URI.parse(node[:bach][:repository][:pypi_mirror])
-  pip_cheese_shop_option = "-i #{uri.to_s} --trusted-host #{uri.host}"
+  pip_cheese_shop_option = "-i #{uri} --trusted-host #{uri.host}"
 else
   pip_cheese_shop_option = ''
 end
 
 pip_environment = {}
-pip_environment.update({http_proxy: node['bach']['http_proxy']}) if \
+pip_environment.update(http_proxy: node['bach']['http_proxy']) if \
   node['bach']['http_proxy']
-pip_environment.update({https_proxy: node['bach']['https_proxy']}) if \
+pip_environment.update(https_proxy: node['bach']['https_proxy']) if \
   node['bach']['https_proxy']
-pip_environment.update({no_proxy: ENV['no_proxy']}) if ENV['no_proxy']
+pip_environment.update(no_proxy: ENV['no_proxy']) if ENV['no_proxy']
 
 remote_file get_pip_path do
   source 'https://raw.githubusercontent.com/pypa/pip/8.0.0/contrib/get-pip.py'
@@ -49,9 +49,9 @@ execute 'get-pip.py' do
   command "#{get_pip_path} " \
     "#{pip_cert_option} #{pip_cheese_shop_option}"
   environment pip_environment
-  not_if {
+  not_if do
     version_string =
-      if File.exists?('/usr/local/bin/pip')
+      if File.exist?('/usr/local/bin/pip')
         cmd =
           Mixlib::ShellOut.new('/usr/local/bin/pip show pip | ' \
                                "grep ^Version | awk '{print $2}'")
@@ -60,12 +60,12 @@ execute 'get-pip.py' do
         '0.0'
       end
     Gem::Version.new(version_string) >= Gem::Version.new('8.0')
-  }
+  end
 end
 
 file '/etc/pip.conf' do
   mode 0444
-  content <<-EOM.gsub(/^ {4}/,'')
+  content <<-EOM.gsub(/^ {4}/, '')
     [global]
     cert = /etc/ssl/certs/ca-certificates.crt
   EOM
@@ -78,24 +78,24 @@ end
 # We should probably set up virtualenv to make this easier to distribute.
 #
 [
- ['packaging', '16.8'],
- ['appdirs', '1.4'],
- ['setuptools', '34.0'],
- ['pip2pi', '0.6.8']
+  ['packaging', '16.8'],
+  ['appdirs', '1.4'],
+  ['setuptools', '34.0'],
+  ['pip2pi', '0.6.8']
 ].each do |package_name, min_version|
   execute "new-pip-upgrade-#{package_name}" do
     command '/usr/local/bin/pip ' \
       "install #{package_name} --no-use-wheel --upgrade " \
       "#{pip_cert_option} #{pip_cheese_shop_option}"
     environment pip_environment
-    not_if {
+    not_if do
       get_version =
         Mixlib::ShellOut.new("/usr/local/bin/pip show #{package_name} | " \
                              "grep ^Version | awk '{print $2}'")
       min_version = Gem::Version.new(min_version)
       actual_version = Gem::Version.new(get_version.run_command.stdout.chomp)
       actual_version >= min_version
-    }
+    end
   end
 end
 
