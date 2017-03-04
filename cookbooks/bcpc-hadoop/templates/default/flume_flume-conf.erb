@@ -4,19 +4,35 @@
 <%= @agent_name %>.sources = pstream
 <%= @agent_name %>.sources.pstream.channels = memoryChannel
 <%= @agent_name %>.sources.pstream.type = exec
-<%= @agent_name %>.sources.pstream.command = tail -f <%= @log_location %>
+<%= @agent_name %>.sources.pstream.command = tail -F <%= @log_location %>
+
 <%= @agent_name %>.sinks = hdfsSink
 <%= @agent_name %>.sinks.hdfsSink.type = hdfs
 <%= @agent_name %>.sinks.hdfsSink.channel = memoryChannel
 <%= @agent_name %>.sinks.hdfsSink.hdfs.useLocalTimeStamp = true
-<%= @agent_name %>.sinks.hdfsSink.hdfs.path = <%= node['bcpc']['hadoop']['hdfs_url'] %>/user/flume/logs/%y-%m-%d
+<%= @agent_name %>.sinks.hdfsSink.hdfs.round = true
+<%= @agent_name %>.sinks.hdfsSink.hdfs.roundUnit = minute
+<%= @agent_name %>.sinks.hdfsSink.hdfs.roundValue = 10
+<%= @agent_name %>.sinks.hdfsSink.hdfs.path = <%= node['bcpc']['hadoop']['hdfs_url'] %>/var/log/<%= @agent_name %>/%y-%m-%d
 <%= @agent_name %>.sinks.hdfsSink.hdfs.filePrefix = <%= @agent_name %>-<%= node.hostname %>
-<%= @agent_name %>.sinks.hdfsSink.hdfs.fileType = DataStream
+<%= @agent_name %>.sinks.hdfsSink.hdfs.fileType = CompressedStream
+<%= @agent_name %>.sinks.hdfsSink.hdfs.codeC = snappy
 <%= @agent_name %>.sinks.hdfsSink.hdfs.writeFormat = Text
-<%= @agent_name %>.sinks.hdfsSink.hdfs.rollInterval = <%= node['bcpc']['hadoop']['copylog_rollup_interval'] %>
-<%= @agent_name %>.sinks.hdfsSink.hdfs.rollSize = 0
+# WARNING: read FLUME-1850: HDFSSink lower hdfs.maxOpenFiles to 100
+# to understand roll semantics and garbage collection processes
+<%= @agent_name %>.sinks.hdfsSink.hdfs.maxOpenFiles = 1
 <%= @agent_name %>.sinks.hdfsSink.hdfs.rollCount = 0
+<%= @agent_name %>.sinks.hdfsSink.hdfs.rollInterval = <%= node['bcpc']['hadoop']['copylog_rollup_interval'] %>
+<%= @agent_name %>.sinks.hdfsSink.hdfs.rollSize = <%= node['bcpc']['hadoop']['copylog_rollup_size'] %>
 <% if node[:bcpc][:hadoop][:kerberos][:enable] %>
 <%= @agent_name %>.sinks.hdfsSink.hdfs.kerberosPrincipal = <%= node['bcpc']['hadoop']['kerberos']['data']['flume']['principal'] %>/<%=float_host(node[:hostname])%>@<%= node['bcpc']['hadoop']['kerberos']['realm'] %>
 <%= @agent_name %>.sinks.hdfsSink.hdfs.kerberosKeytab = <%= node['bcpc']['hadoop']['kerberos']['keytab']['dir'] %>/<%= node['bcpc']['hadoop']['kerberos']['data']['flume']['keytab'] %>
 <% end %>
+
+node['bcpc']['hadoop']['hdfs']['dfs_blocksize']
+def format_mb(size)
+  suffixes = [ 'b', 'k', 'm', 'g', 't', 'p', 'e' ]
+  multiplier = suffixes.index(size[-1].downcase) - 1
+  size = size.slice(0, size.length-1).to_i if multiplier
+  multiplier ? size * multiplier * 1024 : size
+end
