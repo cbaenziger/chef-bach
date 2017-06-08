@@ -33,6 +33,12 @@ suites:
           repo_directory: "/test/repo_dir",
           bundler_bin: "/opt/chef/embedded/bin/bundle",
           gem_bin: "/opt/chef/embedded/bin/gem"
+        },
+        repository_test: {
+          chef-bach: {
+            uri: "https://github.com/cbaenziger/chef-bach",
+            branch: bundler_fix
+          }
         }
       }
     }

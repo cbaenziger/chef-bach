@@ -46,6 +46,11 @@ execute 'bundler install' do
   user 'vagrant'
 end
 
+# bundler install seems to sudo change this to be owned by root
+execute 'correct bundler permissions' do
+  command "chown -R vagrant /home/vagrant/.bundle"
+end
+
 execute 'bundler package' do
   cwd node['bach']['repository']['repo_directory']
   command "#{bundler_bin} package"
