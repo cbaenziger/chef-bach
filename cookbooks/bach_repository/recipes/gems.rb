@@ -33,6 +33,11 @@ EOF
   action :create
 end
 
+# bundler install seems to sudo change this to be owned by root
+execute 'correct bundler permissions' do
+  command "chown -R vagrant /home/vagrant/.bundle"
+end
+
 execute 'bundler install' do
   cwd node['bach']['repository']['repo_directory']
   command "#{bundler_bin} install"
@@ -44,11 +49,6 @@ execute 'bundler install' do
                             /usr/share/pkgconfig).join(':'),
     'PATH' => [::File.dirname(bundler_bin), ENV['PATH']].join(':')
   user 'vagrant'
-end
-
-# bundler install seems to sudo change this to be owned by root
-execute 'correct bundler permissions' do
-  command "chown -R vagrant /home/vagrant/.bundle"
 end
 
 execute 'bundler package' do
