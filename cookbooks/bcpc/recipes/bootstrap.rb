@@ -153,3 +153,7 @@ chefconflinks.each do |chefconflink|
     to vagrantchefconf
   end
 end
+
+link "/home/vagrant/chef-bcpc/.chef/#{node[:fqdn]}.pem" do
+  to '/etc/chef/client.pem'
+end
