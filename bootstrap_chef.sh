@@ -76,7 +76,7 @@ if [[ -z $VAGRANT ]]; then
   $SSH_CMD "cd $BCPC_DIR && ./setup_ssh_keys.sh ${KEYFILE}.pub"
 else
   echo "Running rsync of Vagrant install"
-  $SSH_CMD "rsync $RSYNCEXTRA -avP --exclude vbox --exclude .chef /chef-bcpc-host/ /home/vagrant/chef-bcpc/"
+  $SSH_CMD "rsync $RSYNCEXTRA -avP --exclude vbox --exclude .chef --exclude Gemfile.lock /chef-bcpc-host/ /home/vagrant/chef-bcpc/"
 fi
 
 
