@@ -118,7 +118,7 @@ default['bcpc']['hadoop']['kerberos']['data'] = {
     princhost: '_HOST',
     perms: '0440',
     spnego_keytab: 'spnego.service.keytab'
-  }
+  },
   hdfsdu: {
     principal: 'hdfsdu',
     keytab: 'hdfsdu.service.keytab',
