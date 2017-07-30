@@ -4,6 +4,10 @@ default["hadoop"]["hdfs"]["balancer"]["bandwidth"] = 1048576
 # balancer thread multiplier constant
 default["hadoop"]["hdfs"]["balancer"]["max_concurrent_moves_multiplier"] = 10
 
+default['bcpc']['hadoop']['datanode']['xmx']['max_size'] = 4_096                
+default['bcpc']['hadoop']['datanode']['xmx']['max_ratio'] = 0.25                
+default['bcpc']['hadoop']['datanode']['max']['xferthreads'] = 16_384 
+
 # JMX port mappings
 default['bcpc']['hadoop'].tap do |jmx|
   jmx['journalnode']['jmx']['port'] = 10110
@@ -48,6 +52,9 @@ default[:bcpc][:hadoop][:hdfs][:site_xml].tap do |site_xml|
   site_xml['dfs.namenode.audit.log.async'] =
     dfs[:namenode][:audit][:log][:async]
 
+  site_xml['dfs.datanode.sync.behind.writes'] = true
+  site_xml['dfs.datanode.synconclose'] = true
+  site_xml['dfs.namenode.stale.datanode.interval'] = 30_000
 
   site_xml['dfs.nameservices'] = node.chef_environment
 
