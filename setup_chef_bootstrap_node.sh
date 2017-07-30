@@ -23,8 +23,7 @@ sudo chmod 550 $PEM_RELATIVE_PATH
 [ ! -L /etc/chef/client.pem ] && \
   sudo ln -s $(readlink -f $PEM_RELATIVE_PATH) /etc/chef/client.pem
 [ ! -L ~/.chef ] && \
-  sudo ln -s $(readlink -f $PEM_RELATIVE_PATH) /etc/chef/client.pem
-sudo ln -s $(readlink -f .chef) ~/.chef
+  sudo ln -s $(readlink -f .chef) ~/.chef
 
 admin_val=`knife client show $(hostname -f) -c .chef/knife.rb | grep ^admin: | sed "s/admin:[^a-z]*//"`
 if [[ "$admin_val" != "true" ]]; then
