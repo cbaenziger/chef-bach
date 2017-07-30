@@ -1,7 +1,26 @@
-# Cookbook Name : hdfsdu
-# Recipe Name   : deploy.rb
-# Description   : Download, configure and start hdfsdu
+#
+# Cookbook Name:: hdfsdu
+# Recipe:: deploy
+#
+# Copyright 2017, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Downloads hdfsdu zip, configures and starts hdfsdu webservice
+# Will periodically compare hdfsdu data in HDFS and pull it down if it has
+# a newer timestamp than stored in the Chef node attribute
 
+require "mixlib/shellout"
 Chef::Resource.send(:extend, Hdfsdu::Helper)
 
 src_filename = "hdfsdu-service-#{node[:hdfsdu][:version]}-bin.zip"
@@ -22,102 +41,105 @@ hdfsdu_user_dir = "/user/#{hdfs_user}"
 hdfsdu_user_group = node[:hdfsdu][:hdfs_user_group] 
 
 ark "hdfsdu" do
-   url "#{node[:hdfsdu][:service_download_url]}/#{src_filename}"
-   path install_dir
-   owner owner
-   action :put
-   creates "lib/hdfsdu-service-#{node[:hdfsdu][:version]}.jar" 
+  url "#{node[:hdfsdu][:service_download_url]}/#{src_filename}"
+  path install_dir
+  owner owner
+  action :put
+  creates "lib/hdfsdu-service-#{node[:hdfsdu][:version]}.jar" 
 end
 
 directory "#{install_dir}/hdfsdu/bin" do
-   recursive true   
-   action :delete
+  recursive true   
+  action :delete
 end
 
 directory log_dir do
-   recursive true   
-   owner service_user
-   group service_group
-   action :create
+  recursive true   
+  owner service_user
+  group service_group
+  action :create
 end
 
 directory data_dir do
-   recursive true   
-   owner service_user
-   group service_group
-   mode '0777'
-   action :create
+  recursive true   
+  owner service_user
+  group service_group
+  mode '0777'
+  action :create
 end
 
 file "#{log_dir}/application.log" do
-   owner service_user
-   group service_group
-   action :create_if_missing 
+  owner service_user
+  group service_group
+  action :create_if_missing 
 end
 
 ruby_block "set_hdfsdu_permissions" do
-   block do
-      FileUtils.chmod_R 0755, Dir["#{install_dir}/hdfsdu/lib"]
-   end
-   action :nothing
-   subscribes :run, "ark[hdfsdu]", :immediately
+  block do
+    FileUtils.chmod_R 0755, Dir["#{install_dir}/hdfsdu/lib"]
+  end
+  action :nothing
+  subscribes :run, "ark[hdfsdu]", :immediately
 end
 
 template "hdfsdu_service" do
-   path "#{service_dir}/hdfsdu.conf"
-   source "hdfsdu.upstart.conf.erb"
-   owner owner
-   group group
-   mode file_mode
+  path "#{service_dir}/hdfsdu.conf"
+  source "hdfsdu.upstart.conf.erb"
+  owner owner
+  group group
+  mode file_mode
 end
 
 bash "create_hdfsdu_hdfs_dir" do
-   code "hdfs dfs -mkdir -p #{hdfsdu_user_dir}; hdfs dfs -chown #{hdfs_user}:#{hdfsdu_user_group} #{hdfsdu_user_dir}"
-   user "hdfs"
-   not_if "hdfs dfs -test -d #{hdfsdu_user_dir}"
+  code "hdfs dfs -mkdir -p #{hdfsdu_user_dir}; hdfs dfs -chown #{hdfs_user}:#{hdfsdu_user_group} #{hdfsdu_user_dir}"
+  user "hdfs"
+  not_if "hdfs dfs -test -d #{hdfsdu_user_dir}"
 end
 
 execute "fetch_usage_data" do
-   command "hdfs dfs -get #{hdfs_path}/data/hdfsdu.data #{data_dir}/hdfsdu.data.new"
-   only_if "hdfs dfs -test -e #{hdfs_path}/data/hdfsdu.data && [ \"#{node[:hdfsdu][:image_timestamp]}\" != \"$(hdfs dfs -stat #{hdfs_path}/data/hdfsdu.data)\" ]", :user => "#{hdfs_user}"
-   user hdfs_user 
-   notifies :delete, "file[#{data_dir}/hdfsdu.data]", :immediately
-   notifies :run, "execute[copy_new_file]", :immediately
+  command "hdfs dfs -get #{hdfs_path}/data/hdfsdu.data #{data_dir}/hdfsdu.data.new"
+  only_if "hdfs dfs -test -e #{hdfs_path}/data/hdfsdu.data && [ \"#{node[:hdfsdu][:image_timestamp]}\" != \"$(hdfs dfs -stat #{hdfs_path}/data/hdfsdu.data)\" ]", :user => "#{hdfs_user}"
+  user hdfs_user 
+  notifies :delete, "file[#{data_dir}/hdfsdu.data]", :immediately
+  notifies :run, "execute[copy_new_file]", :immediately
 end
 
 file "#{data_dir}/hdfsdu.data" do
-   action :nothing
+  action :nothing
 end
 
 execute "copy_new_file" do
-   command "mv #{data_dir}/hdfsdu.data.new #{data_dir}/hdfsdu.data"
-   action :nothing
-   notifies :run, "ruby_block[update_timestamp]", :immediately
+  command "mv #{data_dir}/hdfsdu.data.new #{data_dir}/hdfsdu.data"
+  action :nothing
+  notifies :run, "ruby_block[update_timestamp]", :immediately
 end
 
 ruby_block "update_timestamp" do
-   block do 
-      node.set[:hdfsdu][:image_timestamp] = %x[sudo -u #{hdfs_user} hdfs dfs -stat #{hdfs_path}/data/hdfsdu.data].strip
-      node.save
-   end
-   action :nothing
+  block do 
+    check_hdfs_timestamp = "sudo -u #{hdfs_user} hdfs dfs -stat #{hdfs_path}/data/hdfsdu.data"
+    cmd = Mixlib::ShellOut.new(check_hdfs_timestamp, :timeout => 30).run_command
+    cmd.error!
+    node.set[:hdfsdu][:image_timestamp] = cmd.stdout.strip
+    node.save
+  end
+  action :nothing
 end
 
 # Start service only if the data file is >20bytes. This is because initial fsimage doesnt record any directories
 # and hdfsdu service fails to start.
 service "hdfsdu" do
-   provider Chef::Provider::Service::Upstart
-   supports :status => true, :restart => true 
-   action [:enable, :start]
-   only_if { ::File.exists?("#{data_dir}/hdfsdu.data") and ::File.stat("#{data_dir}/hdfsdu.data").size > 20 }
-   subscribes :restart, "ruby_block[update_timestamp]", :delayed
-   notifies :run, "ruby_block[wait_for_hdfsdu]", :delayed
+  provider Chef::Provider::Service::Upstart
+  supports :status => true, :restart => true 
+  action [:enable, :start]
+  only_if { ::File.exists?("#{data_dir}/hdfsdu.data") and ::File.stat("#{data_dir}/hdfsdu.data").size > 20 }
+  subscribes :restart, "ruby_block[update_timestamp]", :delayed
+  notifies :run, "ruby_block[wait_for_hdfsdu]", :delayed
 end
 
 # Confirm service did start; try until timeout and fail
 ruby_block "wait_for_hdfsdu" do
-   block do 
-      Hdfsdu::Helper.wait_until_ready("HDFSDU", node[:hdfsdu][:service_endpoint], node[:hdfsdu][:service_timeout]) 
-   end
-   action :nothing
+  block do 
+    Hdfsdu::Helper.wait_until_ready("HDFSDU", node[:hdfsdu][:service_endpoint], node[:hdfsdu][:service_timeout]) 
+  end
+  action :nothing
 end
