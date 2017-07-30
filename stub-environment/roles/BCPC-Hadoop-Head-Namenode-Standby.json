@@ -5,6 +5,8 @@
     "role[Basic]",
     "recipe[bcpc-hadoop::configs]",
     "recipe[bcpc-hadoop::namenode_standby]",
+    "recipe[bcpc-hadoop::hdfsdu_pre_deploy]",
+    "recipe[hdfsdu::deploy]",
     "recipe[bcpc_jmxtrans]"
   ],
   "description": "A highly-available head node in a BCPC Hadoop cluster",
