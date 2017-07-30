@@ -37,7 +37,7 @@ default[:hdfsdu][:hdfs_path] = "/user/#{node[:hdfsdu][:hdfs_user]}/hdfsdu"
 # Ordered list of jars required to compile hdfsdu source
 default[:hdfsdu][:dependent_jars] = [ '/usr/hdp/current/hadoop-client/hadoop-common.jar', 
                                       '/usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-client-core.jar', 
-                                      '/usr/hdp/current/pig-client/pig-0.14.0.2.2.0.0-2041-core-h2.jar' ]
+                                      '/usr/hdp/current/pig-client/pig*core*.jar' ]
 default[:hdfsdu][:jobtracker] = 'localhost:8032'
 default[:hdfsdu][:namenode] = 'hdfs://test'
 default[:hdfsdu][:mr_queue] = 'default'
@@ -48,4 +48,9 @@ default[:hdfsdu][:oozie_timezone] = 'UTC'
 default[:hdfsdu][:oozie_url] = 'http://localhost:11000/oozie'
 
 # Attribute stores the latest hdfsdu data timestamp that the server is serving
+# will be updated as a node attribute later
 default[:hdfsdu][:image_timestamp] = "2015-04-09 00:00:00"
+
+default['hdfsdu']['maven']['repository'] = 'http://maven.twttr.com'
+default['maven']['repositories'] = ( node['maven']['repositories'] || nil ) + \
+                                     [ node['hdfsdu']['maven']['repository'] ]

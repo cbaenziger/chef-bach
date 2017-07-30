@@ -23,6 +23,8 @@
     "recipe[bcpc-hadoop::tez]",
     "recipe[bcpc-hadoop::mahout]",
     "recipe[bcpc-hadoop::oozie_client]",
+    "recipe[bcpc-hadoop::hdfsdu_pre_fetch]",
+    "recipe[hdfsdu::fetch_data]",
     "recipe[bcpc-hadoop::smoke_test_wrapper]",
     "recipe[bcpc::diamond]",
     "recipe[bcpc_jmxtrans]"
