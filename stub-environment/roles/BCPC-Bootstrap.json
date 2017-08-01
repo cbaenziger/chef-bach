@@ -11,12 +11,9 @@
       "recipe[bcpc::chef_vault_download]",
       "recipe[bcpc::chef_vault_install]",
       "recipe[bcpc::cobbler]",
+      "role[HDFSDU-Build]",
       "recipe[bach_krb5::krb5_server]",
       "recipe[bach_krb5::keytabs]",
-      "role[Hannibal-Build]",
-      "role[HDFSDU-Build]",
-      "recipe[bach_spark::spark_package]",
-      "recipe[bcpc::mysql_connector]",
       "recipe[bcpc::rotate_chef_nginx_access_log]"
     ],
     "description": "A bootstrap node in a BCPC cluster",
