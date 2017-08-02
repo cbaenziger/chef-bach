@@ -30,6 +30,7 @@ default['bcpc']['hadoop']['hdfs']['dfs_blocksize'] = '128m'
 default['bcpc']['hadoop']['hdfs_url'] = "hdfs://#{node.chef_environment}"
 default['bcpc']['hadoop']['jmx_enabled'] = true
 default['bcpc']['hadoop']['jute']['maxbuffer'] = 6_291_456
+default['bcpc']['hadoop']['java_https_keystore'] = '/usr/local/maven/conf/keystore'
 
 # for jvmkill library
 default['bcpc-hadoop']['jvmkill']['lib_file'] = '/var/lib/jvmkill/libjvmkill.so'
@@ -68,19 +69,6 @@ default['bcpc']['hadoop']['namenode']['gc_opts'] =
   common_opts
 
 default['bcpc']['hadoop']['mapreduce']['framework']['name'] = 'yarn'
-default['bcpc']['hadoop']['namenode']['handler']['count'] = 100
-# set to nil to calculate dynamically based on available memory
-default['bcpc']['hadoop']['namenode']['xmx']['max_size'] = 1024
-# set to nil to calculate dynamically based on available memory
-default['bcpc']['hadoop']['namenode']['xmn']['max_size'] = 128
-default['bcpc']['hadoop']['namenode']['xmx']['max_ratio'] = 0.25
-<<<<<<< d2c02b8de0c23f5c8f0930887f8286e6041a08b3
-=======
-default['bcpc']['hadoop']['namenode']['jmx']['port'] = 10111
->>>>>>> Correct default bcpc-hadoop attributes
-default['bcpc']['hadoop']['namenode']['rpc']['port'] = 8020
-default['bcpc']['hadoop']['namenode']['http']['port'] = 50070
-default['bcpc']['hadoop']['namenode']['https']['port'] = 50470
 default['bcpc']['hadoop']['kafka']['jmx']['port'] = 9995
 default['bcpc']['hadoop']['topology']['script'] = 'topology'
 default['bcpc']['hadoop']['topology']['cookbook'] = 'bcpc-hadoop'
