@@ -33,6 +33,7 @@ default['bcpc']['hadoop']['hdfs']['dfs_replication_factor'] = 3
 default['bcpc']['hadoop']['hdfs']['dfs_blocksize'] = '128m'
 default['bcpc']['hadoop']['hdfs_url'] = "hdfs://#{node.chef_environment}"
 default['bcpc']['hadoop']['jmx_enabled'] = true
+default['bcpc']['hadoop']['java_https_keystore'] = '/usr/local/maven/conf/keystore'
 default[:bcpc][:hadoop][:jute][:maxbuffer] = 6_291_456
 default['bcpc']['hadoop']['datanode']['xmx']['max_size'] = 4_096
 default['bcpc']['hadoop']['datanode']['xmx']['max_ratio'] = 0.25
