@@ -6,7 +6,7 @@ if ::Dir.exist?('/usr/local/share/ca-certificates')
   node.override['maven']['mavenrc']['opts'] = \
     node['maven']['mavenrc']['opts'] +\
     " -Djavax.net.ssl.trustStorePassword=doesnotneedtobesecure " + \
-    "-Djavax.net.ssl.trustStore=#{node['bccp']['hadoop']['java_https_keystore']}"
+    "-Djavax.net.ssl.trustStore=#{node['bcpc']['hadoop']['java_https_keystore']}"
 end
 
 internet_download_url = node['maven']['url']
@@ -24,30 +24,40 @@ remote_file "/home/vagrant/chef-bcpc/bins/#{maven_file}" do
   checksum node['maven']['checksum']
 end
 
-# Setup keystore for custom certs
-ruby_block 'concatenate certs' do
-  block do
-    File.open(unitifed_certs, 'w' ) do |output|
-      Dir.glob('/usr/local/share/ca-certificates/*').each do |cert|
-        File.open(cert) do |cert_data|
-          cert_data.each { |line| output.puts(line) }
-        end
-      end
-    end
-  end
+file 'cacert file' do
+  cert_data = Dir.glob('/usr/local/share/ca-certificates/*').map do |cert|
+    File.open(cert, 'r').read()
+  end.join("\n")
+  path unified_certs 
+  content lazy { cert_data }
+  action :create
   only_if { ::Dir.exist?('/usr/local/share/ca-certificates') }
-  notifies :run, 'directory["create keystore"]', :immediately
+  notifies :delete, 'file[keystore file]', :immediately
+  notifies :run, 'execute[create keystore]', :immediately
+end
+
+file 'keystore file' do
+  path node['bcpc']['hadoop']['java_https_keystore']
+  action :nothing
 end
 
 execute 'create keystore' do
-  command <<<-EOH
-    keytool -v -alias mavensrv -import \
+  command <<-EOH
+    yes | keytool -v -alias mavensrv -import \
     -file #{unified_certs} \
-    -keystore #{node['bccp']['hadoop']['java_https_keystore']}
-    -storepass doesnotneedtobesecure
+    -keystore #{node['bcpc']['hadoop']['java_https_keystore']} \
+    -storepass doesnotneedtobesecure \
     -alias mavensrv -import
     EOH
   action :nothing
+end
+
+if ::Dir.exist?('/usr/local/share/ca-certificates')
+  node.override['maven']['mavenrc']['opts'] = <<-EOH
+    #{node['maven']['mavenrc']['opts']} \
+    -Djavax.net.ssl.trustStore=#{node['bcpc']['hadoop']['java_https_keystore']} \
+    -Djavax.net.ssl.trustStorePassword=doesnotneedtobesecure
+  EOH
 end
 
 # Setup custom maven config
@@ -58,10 +68,23 @@ directory '/root/.m2' do
   action :create
 end
 
-template "maven_settings.xml" do
-  path '/root/.m2/settings.xml'
-  source 'maven_settings.xml.erb'
-  owner 'root' 
-  group 'root'
-  mode '0644'
+include_recipe 'maven::settings'
+
+maven_settings "settings.proxies" do
+  uri = URI(node[:bcpc][:bootstrap][:proxy])
+  value proxy: {
+    active: true,
+    protocol: uri.scheme,
+    host: uri.host,
+    port: uri.port,
+    nonProxyHosts: 'localhost|127.0.0.1|localaddress|.localdomain.com'
+  }
+  only_if { node[:bcpc][:bootstrap][:proxy] != nil }
+end
+
+include_recipe 'maven::default'
+
+# it looks like the Maven cookbook uses the default, restrictive umask from Chef-Client
+execute 'chmod maven' do
+  command "chmod -R 755 #{node['maven']['m2_home']}"
 end

@@ -4,13 +4,13 @@
 
 require 'fileutils'
 
-hdfsdu_version = "#{node[:hdfsdu][:version]}"
+hdfsdu_version = node[:hdfsdu][:version]
 target_filename = "hdfsdu-service-#{hdfsdu_version}-bin.zip"
 target_filepath = "#{node[:hdfsdu][:bin_dir]}/#{target_filename}"
-owner = "#{node[:hdfsdu][:owner]}"
-group = "#{node[:hdfsdu][:group]}"
+owner = node[:hdfsdu][:owner]
+group = node[:hdfsdu][:group]
 source_code_location = "#{Chef::Config['file_cache_path']}/hdfsdu"
-file_mode = "#{node[:hdfsdu][:file_mode]}" 
+file_mode = node[:hdfsdu][:file_mode]
 
 git source_code_location do
    repository node[:hdfsdu][:repo_url]

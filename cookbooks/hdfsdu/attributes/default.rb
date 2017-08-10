@@ -48,4 +48,9 @@ default[:hdfsdu][:oozie_timezone] = 'UTC'
 default[:hdfsdu][:oozie_url] = 'http://localhost:11000/oozie'
 
 # Attribute stores the latest hdfsdu data timestamp that the server is serving
+# will be updated as a node attribute later
 default[:hdfsdu][:image_timestamp] = "2015-04-09 00:00:00"
+
+default['hdfsdu']['maven']['repository'] = 'http://maven.twttr.com'
+default['maven']['repositories'] = ( node['maven']['repositories'] || nil ) + \
+                                     [ node['hdfsdu']['maven']['repository'] ]
