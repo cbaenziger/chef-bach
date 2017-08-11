@@ -24,6 +24,8 @@ remote_file "/home/vagrant/chef-bcpc/bins/#{maven_file}" do
   checksum node['maven']['checksum']
 end
 
+include_recipe 'maven::default'
+
 file 'cacert file' do
   cert_data = Dir.glob('/usr/local/share/ca-certificates/*').map do |cert|
     File.open(cert, 'r').read()
@@ -81,8 +83,6 @@ maven_settings "settings.proxies" do
   }
   only_if { node[:bcpc][:bootstrap][:proxy] != nil }
 end
-
-include_recipe 'maven::default'
 
 # it looks like the Maven cookbook uses the default, restrictive umask from Chef-Client
 execute 'chmod maven' do
