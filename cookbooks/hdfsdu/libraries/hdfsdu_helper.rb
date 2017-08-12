@@ -25,6 +25,18 @@ module Hdfsdu
       raise "#{service} service at #{endpoint} has not become ready in #{timeout} seconds."
     end
 
+    # if path contains a wildcard use directory globbing
+    # to find the desired file(s)
+    def find_paths(paths)
+      paths.map do |path|
+        if path.include?('*')
+          Dir.glob(path)
+        else
+          path
+        end
+      end.flatten
+    end
+
   end
 end
 

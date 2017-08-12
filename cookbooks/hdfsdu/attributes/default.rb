@@ -37,7 +37,7 @@ default[:hdfsdu][:hdfs_path] = "/user/#{node[:hdfsdu][:hdfs_user]}/hdfsdu"
 # Ordered list of jars required to compile hdfsdu source
 default[:hdfsdu][:dependent_jars] = [ '/usr/hdp/current/hadoop-client/hadoop-common.jar', 
                                       '/usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-client-core.jar', 
-                                      '/usr/hdp/current/pig-client/pig-0.14.0.2.2.0.0-2041-core-h2.jar' ]
+                                      '/usr/hdp/current/pig-client/pig*core*.jar' ]
 default[:hdfsdu][:jobtracker] = 'localhost:8032'
 default[:hdfsdu][:namenode] = 'hdfs://test'
 default[:hdfsdu][:mr_queue] = 'default'
