@@ -48,6 +48,14 @@
       },
       "hadoop" : {
         "yarn" : {
+          "nodemanager": {
+            "avail_memory": {
+              "ratio": 0.85
+            },
+            "avail_vcpu": {
+              "ratio": 0.85
+            }
+          },
           "resourcemanager" : {
             "yarn.client.failover-sleep-base-ms": 30000
           }

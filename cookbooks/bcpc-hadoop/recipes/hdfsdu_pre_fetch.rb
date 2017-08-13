@@ -30,9 +30,10 @@ end
 node.override[:hdfsdu][:oozie_frequency] = 120
 node.override[:hdfsdu][:oozie_timezone] = 'EST'
 time_now = Time.now.utc
-node.override[:hdfsdu][:oozie_start_time] = time_now.iso8601
+# Oozie wants time in yyyy-MM-dd'T'HH:mm'Z' format
+node.override[:hdfsdu][:oozie_start_time] = time_now.strftime("%FT%RZ")
 # Set endtime to one week from now
-node.override[:hdfsdu][:oozie_end_time] = (time_now + 60 * 60 * 24 * 7).iso8601
+node.override[:hdfsdu][:oozie_end_time] = (time_now + 60 * 60 * 24 * 7).strftime("%FT%RZ") 
 
 configure_kerberos 'hdfsdu_keytab' do
   service_name hdfsdu_hdfs_user
