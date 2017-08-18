@@ -25,7 +25,6 @@ user = node[:hdfsdu][:hdfs_user]
 hdfsdu_vers = node[:hdfsdu][:version]
 hdfsdu_pig_src_filename = "hdfsdu-pig-src-#{hdfsdu_vers}.tgz"
 remote_filepath = "#{get_binary_server_url}#{hdfsdu_pig_src_filename}"
-dependent_jars = Hdfsdu::Helper.find_paths(node['hdfsdu']['dependent_jars'])
 hdfsdu_pig_dir = "#{Chef::Config['file_cache_path']}/hdfsdu"
 hdfsdu_oozie_dir = "#{hdfsdu_pig_dir}/oozie"
 
@@ -81,11 +80,12 @@ bash 'compile_extract_sizes' do
     "#{hdfsdu_oozie_dir}/hdfsdu/workflowApp/lib/hdfsdu-pig-#{hdfsdu_vers}"
   extractsizes_class = 'com/twitter/hdfsdu/pig/piggybank/ExtractSizes*'
   cwd "#{hdfsdu_pig_dir}/pig/src/main/java"
-  code %(
-    javac -cp #{dependent_jars.join(':')} \
-      com/twitter/hdfsdu/pig/piggybank/ExtractSizes.java
-    jar cvf #{hdfsdu_pig_jar}.jar #{extractsizes_class}.class
-  )
+  code lazy { %(
+      javac -cp #{Hdfsdu::Helper.find_paths(node['hdfsdu']['dependent_jars']).join(':')} \
+        com/twitter/hdfsdu/pig/piggybank/ExtractSizes.java
+      jar cvf #{hdfsdu_pig_jar}.jar #{extractsizes_class}.class
+    )
+  }
   user user
   creates "#{hdfsdu_pig_jar}.jar"
 end
