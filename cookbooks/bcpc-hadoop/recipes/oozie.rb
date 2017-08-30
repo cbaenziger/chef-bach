@@ -135,6 +135,21 @@ bash 'copy ssl configuration' do
   code("cp -r /usr/hdp/#{hdp_rel}/oozie/tomcat-deployment/conf/ssl " \
        '/etc/oozie/conf/')
 end
+# XXX
+#haproxy_frontend 'oozie' do
+#  bind "#{node[:bcpc][:floating][:vip]}:11010"
+#  mode 'http'
+#  default_backend 'oozie-servers'
+#end
+#
+#haproxy_backend 'oozie-servers' do
+#  servers = get_nodes_for("oozie", "bcpc-hadoop").map do |server|
+#              "server #{float_host(server[:fqdn])} #{server['bcpc']['floating']['ip']}:11000 check"
+#            end
+#  options balance: 'roundrobin'
+#  mode 'http'
+#  server servers
+#end
 
 service 'stop oozie for war setup' do
   action :stop

@@ -106,7 +106,7 @@ end
 
 service 'xinetd' do
   action :enable
-  subscribes :restart, 'bash[cobbler-sync]'
+  subscribes :restart, 'bash[cobbler-sync]', :immediately
 end
 
 [

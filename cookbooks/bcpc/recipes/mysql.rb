@@ -296,6 +296,28 @@ template '/etc/xinetd.d/mysqlchk' do
   notifies signal, 'service[xinetd]', :immediately
 end
 
+haproxy_frontend 'mysql-galera' do
+  mode 'tcp' 
+  bind "#{node['bcpc']['management']['vip']}:3306"
+  extra_options 'option tcplog': '',
+                'option tcpka': '',
+                'option httpchk': '',
+                balance: 'leastconn',
+                'timeout client': '24h',
+                'timeout server': '24h'
+  default_backend 'mysql-galera-servers'
+end
+
+haproxy_backend 'mysql-galera-servers' do
+  servers = mysql_nodes.map do |srvr|
+              float_host(srvr['hostname']) +
+              " #{srvr['bcpc']['management']['ip']}:3306" +
+              " check port 3307 inter 1s rise 1 fall 1 observe layer4 backup"
+            end
+  name 'mysql-galera-servers'
+  server servers
+end
+
 #
 # Now that we have a working Percona instance, we'll install a dummy
 # metapackage to prevent any well-meaning packages from depending on
