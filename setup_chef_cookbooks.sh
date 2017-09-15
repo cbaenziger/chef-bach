@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 
 # Expected to be run in the root of the Chef Git repository (e.g. chef-bcpc)
 

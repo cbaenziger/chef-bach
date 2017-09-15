@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Helper to make a web page with links to hosts and their consoles
 # (ILOs). Pass the name of the cluster as an optional parameter to

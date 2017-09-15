@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # A tool to wipe the by-products of a cluster bringup from a bootstrap
 # node but leave the bootstrap node and related roles, nodes, clients

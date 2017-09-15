@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Parameters :
 # $1 is the IP address of the bootstrap node

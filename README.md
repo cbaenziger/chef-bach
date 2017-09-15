@@ -82,7 +82,8 @@ only changing DNS, proxy and VM resource settings. (This is the basis of our
 automated build tests.)
 
 Using the script [tests/automated_install.sh](./tests/automated_install.sh) on Mac OS (OS X),
-will require [`brew`](http://brew.sh) to be available/installed.
+will require [`brew`](http://brew.sh) to be available/installed. Further, one will need to
+install bash via Homebrew and ensure it is first in one's PATH.
 
 Note: To run more than one test cluster at a time with VirtualBox, one may
       set in `tests/automated_install.sh` their desired cluster name prefix.

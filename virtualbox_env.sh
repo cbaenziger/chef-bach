@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Source this file at the top of your script when needing VBoxManage
 # e.g.,

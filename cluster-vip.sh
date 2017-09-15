@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 if [[ -z "$1" ]]; then
     if [[ -d environments ]]; then
 	ENVIRONMENTS=`ls -lt environments/*.json | wc -l`

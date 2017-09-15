@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Script to instruct all cluster nodes to rerun chef client - useful,
 # for example, after changing chef recipes on the chef server.

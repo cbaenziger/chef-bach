@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # a script to find which nodes, defined in a cluster definition file
 # cluster.txt are responding to ping
 COUNT=0

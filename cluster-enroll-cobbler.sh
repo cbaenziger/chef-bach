@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # A script to enroll cluster nodes in cobbler based on a cluster
 # definition in cluster.txt :
 #

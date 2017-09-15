@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ################################################################################
 # This script designed to provide a complete one-touch install of Chef-BCPC in

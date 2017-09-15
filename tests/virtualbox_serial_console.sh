@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check we got a VM name
 if [[ "$#" != 1 ]]; then

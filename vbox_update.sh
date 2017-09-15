@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 vagrant ssh -c "rsync -avP --exclude vbox --exclude .chef /chef-bcpc-host/ " \
                "/home/vagrant/chef-bcpc/"
 vagrant ssh -c "cd chef-bcpc && source proxy_setup.sh && " \

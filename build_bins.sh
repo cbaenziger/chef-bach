@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/usr/bin/env bash
 # vim: tabstop=2:shiftwidth=2:softtabstop=2
 #
 # This script originally built a repository with all third-party

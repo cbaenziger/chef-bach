@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This shell stub invokes the cluster_assign_roles.rb script using the
 # binary gems pre-installed in vendor/bundle.

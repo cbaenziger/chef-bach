@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 # if you dont have internet access from your cluster nodes, you will
 # not be able to "knife bootstrap" nodes to get them ready for

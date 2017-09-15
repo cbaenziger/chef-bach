@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This shell stub invokes the wait_for_hosts.rb script using the
 # binary gems pre-installed in vendor/bundle.

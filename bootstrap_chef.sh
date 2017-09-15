@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Parameters:
 # $1 is the vagrant install mode or user name to SSH as (see "Usage:" below)

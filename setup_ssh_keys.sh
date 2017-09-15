@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ ! -f $HOME/.ssh/authorized_keys ]]; then
   if [[ ! -d $HOME/.ssh ]]; then
