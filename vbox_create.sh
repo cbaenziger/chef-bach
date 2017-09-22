@@ -166,15 +166,30 @@ function create_cluster_VMs {
   # Gather VirtualBox networks in use by bootstrap VM
   oifs="$IFS"
   IFS=$'\n'
-  bootstrap_interfaces=($($VBM showvminfo ${CLUSTER_PREFIX}bcpc-bootstrap \
-    --machinereadable | \
-    egrep '^hostonlyadapter[0-9]=' | \
-    sort | \
-    sed -e 's/.*=//' -e 's/"//g'))
-  IFS="$oifs"
-  VBN0="${bootstrap_interfaces[0]?Need a Virtualbox network 1 for the bootstrap}"
-  VBN1="${bootstrap_interfaces[1]?Need a Virtualbox network 2 for the bootstrap}"
-  VBN2="${bootstrap_interfaces[2]?Need a Virtualbox network 3 for the bootstrap}"
+
+  # avoid a race between the bootstrap getting networks assigned and us looking
+  # for them by looping until we get success or timeout
+  for i in $(seq 1 10); do
+    bootstrap_interfaces=($($VBM showvminfo ${CLUSTER_PREFIX}bcpc-bootstrap \
+      --machinereadable | \
+      egrep '^hostonlyadapter[0-9]=' | \
+      sort | \
+      sed -e 's/.*=//' -e 's/"//g'))
+    IFS="$oifs"
+    VBN0="${bootstrap_interfaces[0]}"
+    VBN1="${bootstrap_interfaces[1]}"
+    VBN2="${bootstrap_interfaces[2]}"
+
+    # see if we got networks
+    [ -n "$VBN0" -a -n "$VBN1" -a -n "$VBN2" ] && break
+    echo "Still looking for VBox networks for the bootstrap host -- $i"
+    sleep 2
+  done
+
+  if [ -z "$VBN0" -o -z "$VBN1" -o -z "$VBN2" ]; then
+    echo 'Failed to find networks for bootstrap host -- can not continue' > /dev/stderr
+    exit 1
+  fi
 
   #
   # Add the ipxe USB key to the vbox storage registry as an immutable
