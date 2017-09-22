@@ -51,8 +51,8 @@ end
 include_recipe 'maven::default'
 
 file 'cacert file' do
-  cert_data = Dir.glob('/usr/local/share/ca-certificates/*').map do |cert|
-    File.open(cert, 'r').read()
+  cert_data = Find.find('/usr/local/share/ca-certificates/').map do |f|
+    File.open(f, 'r').read() if File.file?(f)
   end.join("\n")
   path unified_certs 
   content lazy { cert_data }
