@@ -17,18 +17,19 @@
 # limitations under the License.
 #
 
+cert_dir = '/usr/local/share/ca-certificates'
+
 if node['bcpc']['bootstrap']['proxy']
   include_recipe 'bcpc::proxy_configuration'
 end
 
-if ::Dir.exist?('/usr/local/share/ca-certificates')
+if ::Dir.exist?(cert_dir)
   node.override['maven']['mavenrc']['opts'] = \
     node['maven']['mavenrc']['opts'] +\
     " -Djavax.net.ssl.trustStorePassword=doesnotneedtobesecure " + \
     "-Djavax.net.ssl.trustStore=#{node['bcpc']['hadoop']['java_https_keystore']}"
 end
 
-internet_download_url = node['maven']['url']
 maven_file = Pathname.new(node['maven']['url']).basename
 
 # Dependencies of the maven cookbook.
@@ -41,44 +42,48 @@ end
 unified_certs = ::File.join(Chef::Config[:file_cache_path], 'ca-certs.pem')
 
 # download Maven only if not already stashed in the bins directory
-remote_file "/home/vagrant/chef-bcpc/bins/#{maven_file}" do
-  source internet_download_url
-  action :create
-  mode 0555
-  checksum node['maven']['checksum']
+if node['fqdn'] == get_bootstrap
+  internet_download_url = node['maven']['url']
+  remote_file "/home/vagrant/chef-bcpc/bins/#{maven_file}" do
+    source internet_download_url
+    action :create
+    mode 0o0555
+    checksum node['maven']['checksum']
+  end
+else
+  node.override['maven']['url'] = File.join(get_binary_server_url, maven_file) 
 end
 
 include_recipe 'maven::default'
 
-file 'cacert file' do
-  cert_data = Find.find('/usr/local/share/ca-certificates/').map do |f|
-    File.open(f, 'r').read() if File.file?(f)
-  end.join("\n")
-  path unified_certs 
-  content lazy { cert_data }
-  action :create
-  only_if { ::Dir.exist?('/usr/local/share/ca-certificates') }
-  notifies :delete, 'file[keystore file]', :immediately
-  notifies :run, 'execute[create keystore]', :immediately
-end
+# handling for custom SSL certificates
+custom_certs = Find.find(cert_dir).select { |f| ::File.file?(f) }
+unless custom_certs.empty?
+  file 'cacert file' do
+    cert_data = custom_certs.map { |f| File.open(f, 'r').read() }.join("\n")
+    path unified_certs 
+    content lazy { cert_data }
+    action :create
+    notifies :delete, 'file[keystore file]', :immediately
+    notifies :run, 'execute[create keystore]', :immediately
+  end
 
-file 'keystore file' do
-  path node['bcpc']['hadoop']['java_https_keystore']
-  action :nothing
-end
+  file 'keystore file' do
+    path node['bcpc']['hadoop']['java_https_keystore']
+    action :nothing
+  end
 
-execute 'create keystore' do
-  command <<-EOH
-    yes | keytool -v -alias mavensrv -import \
-    -file #{unified_certs} \
-    -keystore #{node['bcpc']['hadoop']['java_https_keystore']} \
-    -storepass doesnotneedtobesecure \
-    -alias mavensrv -import
-    EOH
-  action :nothing
-end
+  execute 'create keystore' do
+    command <<-EOH
+      yes | keytool -v -alias mavensrv -import \
+      -file #{unified_certs} \
+      -keystore #{node['bcpc']['hadoop']['java_https_keystore']} \
+      -storepass doesnotneedtobesecure \
+      -alias mavensrv -import
+      EOH
+    action :nothing
+  end
 
-if ::Dir.exist?('/usr/local/share/ca-certificates')
   node.override['maven']['mavenrc']['opts'] = <<-EOH
     #{node['maven']['mavenrc']['opts']} \
     -Djavax.net.ssl.trustStore=#{node['bcpc']['hadoop']['java_https_keystore']} \
