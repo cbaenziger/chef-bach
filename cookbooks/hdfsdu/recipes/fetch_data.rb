@@ -21,7 +21,7 @@
 
 Chef::Recipe.send(:extend, Hdfsdu::Helper)
 
-user = node[:hdfsdu][:hdfs_user]
+user = node[:hdfsdu][:hdfsdu_user]
 hdfsdu_vers = node[:hdfsdu][:version]
 hdfsdu_pig_src_filename = "hdfsdu-pig-src-#{hdfsdu_vers}.tgz"
 remote_filepath = "#{get_binary_server_url}#{hdfsdu_pig_src_filename}"
@@ -53,7 +53,7 @@ end
   end
 end
 
-['coordinator.xml', 'coordinator.properties'].each do |t|
+%w(coordinator.xml coordinator.properties).each do |t|
   template "#{hdfsdu_oozie_dir}/hdfsdu/coordinatorConf/#{t}" do
     source "#{t}.erb"
     mode 0o0644
@@ -61,7 +61,7 @@ end
   end
 end
 
-['fetchFsimage.sh', 'formatUsage.sh'].each do |t|
+%w(fetchFsimage.sh formatUsage.sh).each do |t|
   template "#{hdfsdu_oozie_dir}/hdfsdu/scripts/#{t}" do
     source "#{t}.erb"
     mode 0o0655
@@ -107,9 +107,15 @@ ruby_block 'copy_python_script' do
 end
 
 bash 'prepare_oozie_job' do
-  job_freq_min = node['hdfsdu']['oozie_frequency'] / 60
+  job_freq = node['hdfsdu']['oozie_frequency']
   job_name = node['hdfsdu']['coordinator_job_name']
-  oozie_filter = "\"user=#{user};frequency=#{job_freq_min};" \
+  # set our frequency to the default of minutes
+  # if we do not have an EL expression
+  unless job_freq.to_i == job_freq
+    raise "Units other than bare minutes are not supported; got: #{job_freq}"
+  end
+
+  oozie_filter = "\"user=#{user};frequency=#{job_freq};" \
                  "unit=minutes;name=#{job_name};status=RUNNING\""
   cwd hdfsdu_oozie_dir
   code %(
