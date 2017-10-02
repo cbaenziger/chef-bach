@@ -27,6 +27,8 @@ module Hdfsdu
 
     # if path contains a wildcard use directory globbing
     # to find the desired file(s)
+    # Arguments: A an array of shell glob patterns (must include *) or paths
+    # Returns: An array of paths found matching the glob or path if not a glob
     def find_paths(paths)
       paths.map do |path|
         if path.include?('*')

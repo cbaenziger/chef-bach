@@ -4,7 +4,7 @@ include_recipe 'bcpc-hadoop::hdfsdu_kerberos'
 
 hdfsdu_keytab = ::File.join(node['bcpc']['hadoop']['kerberos']['keytab']['dir'],
   node[:bcpc]['hadoop']['kerberos']['data']['hdfsdu']['keytab'])
-hdfsdu_hdfs_user = node['hdfsdu']['hdfs_user']
+hdfsdu_hdfs_user = node['hdfsdu']['hdfsdu_user']
 
 node.override[:hdfsdu][:service_download_url] = get_binary_server_url
 node.override[:bcpc][:hadoop][:hdfs][:dfs][:cluster][:administrators] = \

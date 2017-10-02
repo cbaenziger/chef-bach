@@ -25,8 +25,7 @@ require 'fileutils'
 hdfsdu_version = node[:hdfsdu][:version]
 target_filename = "hdfsdu-service-#{hdfsdu_version}-bin.zip"
 target_filepath = "#{node[:hdfsdu][:bin_dir]}/#{target_filename}"
-owner = node[:hdfsdu][:owner]
-group = node[:hdfsdu][:group]
+build_user = node[:hdfsdu][:build_user]
 source_code_location = "#{Chef::Config['file_cache_path']}/hdfsdu"
 file_mode = node[:hdfsdu][:file_mode]
 
@@ -39,8 +38,7 @@ end
 
 bash "compile_hdfsdu" do
    cwd "#{source_code_location}/service"
-   user owner
-   group group
+   user build_user
    code %Q{
       sed -iE 's/#{node[:hdfsdu][:default_db_port]}/#{node[:hdfsdu][:db_port]}/' src/main/java/com/twitter/hdfsdu/Database.java
       mvn clean assembly:assembly -DdescriptorId=bin
@@ -61,8 +59,7 @@ end
 
 bash "create_hdfsdu_pig_tar" do
    cwd "#{source_code_location}/service"
-   user owner
-   group group
+   user build_user
    code %Q{
       tar -zcvf #{node[:hdfsdu][:bin_dir]}/hdfsdu-pig-src-#{hdfsdu_version}.tgz ../pig/src
    }
@@ -75,8 +72,7 @@ end
 
 bash "cleanup" do
    cwd ::File.dirname(source_code_location)
-   user owner
-   group group
+   user build_user
    code %Q{
       rm -rf hdfsdu/
    }

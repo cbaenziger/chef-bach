@@ -17,18 +17,6 @@
 # limitations under the License.
 #
 
-cert_dir = '/usr/local/share/ca-certificates'
-
-include_recipe 'bcpc::proxy_configuration' if node['bcpc']['bootstrap']['proxy']
-
-if ::Dir.exist?(cert_dir)
-  kstore = node['bcpc']['hadoop']['java_https_keystore']
-  node.override['maven']['mavenrc']['opts'] = \
-    node['maven']['mavenrc']['opts'] +
-    ' -Djavax.net.ssl.trustStorePassword=doesnotneedtobesecure' \
-    " -Djavax.net.ssl.trustStore=#{kstore}"
-end
-
 maven_file = Pathname.new(node['maven']['url']).basename
 
 # Dependencies of the maven cookbook.
@@ -38,7 +26,13 @@ maven_file = Pathname.new(node['maven']['url']).basename
   end
 end
 
+# handling for custom SSL certificates
+cert_dir = '/usr/local/share/ca-certificates'
 unified_certs = ::File.join(Chef::Config['file_cache_path'], 'ca-certs.pem')
+custom_certs = Find.find(cert_dir).select { |f| ::File.file?(f) } \
+  if ::Dir.exist?(cert_dir)
+
+include_recipe 'bcpc::proxy_configuration' if node['bcpc']['bootstrap']['proxy']
 
 # download Maven only if not already stashed in the bins directory
 if node['fqdn'] == get_bootstrap
@@ -55,8 +49,6 @@ end
 
 include_recipe 'maven::default'
 
-# handling for custom SSL certificates
-custom_certs = Find.find(cert_dir).select { |f| ::File.file?(f) }
 unless custom_certs.empty?
   file 'cacert file' do
     cert_data = custom_certs.map { |f| File.open(f, 'r').read }.join("\n")
@@ -100,16 +92,17 @@ end
 
 include_recipe 'maven::settings'
 
-maven_settings 'settings.proxies' do
-  uri = URI(node['bcpc']['bootstrap']['proxy'])
-  value proxy: {
-    active: true,
-    protocol: uri.scheme,
-    host: uri.host,
-    port: uri.port,
-    nonProxyHosts: 'localhost|127.0.0.1|localaddress|.localdomain.com'
-  }
-  only_if { !node['bcpc']['bootstrap']['proxy'].nil? }
+unless node['bcpc']['bootstrap']['proxy'].nil?
+  maven_settings 'settings.proxies' do
+    uri = URI(node['bcpc']['bootstrap']['proxy'])
+    value proxy: {
+      active: true,
+      protocol: uri.scheme,
+      host: uri.host,
+      port: uri.port,
+      nonProxyHosts: 'localhost|127.0.0.1|localaddress|.localdomain.com'
+    }
+  end
 end
 
 # it looks like the Maven cookbook uses the default
