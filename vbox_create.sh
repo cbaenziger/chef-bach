@@ -63,11 +63,11 @@ require './lib/cluster_data.rb';
 include BACH::ClusterData;
 cp=ENV.fetch('BACH_CLUSTER_PREFIX', '');
 cp += '-' unless cp.empty?;
-vms = parse_cluster_txt(File.readlines('cluster.txt'))
+vms = parse_cluster_txt(File.readlines(File.join(
+  'stub-environment','${CLUSTER_TYPE,,}_cluster.txt')))
 puts vms.map{|e| cp + e[:hostname]}.join(' ')
 "
-VM_LIST=( $(ruby -e "$code_to_produce_vm_list") )
-export VM_LIST
+export VM_LIST=( $(ruby -e "$code_to_produce_vm_list") )
 
 ######################################################
 # Function to download files necessary for VM stand-up
@@ -175,6 +175,15 @@ function create_cluster_VMs {
   VBN0="${bootstrap_interfaces[0]?Need a Virtualbox network 1 for the bootstrap}"
   VBN1="${bootstrap_interfaces[1]?Need a Virtualbox network 2 for the bootstrap}"
   VBN2="${bootstrap_interfaces[2]?Need a Virtualbox network 3 for the bootstrap}"
+
+  #
+  # Delete any old (or other clusters') IPXE disks to avoid collisions
+  #
+  old_ipxe=$($VBM list hdds | egrep '^Location:.*ipxe.vdi' | \
+             sed 's/Location:[ ]*//')
+  [ -n "$old_ipxe" ] && for disk in $old_ipxe; do
+    $VBM closemedium disk $disk --delete
+  done
 
   #
   # Add the ipxe USB key to the vbox storage registry as an immutable
