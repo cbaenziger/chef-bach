@@ -53,7 +53,7 @@
               "ratio": 0.85
             },
             "avail_vcpu": {
-              "ratio": 0.85
+              "ratio": 2.00
             }
           },
           "resourcemanager" : {
