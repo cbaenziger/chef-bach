@@ -22,6 +22,10 @@
 
 require 'fileutils'
 
+node.force_default['maven']['repositories'] = \
+  ( node['maven']['repositories'] || nil ) + \
+  [ node['hdfsdu']['maven']['repository'] ]
+
 hdfsdu_version = node[:hdfsdu][:version]
 target_filename = "hdfsdu-service-#{hdfsdu_version}-bin.zip"
 target_filepath = "#{node[:hdfsdu][:bin_dir]}/#{target_filename}"
@@ -36,7 +40,12 @@ git source_code_location do
    not_if { ::File.exists?(target_filepath) }
 end
 
-bash "compile_hdfsdu" do
+bash "chown hdfsdu" do
+   code "chown -R #{build_user} #{source_code_location}"
+   only_if { ::File.directory?(source_code_location) }
+end
+
+bash "compile_hdfsdu_service" do
    cwd "#{source_code_location}/service"
    user build_user
    code %Q{
@@ -59,7 +68,6 @@ end
 
 bash "create_hdfsdu_pig_tar" do
    cwd "#{source_code_location}/service"
-   user build_user
    code %Q{
       tar -zcvf #{node[:hdfsdu][:bin_dir]}/hdfsdu-pig-src-#{hdfsdu_version}.tgz ../pig/src
    }
@@ -72,9 +80,8 @@ end
 
 bash "cleanup" do
    cwd ::File.dirname(source_code_location)
-   user build_user
    code %Q{
-      rm -rf hdfsdu/
+      rm -rf #{::File.basename(source_code_location)}
    }
    only_if { ::File.directory?(source_code_location) }
 end
