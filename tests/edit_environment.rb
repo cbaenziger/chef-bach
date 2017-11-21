@@ -140,6 +140,7 @@ environment_data['override_attributes'].tap do |attrs|
 
   if proxy_uri
     attrs['bcpc']['bootstrap']['proxy'] = proxy_uri.to_s
+    attrs['bcpc']['no_proxy'] = [ENV['additional_no_proxy'], ENV['no_proxy'], "localhost", attrs['bcpc']['bootstrap']['server'], attrs['bcpc']['bootstrap']['hostname'], attrs['bcpc']['bootstrap']['hostname'] + '.' + attrs['bcpc']['domain_name'], '10.0.2.15'].compact.join(',').split(',').uniq
   end
 end
 

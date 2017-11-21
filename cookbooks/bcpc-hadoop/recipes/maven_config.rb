@@ -28,8 +28,7 @@ end
 
 # handling for custom SSL certificates
 cert_dir = '/usr/local/share/ca-certificates'
-unified_certs = ::File.join(Chef::Config['file_cache_path'], 'ca-certs.pem')
-custom_certs = Find.find(cert_dir).select { |f| ::File.file?(f) } \
+custom_certs = ::Find.find(cert_dir).select { |f| ::File.file?(f) } \
   if ::Dir.exist?(cert_dir)
 
 include_recipe 'bcpc::proxy_configuration' if node['bcpc']['bootstrap']['proxy']
@@ -49,36 +48,31 @@ end
 
 include_recipe 'maven::default'
 
+file 'keystore file' do
+  path node['bcpc']['hadoop']['java_https_keystore']
+  action :nothing
+end
+
+unless ::File.exist?(node['bcpc']['hadoop']['java_https_keystore'])
+  custom_certs.map do |cert|
+    execute "create keystore #{::File.basename(cert)}" do
+      command <<-EOH
+        yes | keytool -v -alias #{::File.basename(cert)} -import \
+        -file #{cert} \
+        -keystore #{node['bcpc']['hadoop']['java_https_keystore']} \
+        -storepass changeit \
+        -trustcacerts \
+        -import
+        EOH
+    end
+  end
+end
+
 unless custom_certs.empty?
-  file 'cacert file' do
-    cert_data = custom_certs.map { |f| File.open(f, 'r').read }.join("\n")
-    path unified_certs
-    content lazy { cert_data }
-    action :create
-    notifies :delete, 'file[keystore file]', :immediately
-    notifies :run, 'execute[create keystore]', :immediately
-  end
-
-  file 'keystore file' do
-    path node['bcpc']['hadoop']['java_https_keystore']
-    action :nothing
-  end
-
-  execute 'create keystore' do
-    command <<-EOH
-      yes | keytool -v -alias mavensrv -import \
-      -file #{unified_certs} \
-      -keystore #{node['bcpc']['hadoop']['java_https_keystore']} \
-      -storepass doesnotneedtobesecure \
-      -alias mavensrv -import
-      EOH
-    action :nothing
-  end
-
   node.override['maven']['mavenrc']['opts'] = <<-EOH
     #{node['maven']['mavenrc']['opts']} \
     -Djavax.net.ssl.trustStore=#{node['bcpc']['hadoop']['java_https_keystore']} \
-    -Djavax.net.ssl.trustStorePassword=doesnotneedtobesecure
+    -Djavax.net.ssl.trustStorePassword=changeit
   EOH
 end
 
@@ -100,7 +94,7 @@ unless node['bcpc']['bootstrap']['proxy'].nil?
       protocol: uri.scheme,
       host: uri.host,
       port: uri.port,
-      nonProxyHosts: 'localhost|127.0.0.1|localaddress|.localdomain.com'
+      nonProxyHosts: node['bcpc']['no_proxy'].join('|')
     }
   end
 end
