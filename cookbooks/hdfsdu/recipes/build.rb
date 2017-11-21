@@ -50,7 +50,7 @@ bash "compile_hdfsdu_service" do
    user build_user
    code %Q{
       sed -iE 's/#{node[:hdfsdu][:default_db_port]}/#{node[:hdfsdu][:db_port]}/' src/main/java/com/twitter/hdfsdu/Database.java
-      mvn clean assembly:assembly -DdescriptorId=bin
+      mvn clean assembly:assembly -DdescriptorId=bin -DskipTests
    }
    only_if { ::File.directory?(source_code_location) }
 end
