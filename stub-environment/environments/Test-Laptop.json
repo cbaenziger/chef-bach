@@ -1,6 +1,17 @@
 {
   "name": "Test-Laptop",
   "override_attributes": {
+    "maven": {
+      "repositories" : [
+        "https://artprod.dev.bloomberg.com/artifactory/repo1-maven"
+      ]
+    },
+    "hdfsdu": {
+      "maven" : {
+        "repository" : "https://artprod.dev.bloomberg.com/artifactory/maven_twttr"
+      },
+      "build_user": "vagrant"
+    },
     "bcpc": {
       "management": {
         "vip" : "10.0.100.5"
