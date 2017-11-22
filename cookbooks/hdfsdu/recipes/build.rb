@@ -23,65 +23,69 @@
 require 'fileutils'
 
 node.force_default['maven']['repositories'] = \
-  ( node['maven']['repositories'] || nil ) + \
-  [ node['hdfsdu']['maven']['repository'] ]
+  (node['maven']['repositories'] || nil) + \
+  [node['hdfsdu']['maven']['repository']]
 
-hdfsdu_version = node[:hdfsdu][:version]
+hdfsdu_version = node['hdfsdu']['version']
 target_filename = "hdfsdu-service-#{hdfsdu_version}-bin.zip"
-target_filepath = "#{node[:hdfsdu][:bin_dir]}/#{target_filename}"
-build_user = node[:hdfsdu][:build_user]
+target_filepath = "#{node['hdfsdu']['bin_dir']}/#{target_filename}"
+build_user = node['hdfsdu']['build_user']
 source_code_location = "#{Chef::Config['file_cache_path']}/hdfsdu"
-file_mode = node[:hdfsdu][:file_mode]
 
 git source_code_location do
-   repository node[:hdfsdu][:repo_url]
-   revision node[:hdfsdu][:repo_branch]
-   action :sync
-   not_if { ::File.exists?(target_filepath) }
+  repository node['hdfsdu']['repo_url']
+  revision node['hdfsdu']['repo_branch']
+  action :sync
+  not_if { ::File.exist?(target_filepath) }
 end
 
-bash "chown hdfsdu" do
-   code "chown -R #{build_user} #{source_code_location}"
-   only_if { ::File.directory?(source_code_location) }
+bash 'chown hdfsdu' do
+  code "chown -R #{build_user} #{source_code_location}"
+  only_if { ::File.directory?(source_code_location) }
 end
 
-bash "compile_hdfsdu_service" do
-   cwd "#{source_code_location}/service"
-   user build_user
-   code %Q{
-      sed -iE 's/#{node[:hdfsdu][:default_db_port]}/#{node[:hdfsdu][:db_port]}/' src/main/java/com/twitter/hdfsdu/Database.java
-      mvn clean assembly:assembly -DdescriptorId=bin -DskipTests
-   }
-   only_if { ::File.directory?(source_code_location) }
+bash 'compile_hdfsdu_service' do
+  cwd "#{source_code_location}/service"
+  user build_user
+  code %(
+    sed -iE \
+      's/#{node['hdfsdu']['default_db_port']}/#{node['hdfsdu']['db_port']}/' \
+      src/main/java/com/twitter/hdfsdu/Database.java
+    mvn clean assembly:assembly -DdescriptorId=bin -DskipTests
+  )
+  only_if { ::File.directory?(source_code_location) }
 end
 
-ruby_block "copy_hdfsdu_bin" do
-   block do
-      FileUtils.cp "#{source_code_location}/service/target/#{target_filename}", target_filepath
-   end
-   only_if { ::File.directory?(source_code_location) }
+ruby_block 'copy_hdfsdu_bin' do
+  block do
+    FileUtils.cp "#{source_code_location}/service/target/#{target_filename}",
+                 target_filepath
+  end
+  only_if { ::File.directory?(source_code_location) }
 end
 
 file target_filepath do
-   mode '0755'
+  mode '0755'
 end
 
-bash "create_hdfsdu_pig_tar" do
-   cwd "#{source_code_location}/service"
-   code %Q{
-      tar -zcvf #{node[:hdfsdu][:bin_dir]}/hdfsdu-pig-src-#{hdfsdu_version}.tgz ../pig/src
-   }
-   only_if { ::File.directory?(source_code_location) }
+bash 'create_hdfsdu_pig_tar' do
+  cwd "#{source_code_location}/service"
+  code %(
+    tar -zcvf \
+      #{node['hdfsdu']['bin_dir']}/hdfsdu-pig-src-#{hdfsdu_version}.tgz \
+      ../pig/src
+  )
+  only_if { ::File.directory?(source_code_location) }
 end
 
-file "#{node[:hdfsdu][:bin_dir]}/hdfsdu-pig-src-#{hdfsdu_version}.tgz" do 
-   mode '0755'
+file "#{node['hdfsdu']['bin_dir']}/hdfsdu-pig-src-#{hdfsdu_version}.tgz" do
+  mode '0755'
 end
 
-bash "cleanup" do
-   cwd ::File.dirname(source_code_location)
-   code %Q{
-      rm -rf #{::File.basename(source_code_location)}
-   }
-   only_if { ::File.directory?(source_code_location) }
+bash 'cleanup' do
+  cwd ::File.dirname(source_code_location)
+  code %(
+    rm -rf #{::File.basename(source_code_location)}
+  )
+  only_if { ::File.directory?(source_code_location) }
 end
