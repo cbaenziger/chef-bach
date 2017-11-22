@@ -5,9 +5,7 @@ require 'uri'
 
 module Hdfsdu
   module Helper
-  extend self
-
-    def wait_until_ready(service, endpoint, timeout)
+    def wait_until_ready!(service, endpoint, timeout)
       Timeout.timeout(timeout) do
         begin
           open(endpoint)
@@ -21,8 +19,9 @@ module Hdfsdu
           retry
         end
       end
-      rescue Timeout::Error
-      raise "#{service} service at #{endpoint} has not become ready in #{timeout} seconds."
+    rescue Timeout::Error
+      raise "#{service} service at #{endpoint} has not become " \
+            "ready in #{timeout} seconds."
     end
 
     # if path contains a wildcard use directory globbing
@@ -38,8 +37,5 @@ module Hdfsdu
         end
       end.flatten
     end
-
   end
 end
-
-Chef::Recipe.send(:include, Hdfsdu::Helper)

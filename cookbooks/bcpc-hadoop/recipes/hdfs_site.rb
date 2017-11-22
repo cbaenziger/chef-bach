@@ -1,27 +1,10 @@
 # vim: tabstop=2:shiftwidth=2:softtabstop=2:expandtabs
+::Chef::Resource::RubyBlock.send(:include, Bcpc_Hadoop::Helper)
 subnet = node[:bcpc][:management][:subnet]
 
 hdfs_site_values = node[:bcpc][:hadoop][:hdfs][:site_xml]
 
-# Function to tell us what type of storage tier an HDFS data dir
-# should be
-# Arguments:
-#   mount_point - string of the mount-point root
-# Returns:
-#   DISK, SSD, etc. per:
-#     https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/ArchivalStorage.html
-# Raises:
-#   If mount point fails to be found
-def hdfs_disk_type(mount_point)
-  dev = node['disk'].select do |n|
-    n['mount'] == mount_point
-  end.first or raise "Failed to find a device for mount-point: #{mount_point}"
-  ::File.open("/sys/block/#{dev}/queue/rotational", 'r') do |f|
-    f.read().chomp == 0 ? 'SSD' : 'DISK'
-  end
-end
-
-ruby_block "hdfs_site_generated_values_common" do
+ruby_block 'hdfs_site_generated_values_common' do
   block do
     node.run_state['hdfs_site_generated_values'] =
     {
@@ -36,9 +19,8 @@ ruby_block "hdfs_site_generated_values_common" do
 
      'dfs.datanode.data.dir' =>
        node.run_state['bcpc_hadoop_disks']['mounts']
-       .map do |disk|
-         dev = node['disk'].select{ |n| n['mount'] == disk }.first
-         "[#{hdfs_disk_type(disk)}]file:///disk/#{disk}/dfs/dn"
+       .map do |d|
+         "[#{hdfs_disk_type("/disk/#{d}")}]file:///disk/#{d}/dfs/dn"
        end.join(','),
 
      'dfs.journalnode.edits.dir' =>
@@ -50,7 +32,7 @@ ruby_block "hdfs_site_generated_values_common" do
   end
 end
 
-ruby_block "hdfs_site_generated_values_balancer_properties" do
+ruby_block 'hdfs_site_generated_values_balancer_properties' do
   block do
     # get the speed of the fastest interface and use
     max_concurrent_moves =
@@ -76,7 +58,7 @@ ruby_block "hdfs_site_generated_values_balancer_properties" do
 end
 
 
-ruby_block "hdfs_site_generated_values_nn_properties" do
+ruby_block 'hdfs_site_generated_values_nn_properties' do
   block do
     # Using 'map', a hash is built for each host.
     # Using 'reduce', all host hashes are consolidated into a single hash.
@@ -102,14 +84,14 @@ ruby_block "hdfs_site_generated_values_nn_properties" do
   end
 end
 
-ruby_block "hdfs_site_generated_values_krb_properties" do
+ruby_block 'hdfs_site_generated_values_krb_properties' do
   block do
     if node[:bcpc][:hadoop][:kerberos][:enable]
       dfs = node[:bcpc][:hadoop][:hdfs][:dfs]
 
       kerberos_data = node[:bcpc][:hadoop][:kerberos][:data]
 
-      if kerberos_data[:spnego][:princhost] == '_HOST'
+      if kerberos_data[:spnego][:princhost].eql? '_HOST'
         spnego_host = '_HOST'
       else
         spnego_host = kerberos_data[:spnego][:princhost]
@@ -122,7 +104,7 @@ ruby_block "hdfs_site_generated_values_krb_properties" do
       spnego_keytab = File.join(node[:bcpc][:hadoop][:kerberos][:keytab][:dir],
                                 kerberos_data[:namenode][:spnego_keytab])
 
-      if kerberos_data[:namenode][:princhost] == '_HOST'
+      if kerberos_data[:namenode][:princhost].eql? '_HOST'
         namenode_host = '_HOST'
       else
         namenode_host = kerberos_data[:namenode][:princhost]
@@ -135,7 +117,7 @@ ruby_block "hdfs_site_generated_values_krb_properties" do
       namenode_keytab = File.join(node[:bcpc][:hadoop][:kerberos][:keytab][:dir],
                                 kerberos_data[:namenode][:keytab])
 
-      if kerberos_data[:datanode][:princhost] == '_HOST'
+      if kerberos_data[:datanode][:princhost].eql? '_HOST'
         dn_host = if node.run_list.expand(node.chef_environment).recipes
                       .include?('bcpc-hadoop::datanode')
                     float_host(node[:fqdn])
@@ -194,7 +176,7 @@ ruby_block "hdfs_site_generated_values_krb_properties" do
       if node.run_list.expand(node.chef_environment).recipes
           .include?('bcpc-hadoop::journalnode')
 
-        if kerberos_data[:journalnode][:princhost] == '_HOST'
+        if kerberos_data[:journalnode][:princhost].eql? '_HOST'
           jn_host = "_HOST"
         else
           jn_host = kerberos_data[:journalnode][:princhost]
@@ -227,7 +209,7 @@ ruby_block "hdfs_site_generated_values_krb_properties" do
 end
 
 
-ruby_block "hdfs_site_generated_values_jn_properties" do
+ruby_block 'hdfs_site_generated_values_jn_properties' do
   block do
     if node.run_list.expand(node.chef_environment).recipes
         .include?('bcpc-hadoop::journalnode')
@@ -249,7 +231,7 @@ ruby_block "hdfs_site_generated_values_jn_properties" do
 end
 
 
-ruby_block "hdfs_site_generated_values_dn_properties" do
+ruby_block 'hdfs_site_generated_values_dn_properties' do
   block do
     if node.run_list.expand(node.chef_environment).recipes
         .include?('bcpc-hadoop::datanode')
@@ -271,7 +253,7 @@ ruby_block "hdfs_site_generated_values_dn_properties" do
   end
 end
 
-ruby_block "hdfs_site_generated_values_ha_properties" do
+ruby_block 'hdfs_site_generated_values_ha_properties' do
   block do
     if node[:bcpc][:hadoop][:hdfs][:HA]
       # This is a cached node search.
@@ -297,15 +279,15 @@ ruby_block "hdfs_site_generated_values_ha_properties" do
   end
 end
 
-ruby_block "complete_hdfs_site_hash" do
+ruby_block 'complete_hdfs_site_hash' do
   block do
     node.run_state['complete_hdfs_site_hash'] =
       node.run_state['hdfs_site_generated_values'].merge(hdfs_site_values)
   end
 end
 
-template "/etc/hadoop/conf/hdfs-site.xml" do
-  source "generic_site.xml.erb"
+template '/etc/hadoop/conf/hdfs-site.xml' do
+  source 'generic_site.xml.erb'
   mode 0644
   variables ( lazy {
     { :options => node.run_state['complete_hdfs_site_hash'] }

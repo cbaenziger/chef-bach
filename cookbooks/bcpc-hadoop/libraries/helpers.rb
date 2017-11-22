@@ -3,6 +3,29 @@ module Bcpc_Hadoop # TODO: CamelCase this name to make rubocop happy
   module Helper
     include Chef::Mixin::ShellOut
 
+    # Function to tell us what type of storage tier an HDFS data dir
+    # should be
+    # Arguments:
+    #   mount_point - string of the mount-point root
+    # Returns:
+    #   DISK, SSD, etc. per:
+    #     https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/ArchivalStorage.html
+    # Raises:
+    #   If mount point fails to be found
+    def hdfs_disk_type(mount_point)
+      dev = node['filesystem'].map do |fs|
+        fs[0] if fs[1]['mount'].eql?(mount_point)
+      end.select{ |a| a }.first
+      dev or raise "Failed to find a device for mount-point: #{mount_point}"
+      # block_device array is keyed off device name only
+      # (not /dev path or partition number)
+      dev = dev.gsub(/^\/dev\//, '')
+      dev.gsub!(/[0-9]*$/, '')
+      node['block_device'].include?(dev) or \
+        raise "Failed to find block device info for: #{dev}"
+      (node['block_device'][dev]['rotational'].to_i).zero? ? 'SSD' : 'DISK'
+    end
+
     # Apply translation rules for Hortonworks release
     # string to a debian package name string
     #

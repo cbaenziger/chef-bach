@@ -21,7 +21,7 @@
 # a newer timestamp than stored in the Chef node attribute
 
 require 'mixlib/shellout'
-Chef::Resource.send(:extend, Hdfsdu::Helper)
+Chef::Resource.send(:include, Hdfsdu::Helper)
 
 # File Data
 src_filename = "hdfsdu-service-#{node['hdfsdu']['version']}-bin.zip"
@@ -94,8 +94,8 @@ bash 'create_hdfsdu_hdfs_dir' do
 end
 
 execute 'fetch_usage_data' do
-  hdfs_time_test = %Q("#{node['hdfsdu']['image_timestamp']}" != ) +
-                   %Q("$(hdfs dfs -stat #{hdfs_hdfsdu_data})")
+  hdfs_time_test = %("#{node['hdfsdu']['image_timestamp']}" != ) +
+                   %("$(hdfs dfs -stat #{hdfs_hdfsdu_data})")
   command "hdfs dfs -get #{hdfs_hdfsdu_data} #{hdfsdu_data}.new"
   only_if "hdfs dfs -test -e #{hdfs_hdfsdu_data} && [ #{hdfs_time_test} ]",
           user: hdfsdu_user.to_s
@@ -141,9 +141,9 @@ end
 # Confirm service did start; try until timeout and fail
 ruby_block 'wait_for_hdfsdu' do
   block do
-    Hdfsdu::Helper.wait_until_ready('HDFSDU',
-                                    node['hdfsdu']['service_endpoint'],
-                                    node['hdfsdu']['service_timeout'])
+    Hdfsdu::Helper.wait_until_ready!('HDFSDU',
+                                     node['hdfsdu']['service_endpoint'],
+                                     node['hdfsdu']['service_timeout'])
   end
   action :nothing
 end
