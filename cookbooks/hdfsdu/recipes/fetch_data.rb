@@ -20,6 +20,8 @@
 # into HDFS the processed HDFS usage data served by the HDFSDU web application
 
 Chef::Recipe.send(:include, Hdfsdu::Helper)
+Chef::Resource::Bash.send(:include, Hdfsdu::Helper)
+
 
 user = node[:hdfsdu][:hdfsdu_user]
 hdfsdu_vers = node[:hdfsdu][:version]
@@ -79,16 +81,16 @@ bash 'compile_extract_sizes' do
   hdfsdu_pig_jar = \
     "#{hdfsdu_oozie_dir}/hdfsdu/workflowApp/lib/hdfsdu-pig-#{hdfsdu_vers}"
   dependent_jars = \
-    find_paths(node['hdfsdu']['dependent_jars']).join(':')
+    Proc.new { find_paths(node['hdfsdu']['dependent_jars']).join(':') }
   extractsizes_class = 'com/twitter/hdfsdu/pig/piggybank/ExtractSizes*'
   cwd "#{hdfsdu_pig_dir}/pig/src/main/java"
-  code lazy do
+  code lazy {
     %(
-      javac -cp #{dependent_jars} \
+      javac -cp #{dependent_jars.call} \
         com/twitter/hdfsdu/pig/piggybank/ExtractSizes.java
       jar cvf #{hdfsdu_pig_jar}.jar #{extractsizes_class}.class
     )
-  end
+  }
   user user
   creates "#{hdfsdu_pig_jar}.jar"
 end
