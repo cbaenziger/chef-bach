@@ -79,7 +79,7 @@ bash 'compile_extract_sizes' do
   hdfsdu_pig_jar = \
     "#{hdfsdu_oozie_dir}/hdfsdu/workflowApp/lib/hdfsdu-pig-#{hdfsdu_vers}"
   dependent_jars = \
-    Hdfsdu::Helper.find_paths(node['hdfsdu']['dependent_jars']).join(':')
+    find_paths(node['hdfsdu']['dependent_jars']).join(':')
   extractsizes_class = 'com/twitter/hdfsdu/pig/piggybank/ExtractSizes*'
   cwd "#{hdfsdu_pig_dir}/pig/src/main/java"
   code lazy do
