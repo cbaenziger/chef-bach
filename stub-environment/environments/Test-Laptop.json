@@ -2,6 +2,7 @@
   "name": "Test-Laptop",
   "override_attributes": {
     "bcpc": {
+      "domain_name": "bcpc.example.com",
       "management": {
         "vip" : "10.0.100.5"
       },
