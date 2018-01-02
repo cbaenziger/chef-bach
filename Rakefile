@@ -1,6 +1,6 @@
 #!/usr/bin/env rake
 
-chef_version = '12.14.89'
+chef_version = '12.19.36'
 namespace :style do
   require 'rubocop/rake_task'
   desc 'Style check with rubocop'
