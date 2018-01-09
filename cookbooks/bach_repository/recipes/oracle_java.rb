@@ -23,20 +23,21 @@ ruby_block 'oracle-cookie-create' do
 end
 
 remote_file "#{bins_dir}/jce_policy-8.zip" do
-  source node['bach']['repository']['java']['jce_url']
+  source node['java']['oracle']['jce']['8']['url']
   user 'root'
   group 'root'
   mode 0444
-  checksum node['bach']['repository']['java']['jce_checksum']
+  checksum node['java']['oracle']['jce']['8']['checksum']
 end
 
-java_tgz_name = Pathname.new(node['bach']['repository']['java']['jdk_url'])\
+java_tgz_name = Pathname.new(node['java']['jdk']['8']['x86_64']['url'])\
                         .basename.to_s
 
-remote_file "#{bins_dir}/#{java_tgz_name}" do
-  source node['bach']['repository']['java']['jdk_url']
+remote_file 'JDK' do
+  path "#{bins_dir}/#{Pathname.new(java_tgz_name).basename.to_s}"
+  source node['java']['jdk']['8']['x86_64']['url']
   user 'root'
   group 'root'
   mode 0444
-  checksum node['bach']['repository']['java']['jdk_checksum']
+  checksum node['java']['jdk']['8']['x86_64']['checksum']
 end
