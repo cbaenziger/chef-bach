@@ -71,7 +71,7 @@ This process is to run tests using ChefDK. It is also possible to run using pure
 * `source proxy_setup.sh`
 * `bundler install --path vendor/bundle --without cookbooks`
 * `bundler exec rspec`
-* `for c in cookbooks/*; do pushd $c; bundler install --path ../../vendor/bundle --without cookbooks && bundler exec rspec || echo "Failed in $c" 1>&2 ; popd; done`
+* `for c in cookbooks/*; do pushd $c; bundler install --path $(pwd)/vendor/bundle --without cookbooks && bundler exec rspec || echo "Failed in $c" 1>&2 ; popd; done`
 
 ## Test-Kitchen
 * `export PATH=/opt/chefdk/embedded/bin:$PATH`
