@@ -1,23 +1,21 @@
 # Test hannibal_hbase recipe.
-# Run from directory ~/chef-bcpc/cookbooks/hannibal/spec
-# Command: rspec tests/hannibal_deploy_spec.rb --color --format documentation
 
-require_relative '../spec_helper'
+require 'spec_helper'
 
 # Test the local_tarball version (built from source locally)
 describe 'hannibal::hannibal_deploy' do
    let(:chef_run) do
-      ChefSpec::ServerRunner.new do |node|
-         node.set['hannibal']['local_tarball'] = true
-         node.set['hannibal']['hbase_version'] = 0.96
-         node.set['hannibal']['zookeeper_quorum'] = 'http://localhost:2181'
-         node.set[:hannibal][:log_dir] = '/var/log/hannibal'
-         node.set[:hannibal][:install_dir] = '/usr/lib'
-         node.set[:hannibal][:data_dir] = '/var/lib/hannibal/data'
-         node.set[:hannibal][:user] = 'nobody'
-         node.set[:hannibal][:owner] = 'root'
-         node.set[:hannibal][:group] = 'root'
-         node.set[:hannibal][:db] = 'mysql'
+      ChefSpec::ServerRunner.new({ platform: 'ubuntu', version: '14.04'}) do |node|
+         node.override['hannibal']['local_tarball'] = true
+         node.override['hannibal']['hbase_version'] = 0.96
+         node.override['hannibal']['zookeeper_quorum'] = 'http://localhost:2181'
+         node.override[:hannibal][:log_dir] = '/var/log/hannibal'
+         node.override[:hannibal][:install_dir] = '/usr/lib'
+         node.override[:hannibal][:data_dir] = '/var/lib/hannibal/data'
+         node.override[:hannibal][:user] = 'nobody'
+         node.override[:hannibal][:owner] = 'root'
+         node.override[:hannibal][:group] = 'root'
+         node.override[:hannibal][:db] = 'mysql'
       end.converge(described_recipe)
    end
 
