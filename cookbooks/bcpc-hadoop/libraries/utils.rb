@@ -31,11 +31,11 @@ require 'thread'
 # For Kerberos to work we need FQDN for each host. Changing "HOSTNAME" to "FQDN".
 # Hadoop breaks principal into 3 parts  (Service, FQDN and REALM)
 
-HOSTNAME_ATTR_SRCH_KEYS = {'hostname' => 'fqdn'}
+HOSTNAME_ATTR_SRCH_KEYS = {'hostname' => 'fqdn'}.freeze
 HOSTNAME_NODENO_ATTR_SRCH_KEYS = {'hostname' => 'fqdn',
                                   'node_number' => 'bcpc.node_number',
-                                  'zookeeper_myid' => 'bcpc.hadoop.zookeeper.myid'}
-MGMT_IP_ATTR_SRCH_KEYS = {'mgmt_ip' => 'bcpc.management.ip'}
+                                  'zookeeper_myid' => 'bcpc.hadoop.zookeeper.myid'}.freeze
+MGMT_IP_ATTR_SRCH_KEYS = {'mgmt_ip' => 'bcpc.management.ip'}.freeze
 
 def init_config
   if not Chef::DataBag.list.key?('configs')
