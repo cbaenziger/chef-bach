@@ -23,8 +23,9 @@
 require 'fileutils'
 
 build_dir = ::File.join(Chef::Config.file_cache_path, 'flume_build')
-flume_version = node['copylogs']['flume']['version'])
-flume_archive = ::File.join(build_dir, "apache-flume-#{flume_version}.tar.gz") do
+flume_version = node['copylogs']['flume']['version']
+flume_archive = ::File.join(build_dir, "apache-flume-#{flume_version}.tar.gz")
+target_filepath = node['copylogs']['flume']['package_location']
 
 directory build_dir do
   action :create

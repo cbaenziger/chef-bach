@@ -28,3 +28,10 @@ default['copylogs']['flume']['distribution']['url'] = \
 default['copylogs']['flume']['distribution']['checksum'] = \
   'be1b554a5e23340ecc5e0b044215bf7828ff841f6eabe647b526d31add1ab5fa'
 default['copylogs']['flume']['package']['short_name'] = 'apache_flume'
+default['copylogs']['flume']['package']['name'] = \
+  "#{node['copylogs']['flume']['package']['short_name']}_" \
+  "#{node['copylogs']['flume']['version']}_amd64.deb"
+default['copylogs']['flume']['bin_dir'] = Chef::Config.file_cache_path
+default['copylogs']['flume']['package_location'] = ::File.join(
+  node['copylogs']['flume']['bin_dir'],
+  node['copylogs']['flume']['package']['name'])
