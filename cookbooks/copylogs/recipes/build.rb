@@ -66,7 +66,7 @@ bash 'build flume package' do
         -n #{node['copylogs']['flume']['package']['short_name']} \
         -v #{flume_version} \
         * && \
-    mv #{node['copylogs']['flume']['package']['short_name']} #{target_filepath}
+    mv #{node['copylogs']['flume']['package']['name']} #{target_filepath}
   }
   umask 0002
   action :nothing
