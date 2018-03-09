@@ -32,6 +32,12 @@ directory build_dir do
   not_if { ::File.exist?(target_filepath) }
 end
 
+%w(ruby-dev ruby).each do |pkg|
+  package pkg do
+    action :upgrade
+  end
+end
+
 gem_package 'fpm' do
   gem_binary '/usr/bin/gem'
   action :install
