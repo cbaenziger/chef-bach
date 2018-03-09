@@ -19,6 +19,9 @@ provisioner:
 
 platforms:
   - name: ubuntu-14.04
+    run_list:
+      - 'recipe[apt::default]'
+    attributes: { "ssl":{"verify":false} }
 
 suites:
   - name: copylogs_build
