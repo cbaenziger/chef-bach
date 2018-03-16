@@ -55,7 +55,7 @@ end
 chef_vault_secret 'ssh' do  
   data_bag 'os'
   raw_data({ "private-key" => key.to_pem })
-  admins "#{ nodes },#{ bootstrap }"
+  admins "#{ nodes },#{ bootstrap },admin"
   search '*:*'
   action :create_if_missing
 end
