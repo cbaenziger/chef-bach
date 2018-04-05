@@ -85,7 +85,7 @@ chef_vault_secret "ssl" do
   end
   data_bag 'os'
   raw_data ({ 'private-key' => ssl_private_key, 'certificate' => ssl_certificate })
-  admins "#{ nodes },#{ bootstrap }"
+  admins "#{ nodes },#{ bootstrap },admin"
   search '*:*'
   action :create_if_missing
 end

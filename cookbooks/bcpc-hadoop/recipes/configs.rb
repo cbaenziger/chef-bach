@@ -75,5 +75,7 @@ include_recipe 'bcpc-hadoop::jvmkill'
 end
 
 # incrase max_map_count
-node.default['sysctl']['params']['vm']['max_map_count'] = (node.memory.total.to_i) / 16
-include_recipe 'sysctl::apply'
+max_maps = node['memory']['total'].to_i / 16
+sysctl_param 'vm.max_map_count' do
+  value max_maps
+end
