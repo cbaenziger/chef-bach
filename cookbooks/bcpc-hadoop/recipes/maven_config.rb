@@ -30,13 +30,15 @@ include_recipe 'bcpc-hadoop::ssl_configuration'
 include_recipe 'bcpc::proxy_configuration'
 include_recipe 'maven::default'
 
-keystore_path = node['bcpc']['hadoop']['java_ssl']['keystore']
-keystore_password = node['bcpc']['hadoop']['java_ssl']['password']
+unless node['bcpc']['bootstrap']['proxy'].nil?
+  keystore_path = node['bcpc']['hadoop']['java_ssl']['keystore']
+  keystore_password = node['bcpc']['hadoop']['java_ssl']['password']
 
-node.override['maven']['mavenrc']['opts'] =
-    "#{node['maven']['mavenrc']['opts']} " \
-    "-Djavax.net.ssl.trustStore=#{keystore_path} " \
-    "-Djavax.net.ssl.trustStorePassword=#{keystore_password} "
+  node.override['maven']['mavenrc']['opts'] =
+      "#{node['maven']['mavenrc']['opts']} " \
+      "-Djavax.net.ssl.trustStore=#{keystore_path} " \
+      "-Djavax.net.ssl.trustStorePassword=#{keystore_password} "
+end
 
 # Setup custom maven config
 directory '/root/.m2' do
