@@ -7,10 +7,10 @@
 #
 
 <%
- mfg = node['dmi']['system']['manufacturer']
- product = node['dmi']['system']['product_name']
- gb = (node['memory']['total'].to_f / 1024 / 1024).round
- cores = node[:cpu]['0'][:cores].to_i * node[:cpu][:real]
+ mfg = '' #node['dmi']['system']['manufacturer']
+ product = '' #node['dmi']['system']['product_name']
+ gb = '' #(node['memory']['total'].to_f / 1024 / 1024).round
+ cores = '' #node[:cpu]['0'][:cores].to_i * node[:cpu][:real]
 
  chef_bach_version =
    node.run_context.cookbook_collection['bach_common'].version rescue nil

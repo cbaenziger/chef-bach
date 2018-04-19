@@ -89,7 +89,7 @@ def bcpc_unused_disks
     end
   end
 
-  if node['dmi']['system']['product_name'] == 'VirtualBox'
+  if node['virtualization']['systems']['vbox'] == 'guest'
     #
     # On a VM build, we reject all disks with fewer than a million
     # blocks, so that we do not attempt to use the iPXE image as a
