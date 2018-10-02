@@ -96,6 +96,7 @@ default[:bcpc][:hadoop][:hbase][:site_xml].tap do |site_xml|
   site_xml['hbase.coprocessor.region.whitelist.paths'] = ''
   site_xml['phoenix.schema.isNamespaceMappingEnabled'] = true
   site_xml['phoenix.schema.mapSystemTablesToNamespace'] = true
+  site_xml['hbase.server.keyvalue.maxsize'] = 1024*1024
 end
 
 # hbase_env attributes
