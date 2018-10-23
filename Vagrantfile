@@ -116,8 +116,8 @@ Vagrant.configure('2') do |config|
     end
   end
 
-  config.vm.box = 'trusty64'
-  config.vm.box_url = 'trusty-server-cloudimg-amd64-vagrant-disk1.box'
+  config.vm.box = 'xenial64'
+  config.vm.box_url = 'xenial-server-cloudimg-amd64-vagrant-disk1.box'
 
   memory = ENV['BOOTSTRAP_VM_MEM'] || '2048'
   cpus = ENV['BOOTSTRAP_VM_CPUs'] || '1'
