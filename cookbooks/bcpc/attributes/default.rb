@@ -132,6 +132,54 @@ default['bcpc']['dns_servers'] = ['8.8.8.8', '8.8.4.4']
 #  Repos for things we rely on
 #
 ###########################################
+default['bcpc']['repos_for']['xenial'].tap do |xenial_repos|
+  xenial_repos['percona'].tap do |repo|
+    repo[:components] = ['main']
+    repo[:distribution] = 'xenial'
+    repo[:key] = 'percona-release.key'
+    repo[:uri] = 'http://repo.percona.com/apt'
+  end
+
+  xenial_repos['canonical-support-tools'].tap do |repo|
+    repo[:components] = ['main']
+    repo[:distribution] = 'xenial'
+    repo[:key] = 'ubuntu-support-tools.key'
+    repo[:uri] =
+      'http://ppa.launchpad.net/canonical-support/support-tools/ubuntu'
+  end
+
+  xenial_repos['hortonworks'].tap do |repo|
+    repo[:components] = ['main']
+    repo[:distribution] = 'HDP'
+    repo[:key] = 'hortonworks.key'
+    repo[:uri] =
+      'http://public-repo-1.hortonworks.com/HDP/ubuntu16/2.x/updates/2.6.5.0'
+  end
+
+  xenial_repos['hortonworks-gpl'].tap do |repo|
+    repo[:components] = ['main']
+    repo[:distribution] = 'HDP-GPL'
+    repo[:key] = 'hortonworks.key'
+    repo[:uri] =
+      'http://public-repo-1.hortonworks.com/HDP-GPL/ubuntu16/2.x/updates/2.6.5.0'
+   end
+
+  xenial_repos['hdp-utils'].tap do |repo|
+    repo[:components] = ['main']
+    repo[:distribution] = 'HDP-UTILS'
+    repo[:key] = 'hortonworks.key'
+    repo[:uri] =
+      'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16'
+  end
+
+  xenial_repos['zabbix'].tap do |repo|
+    repo[:components] = ['main']
+    repo[:distribution] = 'xenial'
+    repo[:key] = 'zabbix-official-repo.key'
+    repo[:uri] = 'http://repo.zabbix.com/zabbix/3.0/ubuntu/'
+  end
+end
+
 default['bcpc']['repos_for']['trusty'].tap do |trusty_repos|
   trusty_repos['percona'].tap do |repo|
     repo[:components] = ['main']

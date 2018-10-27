@@ -39,7 +39,7 @@ Setup
 =====
 
 These recipes are currently intended for building a BACH cluster on top of
-Ubuntu 14.04 servers using Chef 11. When setting this up in VMs, be sure to
+Ubuntu 16.04 servers using Chef 12. When setting this up in VMs, be sure to
 add a few dedicated disks (for HDFS data nodes) aside from boot volume. In
 addition, it's expected that you have three separate NICs per machine, with
 the following as defaults (and recommendations for VM settings):

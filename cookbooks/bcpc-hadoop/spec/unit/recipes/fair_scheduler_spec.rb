@@ -5,7 +5,7 @@ describe '#bcpc_hadoop_test::fair_scheduler' do
   # load a bcpc-hadoop recipe to test cookbook attributes render properly
   let(:chef_run) do
     ChefSpec::SoloRunner.new(step_into: ['fair_share_queue']) do |node|
-      Fauxhai.mock(platform: 'ubuntu', version: '14.04')
+      Fauxhai.mock(platform: 'ubuntu', version: '16.04')
       SET_ATTRIBUTES.call(node)
     end.converge('recipe[bcpc_hadoop_test::fair_scheduler]')
   end

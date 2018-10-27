@@ -7,7 +7,7 @@ long_description 'bach_repository builds a repo for use by BACH nodes. ' \
   'This cookbook builds binary artifacts and repositories declaratively.'
 version          '0.1.0'
 
-supports 'ubuntu', '= 14.04'
+supports 'ubuntu'
 
 depends 'java'
 depends 'ark'

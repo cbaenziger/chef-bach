@@ -16,10 +16,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+require 'rubygems'
 include_recipe 'bcpc::default'
 
-%w(python-support python-configobj python-pip python-httplib2 python-statsd).each do |pkg|
+python_pkg = \
+  Gem::Version.new(node['lsb']['release']) >= Gem::Version.new('16.04') ?
+  'dh-python' : 'python-support'
+%W(#{python_pkg} python-configobj python-pip python-httplib2 python-statsd).each do |pkg|
   package pkg do
     action :upgrade
   end

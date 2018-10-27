@@ -19,6 +19,7 @@
 
 require 'digest/sha2'
 require 'chef-vault'
+require 'rubygems'
 
 make_config('cobbler-web-user', 'cobbler')
 
@@ -46,11 +47,14 @@ end
 # The cobblerd cookbook relies on this attribute.
 node.force_default[:cobblerd][:web_password] = web_password
 
+python_pkg = \
+  Gem::Version.new(node['lsb']['release']) >= Gem::Version.new('16.04') ?
+  'dh-python' : 'python-support'
 [
   'python',
   'apache2',
   'libapache2-mod-wsgi',
-  'python-support',
+  python_pkg,
   'python-yaml',
   'python-netaddr',
   'python-cheetah',
@@ -185,15 +189,15 @@ link '/var/lib/tftpboot/chain.c32' do
   link_type :hard
 end
 
-cobbler_image 'ubuntu-14.04-mini' do
-  source "#{get_binary_server_url}/ubuntu-14.04-hwe44-mini.iso"
-  os_version 'trusty'
+cobbler_image 'ubuntu-16.04-mini' do
+  source "#{get_binary_server_url}/ubuntu-16.04-hwe44-mini.iso"
+  os_version 'xenial'
   os_breed 'ubuntu'
   action :import
 end
 
 {
-  trusty: 'ubuntu-14.04-mini-x86_64',
+  xenial: 'ubuntu-16.04-mini-x86_64',
 }.each do |version, distro_name|
   cobbler_profile "bcpc_host_#{version}" do
     kickstart "cobbler/#{version}.preseed"

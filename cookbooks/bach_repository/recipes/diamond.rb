@@ -14,7 +14,8 @@ src_dir = node['bach']['repository']['src_directory']
 build_dir = src_dir + '/diamond'
 
 git build_dir do
-  repository 'https://github.com/python-diamond/Diamond'
+  repository 'https://github.com/cbaenziger/Diamond'
+  revision 'pr_531'
   action :sync
   not_if { File.exists?("#{bins_dir}/diamond.deb") }
 end
