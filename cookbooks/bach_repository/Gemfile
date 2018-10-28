@@ -11,7 +11,7 @@ elsif File.exist?('/opt/chef/Gemfile')
     opscode_gem_data = IO.read("/opt/chef/Gemfile")
     instance_eval(opscode_gem_data, "/opt/chef/Gemfile")
 else
-  source 'https://rubygems.org' do
+  source 'http://rubygems.org' do
 
   gem 'berkshelf'
   gem 'kitchen-vagrant'

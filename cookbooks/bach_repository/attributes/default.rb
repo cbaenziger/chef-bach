@@ -42,7 +42,7 @@ default[:bach][:repository][:ascii_key_path] =
   default[:bach][:repository][:bins_directory] + '/apt_key.asc'
 
 # Ruby repository location
-default[:bach][:repository][:gem_server] = 'https://rubygems.org'
+default[:bach][:repository][:gem_server] = 'http://rubygems.org'
 
 # Apt repository location
 default[:bach][:repository][:apt_directory] =

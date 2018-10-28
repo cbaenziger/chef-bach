@@ -10,7 +10,7 @@ elsif File.exist?('/opt/chefdk/Gemfile')
     opscode_gem_data.gsub!(/^gem.*opscode-pushy-client.*\n/,'')
     instance_eval(opscode_gem_data, "/opt/chefdk/Gemfile")
 end
-source 'https://rubygems.org' do
+source 'http://rubygems.org' do
   gem 'chef'
   gem 'berkshelf'
   gem 'chefspec'
