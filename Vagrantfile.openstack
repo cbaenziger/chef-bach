@@ -1,0 +1,86 @@
+require 'json'
+require 'resolv'
+require 'uri'
+require 'vagrant-openstack-provider'
+
+OS_TENANTNAME=ENV["OS_TENANT_NAME"]
+DNS_DOMAIN="dob1.bcpc.bloomberg.com"
+
+raise ArgumentError, "DNS_DOMAIN not set. DNS_DOMAIN should be the DNS domain of the OpenStack cluster VMs" if DNS_DOMAIN.length == 0
+
+# load Chef environment
+base_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
+json_file = Dir[File.join(File.join(base_dir, 'environments'), '*.json')]
+if json_file.empty?
+  puts "No environment file found to parse. Please make sure at least one environment file exists."
+  exit
+end
+if json_file.length > 1
+  puts "More than one environment file found."
+  exit
+end
+
+file_name=File.basename(json_file.join(","))
+chef_env = JSON.parse(File.read(json_file.join(",")))
+
+# get proxy from Chef environment
+proxy_url = chef_env["override_attributes"]["bcpc"]["bootstrap"]["proxy"]
+
+# ensure we have a ssh private key and authorized_keys in the vagrant_ssh directory
+raise ArgumentError, "Need a vagrant_ssh/id_rsa file to run" unless File.exists?("vagrant_ssh/id_rsa")
+`ssh-keygen -y -f vagrant_ssh/id_rsa > vagrant_ssh/authorized_keys` unless File.exists?("vagrant_ssh/authorized_keys")
+FLOATING_IP="100.70.17.31"
+
+# optional cluster name if running multiple clusters in a tenancy
+# needs to be a valid ruby symbol name (e.g. no hypens, underscores)
+CLUSTER_NAME=""
+
+# cluster disk size
+DISK_SIZE=10
+
+# these rules come from bcpc::powerdns SQL function dns_name
+def munge_domainname(domainname)
+  return domainname.downcase.
+         gsub('&', 'and').
+         gsub('_','-').
+         gsub(' ','-').
+         gsub('.','-')
+end
+
+Vagrant.configure('2') do |config|
+  # All Vagrant configuration is done here. The most common configuration
+  # options are documented and commented below. For a complete reference,
+  # please see the online documentation at vagrantup.com.
+  config.vm.synced_folder 'vagrant_ssh', '/home/ubuntu/.ssh/', type: 'rsync'
+
+  config.ssh.username = 'ubuntu'           # login for the VM
+  config.vm.provider :openstack do |os|
+   os.username     = ENV['OS_USERNAME']          # e.g. '#{ENV['OS_USERNAME']}'
+   os.password      = ENV['OS_PASSWORD']           # e.g. '#{ENV['OS_PASSWORD']}'
+   os.flavor       = /generic1.small/                # Regex or String
+   os.image        = 'BCC Ubuntu 14.04 LTS'
+   os.openstack_auth_url     = "https://#{URI.parse(ENV["OS_AUTH_URL"]).host}:5000/v2.0/tokens" # e.g. "#{ENV['OS_AUTH_URL']}/tokens"
+   os.keypair_name = 'Clay'      # as stored in Nova
+
+   os.security_groups    = ['All Open']    # optional
+   os.tenant_name             = OS_TENANTNAME
+   os.server_name = "public-#{FLOATING_IP.split('.').join('-')}"
+   os.floating_ip = FLOATING_IP
+  end
+
+  config.vm.define "#{CLUSTER_NAME}bachchef".to_sym do |bachchef|
+    bachchef.ssh.private_key_path = "vagrant_ssh/id_rsa"
+
+    # spoof having a vagrant homedir
+    bachchef.vm.provision :shell, :inline => "ln -s /home/ubuntu /home/vagrant ; ln -s /vagrant /home/ubuntu/chef-bcpc ; chown -R ubuntu /home/ubuntu/" 
+    # clean up Chef environment to have correct IP address for bootstrap server, float and mgmt VIPs
+    bachchef.vm.provision :shell, :privileged => false, :inline => "sed -i \"s/10.0.100.3/\$(curl http://169.254.169.254/latest/meta-data/public-ipv4)/\" chef-bach/environments/Test-Laptop.json"
+    # set correct domain name in environment
+    bachchef.vm.provision :shell, :privileged => false, :inline => "sed -i -e 's/\"bcpc\"[ ]*:[ ]*{/\"bcpc\": {\\n\"domain_name\": \"#{munge_domainname(OS_TENANTNAME)}.#{DNS_DOMAIN}\",/' chef-bcpc/environments/Test-Laptop.json"
+    # build required binaries
+    bachchef.vm.provision :shell, :inline => "cd chef-bcpc && source proxy_setup.sh && sudo -E ./build_bins.sh"
+    # bootstrap the chef server
+    bachchef.vm.provision :shell, :privileged => false, :inline => "cd chef-bcpc && source proxy_setup.sh && ln -s /bin/true rsync; export PATH=.:${PATH} ; ./bootstrap_chef.sh --vagrant-local \$(curl http://169.254.169.254/latest/meta-data/public-ipv4)" 
+  end
+end
+
