@@ -21,5 +21,6 @@ depends 'maven', '~> 5.0.1'
 depends 'nscd'
 depends 'ntp'
 depends 'ubuntu'
+depends 'seven_zip', '~> 3.0.0' # 3.1.0 requires Chef-13 client
 depends 'sudo'
 depends 'pdns'
