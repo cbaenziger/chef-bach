@@ -46,7 +46,7 @@ template '/etc/security/namespace.conf' do
   source 'pam_namespace.conf.erb'
   mode 500
   variables(lazy {{ real_home_dir_users:
-                     node['bcpc']['pam_namespace']['real_home_dir_users'].join(','),
+                     node['bcpc']['pam_namespace']['real_home_dir_users'].uniq.sort.join(','),
                    shm_polyinstantion_dir: shm_polyinstantion_dir,
                    polyinstantion_dir: polyinstantion_dir
                  }})
