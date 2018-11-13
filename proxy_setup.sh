@@ -22,13 +22,19 @@ if [ -n "$http_proxy" ]; then
   else
     DOMAIN="$(domainname),"
   fi
+  CLUSTER_DOMAIN=$(head -n1 cluster.txt | cut -f 7 -d ' ')
+  # Of the form bcpc-bootstrap.domain or cluster-bcpc-bootstrap.domain
+  BOOTSTRAP_FQDN=bcpc-bootstrap.${CLUSTER_DOMAIN}
+  BOOTSTRAP_FQDN=${BACH_CLUSTER_PREFIX}${BACH_CLUSTER_PREFIX+-}${BOOTSTRAP_FQDN}
 
   # a string like 127.0.0.1, 10.0.100.3, ..."
   local_ips=$(ip addr list |grep 'inet '|sed -e 's/.* inet //' -e 's#/.*#,#')
   # a string like 10.0.2.*, 10.0.100.*, ..., 10.0.2., 10.0.100., ...
   local_nets=$(sed -e 's/127[.0-9]*, //' -e 's/\.[0-9]*,/.*,/g' <<< $local_ips)$(sed -e 's/127[.0-9]*, //' -e 's/\.[0-9]*,/.,/g' <<< $local_ips)
+  # we use the .3 on our virtualbox networks for the bootstrap host (crudely no_proxy the .3 on all hypervisor networks)
+  bootstrap_ips=$(sed -e 's/127[.0-9]*, //' -e 's/\.[0-9]*,/.3,/g' <<< $local_ips)
 
-  export no_proxy="$(tr -d ' \n' <<< $local_ips)$(hostname),$(hostname -f),$DOMAIN$(tr -d ' \n' <<< $local_nets)$no_proxy"
+  export no_proxy="${BOOTSTRAP_FQDN},$(tr -d ' \n' <<< $local_ips)$(hostname),$(hostname -f),$DOMAIN$(tr -d ' \n' <<< $local_nets)$(tr -d ' \n' <<< $bootstrap_ips)$no_proxy"
   export NO_PROXY="$no_proxy"
   echo "Force Ruby ecosystem to use system SSL certificates"
   export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt

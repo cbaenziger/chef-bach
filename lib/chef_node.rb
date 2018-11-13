@@ -50,17 +50,31 @@ module BACH
       end
 
       #
-      # Returns the password for the 'ubuntu' account in plaintext.
+      # Returns the username for the cluster administrative account
+      #
+      def admin_user
+        attribute = chef_environment.override_attributes
+        if attribute.has_key?('bcpc') &&
+           attribute['bcpc'].has_key?('admin-user') then
+          attribute['bcpc']['admin-user']
+        else
+          # Note: this is also defined in bcpc/attributes/default.rb
+          'ubuntu'
+        end
+      end
+
+      #
+      # Returns the password for the cluster administrative account in plaintext.
       # The method name comes from the confusing name of the data bag item.
       #
-      def cobbler_root_password
+      def root_password
         # Among other things, Ridley will set up Chef::Config for ChefVault.
-        unless ridley.data_bag.find('os/cobbler_keys')
-          raise('No os/cobbler_keys data bag item found. ' \
+        unless ridley.data_bag.find('os/passwords_keys')
+          raise('No os/passwords_keys data bag item found. ' \
                 'Is this cluster using chef-vault?')
         end
 
-        ChefVault::Item.load('os', 'cobbler')['root-password']
+        ChefVault::Item.load('os', 'passwords')['root-password']
       end
 
       def refresh_vault_keys(entry = nil)

@@ -47,10 +47,8 @@ The automated_install process has the following workflow:
 
 ## Snapshots
 Snapshots are created as the system is setup to allow for rolling back to the last successful step for one to try a modification and re-run. Snapshots are:
-### Shoe-less
-This snapshot is created once we have setup the bootstrap node to have all necessary pre-built and stashed binaries, a working Chef-Server and via Chef has a working PXE boot server to install the OS on the cluster VM's.
-### Post-Cobble
-This snapshot is once the cluster VM's have been enrolled in Cobbler and have been installed with a blank OS -- no Chef objects have been created for them yet.
+### Pre-Basic
+This snapshot is once the cluster VM's have been provisioned by Vagrant -- no Chef objects have been created for them yet.
 ### Post-Basic
 This is after the `cluster-assign-roles.sh <environment> basic` operation has completed. No Hadoop components should be installed at this stage. Initial OS configuration and Chef object creation is all that should have been done at this phase.
 ### Post-Bootstrap

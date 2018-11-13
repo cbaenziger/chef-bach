@@ -3,7 +3,7 @@
 # nodessh.sh
 #
 # Convenience script for running commands over ssh to BCPC nodes when
-# their cobbler root passwd is available in the chef databags. 
+# their root passwd is available in the chef databags. 
 #
 # Parameters:
 # $1 is the name of chef environment file, without the .json file extension
@@ -37,10 +37,10 @@ if [[ ! -z "$KNIFESTAT" ]]; then
     exit
 fi
 
-# get the cobbler root passwd from the data bag
-PASSWD=`sudo knife vault show os cobbler "root-password" --mode client | grep "root-password:" | awk ' {print $2}'`
+# get the root passwd from the data bag
+PASSWD=`sudo knife vault show os passwords "root-password" --mode client | grep "root-password:" | awk ' {print $2}'`
 if [[ -z "$PASSWD" ]]; then
-    echo "Failed to retrieve 'cobbler-root-password'"
+    echo "Failed to retrieve 'passwords-root-password'"
     exit
 fi
 
@@ -55,6 +55,8 @@ IP=$2
 
 SSHCOMMON="-q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o VerifyHostKeyDNS=no"
 
+ADMIN_USER=$(/opt/chefdk/embedded/bin/ruby -e "require_relative 'lib/cluster_data';require_relative 'lib/chef_node'; include BACH::ClusterData; include BACH::ClusterData::ChefNode; puts admin_user")
+
 if [[ $(basename "$0") == nodescp ]]; then
     SCPCMD="scp $SSHCOMMON"
     sshpass -p $PASSWD $SCPCMD -p "$3" "$4"
@@ -66,14 +68,14 @@ else
 
     if [[ "$4" == sudo ]]; then
         # if we need to sudo, pipe the passwd to that too
-	sshpass -p $PASSWD $SSHCMD -t ubuntu@$IP "echo $PASSWD | sudo -S $COMMAND"
+	sshpass -p $PASSWD $SSHCMD -t ${ADMIN_USER}@$IP "echo $PASSWD | sudo -S $COMMAND"
     else  
         # not sudo, do it the normal way
 	if [[ "$COMMAND" == - ]]; then
-	    echo "You might need this : cobbler_root = $PASSWD"
-	    sshpass -p $PASSWD $SSHCMD -t ubuntu@$IP
+	    echo "You might need this : password = $PASSWD"
+	    sshpass -p $PASSWD $SSHCMD -t ${ADMIN_USER}@$IP
 	else
-	    sshpass -p $PASSWD $SSHCMD -t ubuntu@$IP "$COMMAND"
+	    sshpass -p $PASSWD $SSHCMD -t ${ADMIN_USER}@$IP "$COMMAND"
 	fi
     fi
 fi 

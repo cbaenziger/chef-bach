@@ -156,8 +156,8 @@ class ClusterAssignRoles
     chef_command = "sudo chef-client #{runlist_switch} #{runlist}"
 
     result = ssh(host: node[:ip_address],
-                 username: 'ubuntu',
-                 password: cobbler_root_password,
+                 username: admin_user,
+                 password: root_password,
                  command: chef_command,
                  streaming: true)
 
@@ -390,8 +390,8 @@ class ClusterAssignRoles
                            '-y',
                            '-E', chef_environment_name,
                            '-r', 'recipe[bcpc::default]',
-                           '-x', 'ubuntu',
-                           '-P', cobbler_root_password,
+                           '-x', admin_user,
+                           '-P', root_password,
                            '--bootstrap-wget-options', '-e use_proxy=no',
                            '--bootstrap-url', bootstrap_url,
                            '--sudo',
