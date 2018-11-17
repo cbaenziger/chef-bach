@@ -6,27 +6,27 @@
 
 if [[ -z "$VBM" ]]; then
 
-    if ! command -v VBoxManage >& /dev/null; then
-        echo "VBoxManage not found!" >&2
-        echo "  Please ensure VirtualBox is installed and VBoxManage is on your system PATH." >&2
-        exit 1
+  if ! command -v VBoxManage >& /dev/null; then
+    echo "VBoxManage not found!" >&2
+    echo "  Please ensure VirtualBox is installed and VBoxManage is on your system PATH." >&2
+    exit 1
+  fi
+
+  function check_version {
+    local MIN_VERSION="4.3"
+    local MY_VERSION=`VBoxManage --version | perl -ne 'm/(\d\.\d)\./; print "$1"'`
+    local VERSION_CHECK=`ruby -e "puts Gem::Version.new($MY_VERSION) > Gem::Version.new($MIN_VERSION)"`
+
+    if ! $VERSION_CHECK
+    then
+      echo "ERROR: VirtualBox $version is less than $MIN_VERSION.x!" >&2
+      echo "  Only VirtualBox >= $MIN_VERSION.x is officially supported." >&2
+      #exit 1
     fi
+  }
 
-    function check_version {
-      local MIN_VERSION="4.3"
-      local MY_VERSION=`VBoxManage --version | perl -ne 'm/(\d\.\d)\./; print "$1"'`
-      local VERSION_CHECK=`ruby -e "puts Gem::Version.new($MY_VERSION) > Gem::Version.new($MIN_VERSION)"`
+  check_version
+  unset -f check_version
 
-      if ! $VERSION_CHECK
-      then
-          echo "ERROR: VirtualBox $version is less than $MIN_VERSION.x!" >&2
-          echo "  Only VirtualBox >= $MIN_VERSION.x is officially supported." >&2
-          #exit 1
-      fi
-    }
-
-    check_version
-    unset -f check_version
-
-    export VBM=VBoxManage
+  export VBM=VBoxManage
 fi
