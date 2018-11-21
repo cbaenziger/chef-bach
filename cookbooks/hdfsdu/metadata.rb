@@ -9,7 +9,7 @@ version          '0.1.0'
 depends 'ark'
 # FIXME: Remove when upgrading to chef-client 13+
 # This transitive dependency of the ark cookbook.
-depends 'seven_zip', '~> 3.0'
+depends 'seven_zip', '~> 3.0.0'
 depends 'maven'
 
 supports 'ubuntu'
