@@ -220,7 +220,6 @@ def set_hosts
   # set the oozie_url
   oozie_hosts = node['bcpc']['hadoop']['oozie_hosts']
   vip_host = float_host(node['bcpc']['management']['viphost'])
-  first_host = float_host(oozie_hosts.first['hostname'])
   oozie_ha_port = node['bcpc']['hadoop']['oozie_ha_port']
   oozie_port = node['bcpc']['hadoop']['oozie_port']
 
@@ -229,6 +228,7 @@ def set_hosts
       # high-availability
       "http://#{vip_host}:#{oozie_ha_port}/oozie"
     elsif oozie_hosts.length == 1
+      first_host = float_host(oozie_hosts.first['hostname'])
       # single oozie host
       "http://#{first_host}/#{oozie_port}/oozie"
     end
