@@ -71,8 +71,4 @@ end
 
 service 'ufw' do
   action [:enable, :start]
-  if node[:lsb][:id] == 'Ubuntu' &&
-     Gem::Version.new(node[:lsb][:release]) >= Gem::Version.new('14.04')
-    provider Chef::Provider::Service::Upstart
-  end
 end

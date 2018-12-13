@@ -12,16 +12,9 @@ include_recipe 'bach_repository::tools'
 # Gems recipe has to run early because it includes fpm and related gems.
 include_recipe 'bach_repository::gems'
 
-# build cobbler -- cobbler's build has failes if Apache is already installed
-include_recipe 'cobblerd::cobbler_source_build'
-
 include_recipe 'bach_repository::chef'
-include_recipe 'bach_repository::diamond'
-include_recipe 'bach_repository::graphite'
-include_recipe 'bach_repository::opentsdb'
 include_recipe 'bach_repository::oracle_java'
 include_recipe 'bach_repository::spark'
-include_recipe 'bach_repository::ubuntu'
 
 # Python and ruby repos.
 include_recipe 'bach_repository::python'

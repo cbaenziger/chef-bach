@@ -5,7 +5,6 @@
     "json_class": "Chef::Role",
     "run_list": [
       "recipe[bach_common::motd]",
-      "recipe[bcpc::graphite_handler]",
       "recipe[ubuntu]",
       "recipe[ntp]",
       "recipe[bcpc::chef_client]",

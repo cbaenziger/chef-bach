@@ -53,7 +53,7 @@ and tweak accordingly for your setup (by adding them to an environment file).
 Cluster Bootstrap
 -----------------
 
-The provided scripts which sets up a Chef and Cobbler server via
+The provided scripts which sets up a Chef server via
 [Vagrant](http://www.vagrantup.com/) permits imaging of the cluster via PXE.
 
 Once the Chef server is set up, you can bootstrap any number of nodes to get
@@ -217,7 +217,6 @@ BACH currently relies upon a number of open-source packages:
  - [Sentric Hannibal](https://github.com/sentric/hannibal/)
  - [Twitter HDFS-DU](https://github.com/twitter/hdfs-du)
  - [Chef](https://www.chef.io/chef/)
- - [Cobbler](http://cobbler.github.io/)
  - [Diamond](https://github.com/BrightcoveOS/Diamond)
  - [Etherboot](http://etherboot.org/)
  - [Graphite](http://graphite.readthedocs.org/en/latest/)

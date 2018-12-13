@@ -2,10 +2,11 @@
   "name": "Test-Laptop",
   "override_attributes": {
     "bcpc": {
+      "admin-user": "vagrant",
       "databag_overrides": {
         "configs": {
           "Test-Laptop": {
-            "cobbler-root-password": "hadoopy"
+            "root-password": "vagrant"
           }
         }
       },
@@ -20,20 +21,20 @@
         "subnet1": {
           "management": {
             "vip" : "10.0.100.5",
-            "interface" : "eth0",
+            "interface" : "enp0s8",
             "netmask" : "255.255.255.0",
             "cidr" : "10.0.100.0/24",
             "gateway" : "10.0.100.3"
           },
           "storage": {
-            "interface" : "eth1",
+            "interface" : "enp0s9",
             "netmask" : "255.255.255.0",
             "cidr" : "172.16.100.0/24",
             "gateway" : "172.16.100.3"
           },
           "floating": {
             "vip" : "192.168.100.5",
-            "interface" : "eth2",
+            "interface" : "enp0s10",
             "netmask" : "255.255.255.0",
             "cidr" : "192.168.100.0/24",
             "gateway" : "192.168.100.3",

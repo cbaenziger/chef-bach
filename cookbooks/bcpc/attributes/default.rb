@@ -6,6 +6,9 @@
 default['bcpc']['bootstrap']['admin']['user'] = \
   ENV['SUDO_USER'] || ENV['USER'] || 'vagrant'
 
+# Note: this is also defined in cluster_assign_roles.sh
+default['bcpc']['cluster']['admin']['user'] = 'ubuntu'
+
 user = node['bcpc']['bootstrap']['admin']['user']
 
 
@@ -132,49 +135,49 @@ default['bcpc']['dns_servers'] = ['8.8.8.8', '8.8.4.4']
 #  Repos for things we rely on
 #
 ###########################################
-default['bcpc']['repos_for']['xenial'].tap do |xenial_repos|
-  xenial_repos['percona'].tap do |repo|
+default['bcpc']['repos_for']['bionic'].tap do |bionic_repos|
+  bionic_repos['percona'].tap do |repo|
     repo[:components] = ['main']
-    repo[:distribution] = 'xenial'
+    repo[:distribution] = 'bionic'
     repo[:key] = 'percona-release.key'
     repo[:uri] = 'http://repo.percona.com/apt'
   end
 
-  xenial_repos['canonical-support-tools'].tap do |repo|
+  bionic_repos['canonical-support-tools'].tap do |repo|
     repo[:components] = ['main']
-    repo[:distribution] = 'xenial'
+    repo[:distribution] = 'bionic'
     repo[:key] = 'ubuntu-support-tools.key'
     repo[:uri] =
       'http://ppa.launchpad.net/canonical-support/support-tools/ubuntu'
   end
 
-  xenial_repos['hortonworks'].tap do |repo|
+  bionic_repos['hortonworks'].tap do |repo|
     repo[:components] = ['main']
     repo[:distribution] = 'HDP'
     repo[:key] = 'hortonworks.key'
     repo[:uri] =
-      'http://public-repo-1.hortonworks.com/HDP/ubuntu16/2.x/updates/2.6.5.0'
+      'http://public-repo-1.hortonworks.com/HDP/ubuntu18/2.x/updates/2.6.5.0'
   end
 
-  xenial_repos['hortonworks-gpl'].tap do |repo|
+  bionic_repos['hortonworks-gpl'].tap do |repo|
     repo[:components] = ['main']
     repo[:distribution] = 'HDP-GPL'
     repo[:key] = 'hortonworks.key'
     repo[:uri] =
-      'http://public-repo-1.hortonworks.com/HDP-GPL/ubuntu16/2.x/updates/2.6.5.0'
+      'http://public-repo-1.hortonworks.com/HDP-GPL/ubuntu18/2.x/updates/2.6.5.0'
    end
 
-  xenial_repos['hdp-utils'].tap do |repo|
+  bionic_repos['hdp-utils'].tap do |repo|
     repo[:components] = ['main']
     repo[:distribution] = 'HDP-UTILS'
     repo[:key] = 'hortonworks.key'
     repo[:uri] =
-      'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16'
+      'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu18'
   end
 
-  xenial_repos['zabbix'].tap do |repo|
+  bionic_repos['zabbix'].tap do |repo|
     repo[:components] = ['main']
-    repo[:distribution] = 'xenial'
+    repo[:distribution] = 'bionic'
     repo[:key] = 'zabbix-official-repo.key'
     repo[:uri] = 'http://repo.zabbix.com/zabbix/3.0/ubuntu/'
   end
@@ -229,7 +232,6 @@ default['bcpc']['repos_for']['trusty'].tap do |trusty_repos|
 end
 
 default['bcpc']['repos'] = node['bcpc']['repos_for'][node['lsb']['codename']]
-default['cobbler']['package']['type'] = 'apt'
 
 ###########################################
 #

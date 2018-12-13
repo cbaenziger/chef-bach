@@ -75,8 +75,8 @@ if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
     end
     # use a bogus MAC for not yet created VMs in case it gets handed to Cobbler
     # otherwise use the MAC as passed in
-    mac = vms.key?(e[:hostname]) ? virtualbox_mac(e[:hostname]) : \
-      virtualbox_vm?(e) ? BOGUS_VB_MAC : e[:mac]
+    # XXX FIXME
+    mac = BOGUS_VB_MAC
     ip = IPAddr.new(management_net.to_i + \
       IPAddr.new("#{e[:ip_address]}/32").to_i - \
       IPAddr.new("#{e[:ip_address]}/24").to_i, Socket::AF_INET).to_s

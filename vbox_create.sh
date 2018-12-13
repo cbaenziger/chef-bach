@@ -75,8 +75,8 @@ function download_VM_files {
   pushd $VBOX_DIR_PATH
 
   # Can we create the bootstrap VM via Vagrant
-  if [[ ! -f xenial-server-cloudimg-amd64-vagrant-disk1.box ]]; then
-    $CURL -o xenial-server-cloudimg-amd64-vagrant-disk1.box http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-vagrant.box
+  if [[ ! -f bionic-server-cloudimg-amd64-vagrant-disk1.box ]]; then
+    $CURL -o bionic-server-cloudimg-amd64-vagrant-disk1.box http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64-vagrant.box
   fi
   popd
 }

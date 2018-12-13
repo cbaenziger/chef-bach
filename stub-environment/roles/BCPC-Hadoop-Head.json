@@ -13,11 +13,7 @@
     "recipe[bcpc::haproxy]",
     "recipe[bcpc::powerdns]",
     "recipe[bcpc-hadoop::disks]",
-    "recipe[bcpc-hadoop::graphite_disk_wrapper]",
     "recipe[bcpc::ssl_cert_deploy]",
-    "recipe[bcpc::graphite]",
-    "recipe[bcpc::diamond]",
-    "recipe[bcpc::zabbix-head]",
     "recipe[bcpc-hadoop::hdp_repo]",
     "recipe[bach_krb5::krb5_client]",
     "recipe[hdfsdu::create_user]",
@@ -26,8 +22,7 @@
     "recipe[bach_krb5::keytab_directory]",
     "recipe[bcpc-hadoop::bach_backup_wrapper]",
     "recipe[bcpc-hadoop::zookeeper_server]",
-    "recipe[bcpc-hadoop::journalnode]",
-    "recipe[bcpc-hadoop::graphite_to_zabbix]"
+    "recipe[bcpc-hadoop::journalnode]"
   ],
   "description": "A highly-available head node in a BCPC Hadoop cluster",
   "chef_type": "role",

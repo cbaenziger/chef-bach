@@ -18,7 +18,7 @@
 
 require 'spec_helper'
 
-set :os , :family => 'ubuntu' , :release => 16.04
+set :os , :family => 'ubuntu' , :release => 18.04
 
 describe 'ambari::default' do
  it 'ambari-server is installed' do

@@ -40,7 +40,8 @@ sudo /opt/chefdk/embedded/bin/gem install cluster_def
 popd > /dev/null
 
 if dpkg -s chef-server-core 2>/dev/null | grep -q ^Status.*installed; then
-  chef-server-ctl restart
+  chef-server-ctl stop
+  chef-server-ctl start
   echo 'chef-server is installed and the server has been restarted'
 else
   apt-get -y install chef-server-core

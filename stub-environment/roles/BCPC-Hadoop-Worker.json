@@ -14,8 +14,7 @@
     "recipe[hdfsdu::create_user]",
     "recipe[bcpc-hadoop::configs]",
     "recipe[pam::default]",
-    "recipe[bcpc-hadoop::datanode]",
-    "recipe[bcpc::diamond]"
+    "recipe[bcpc-hadoop::datanode]"
   ],
   "description": "A highly-available head node in a BCPC Hadoop cluster",
   "chef_type": "role",

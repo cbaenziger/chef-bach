@@ -55,7 +55,8 @@ IP=$2
 
 SSHCOMMON="-q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o VerifyHostKeyDNS=no"
 
-ADMIN_USER=$(/opt/chefdk/embedded/bin/ruby -e "require_relative 'lib/cluster_data';require_relative 'lib/chef_node'; include BACH::ClusterData; include BACH::ClusterData::ChefNode; admin_user")
+SCRIPT_DIR=$(dirname ${BASH_SOURCE[0]})
+ADMIN_USER=$(/opt/chefdk/embedded/bin/ruby -e "require '${SCRIPT_DIR}/lib/cluster_data';require '${SCRIPT_DIR}/lib/chef_node'; include BACH::ClusterData; include BACH::ClusterData::ChefNode; admin_user")
 
 if [[ $(basename "$0") == nodescp ]]; then
     SCPCMD="scp $SSHCOMMON"
