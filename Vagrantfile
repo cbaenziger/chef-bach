@@ -102,7 +102,7 @@ end
 common_vagrant_settings = Proc.new do |config|
   config.vm.box = 'ubuntu/bionic64'
   config.vm.box_url = 'bionic-server-cloudimg-amd64-vagrant-disk1.box'
-  config.vm.linked_clone = true
+  config.linked_clone = true
 
   # enable password based authentication
   config.vm.provision :shell,
