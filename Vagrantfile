@@ -96,11 +96,12 @@ common_vb_settings = Proc.new do |vb|
   vb.customize ['modifyvm', :id, '--vtxvpid', 'on']
   vb.customize ['modifyvm', :id, '--hwvirtex', 'on']
   vb.customize ['modifyvm', :id, '--ioapic', 'on']
+  vb.linked_clone = true
 end
 
 # Generic Vagrant settings for all VMs
 common_vagrant_settings = Proc.new do |config|
-  config.vm.box = 'bionic64'
+  config.vm.box = 'ubuntu/bionic64'
   config.vm.box_url = 'bionic-server-cloudimg-amd64-vagrant-disk1.box'
 
   # enable password based authentication
@@ -201,7 +202,6 @@ Vagrant.configure('2') do |config|
                            adapter_ip: hypervisor_float_ip,
                            type:       :static)
       cluster_node.vm.provider :virtualbox do |vb|
-        vb.linked_clone = true
         vb.name = node[:hostname]
         vb.customize ['modifyvm', :id, '--memory', memory]
         vb.customize ['modifyvm', :id, '--cpus', cpus]
