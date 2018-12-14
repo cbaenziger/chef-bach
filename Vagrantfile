@@ -96,13 +96,13 @@ common_vb_settings = Proc.new do |vb|
   vb.customize ['modifyvm', :id, '--vtxvpid', 'on']
   vb.customize ['modifyvm', :id, '--hwvirtex', 'on']
   vb.customize ['modifyvm', :id, '--ioapic', 'on']
+  vb.linked_clone = true
 end
 
 # Generic Vagrant settings for all VMs
 common_vagrant_settings = Proc.new do |config|
   config.vm.box = 'ubuntu/bionic64'
   config.vm.box_url = 'bionic-server-cloudimg-amd64-vagrant-disk1.box'
-  config.linked_clone = true
 
   # enable password based authentication
   config.vm.provision :shell,
