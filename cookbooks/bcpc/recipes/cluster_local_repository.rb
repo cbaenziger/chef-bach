@@ -67,14 +67,17 @@ unless node[:fqdn] == get_bootstrap
     block do
       require 'mixlib/shellout'
       cc = Mixlib::ShellOut.new('gpg',
-                                '--with-fingerprint',
+                                '--with-colons',
+                                '--import',
+                                '--import-options',
+                                'show-only',
                                 bcpc_apt_key_path)
       cc.run_command
       cc.error!
       node.run_state['bootstrap_gpg_fingerprint'] =
         cc.stdout.lines.select do |line|
-        line.include?('fingerprint =')
-      end.first.gsub(/.*fingerprint =/, '').gsub(/\s/, '').chomp
+        line.include?(/^fpr:/)
+      end.first.gsub(/:/, '').gsub(/\s/, '').chomp
     end
   end
 
