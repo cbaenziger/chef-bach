@@ -31,7 +31,14 @@ service 'cron' do
 end
 
 # Core networking package
-package 'vlan'
+%w(
+  vlan
+  ifupdown
+).each do |p|
+  package p do
+    action :upgrade
+  end
+end
 
 # Useful networking tools
 %w(
@@ -172,6 +179,8 @@ if node[:bcpc][:management][:vip] && get_nodes_for('powerdns').any?
   resolvers.unshift node[:bcpc][:management][:vip]
 end
 
+package 'resolvconf'
+
 ruby_block 'bcpc-add-resolvers' do
   resolvconf_interface_name =
     node[:bcpc][:networks][subnet][:management][:interface].to_s
@@ -230,6 +239,7 @@ end
 
 execute 'bcpc-interfaces-up' do
   command 'ifup -a'
+  ignore_failure true
 end
 
 ruby_block 'bcpc-deconfigure-dhcp-interfaces' do
