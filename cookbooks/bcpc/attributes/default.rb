@@ -143,14 +143,6 @@ default['bcpc']['repos_for']['bionic'].tap do |bionic_repos|
     repo[:uri] = 'http://repo.percona.com/apt'
   end
 
-  bionic_repos['canonical-support-tools'].tap do |repo|
-    repo[:components] = ['main']
-    repo[:distribution] = 'bionic'
-    repo[:key] = 'ubuntu-support-tools.key'
-    repo[:uri] =
-      'http://ppa.launchpad.net/canonical-support/support-tools/ubuntu'
-  end
-
   bionic_repos['hortonworks'].tap do |repo|
     repo[:components] = ['main']
     repo[:distribution] = 'HDP'
