@@ -78,38 +78,40 @@ else
   # certs and save them to local directories.
   #
   custom_ca_path = '/usr/local/share/ca-certificates/bloomberg'
-
-  directory custom_ca_path  do
-    action :create
-    mode 0755
-    user 'root'
-    group 'root'
-  end
-
   node.run_state[:bcpc_ca_certificate_list] = []
 
-  ruby_block 'Download Certificates' do
-    block do
-      require 'base64'
+  # Guard against issue of this being a read-only mountpoint in Vagrant
+  unless ::Dir.exist?(custom_ca_path) && ! ::File.writable?(custom_ca_path)
+    directory custom_ca_path  do
+      action :create
+      mode 0755
+      user 'root'
+      group 'root'
+    end
 
-      dbi_names =
-        Chef::DataBag.list('ca_certificates')['ca_certificates'].keys rescue []
+    ruby_block 'Download Certificates' do
+      block do
+        require 'base64'
 
-      dbi_names.each do |dbi_name|
-        raw_data = Chef::DataBagItem.load('ca_certificates', dbi_name).raw_data
+        dbi_names =
+          Chef::DataBag.list('ca_certificates')['ca_certificates'].keys rescue []
 
-        cert_path = File.join(custom_ca_path, raw_data['id'])
+        dbi_names.each do |dbi_name|
+          raw_data = Chef::DataBagItem.load('ca_certificates', dbi_name).raw_data
 
-        Chef::Resource::File.new(cert_path,
-                                 node.run_context).tap do |ff|
-          ff.user 'root'
-          ff.group 'root'
-          ff.mode 0444
-          ff.content Base64.decode64(raw_data['encoded_data'])
-          ff.run_action(:create)
+          cert_path = File.join(custom_ca_path, raw_data['id'])
+
+          Chef::Resource::File.new(cert_path,
+                                   node.run_context).tap do |ff|
+            ff.user 'root'
+            ff.group 'root'
+            ff.mode 0444
+            ff.content Base64.decode64(raw_data['encoded_data'])
+            ff.run_action(:create)
+          end
+
+          node.run_state[:bcpc_ca_certificate_list] << cert_path
         end
-
-        node.run_state[:bcpc_ca_certificate_list] << cert_path
       end
     end
   end
