@@ -76,7 +76,7 @@ unless node[:fqdn] == get_bootstrap
       cc.error!
       node.run_state['bootstrap_gpg_fingerprint'] =
         cc.stdout.lines.select do |line|
-        line.include?(/^fpr:/)
+        line.start_with?("fpr:")
       end.first.gsub(/:/, '').gsub(/\s/, '').chomp
     end
   end

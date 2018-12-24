@@ -21,6 +21,9 @@ chef_vault_loaded = begin
                       false
                     end
 
+# we depend on GPG version 1 calling conventions
+package 'gnupg1'
+
 include_recipe 'bach_repository::directory'
 bins_path = node['bach']['repository']['bins_directory']
 apt_directory = node['bach']['repository']['apt_directory']
@@ -112,7 +115,7 @@ end
 end
 
 execute 'generate local bach keys' do
-  command "cat #{gpg_conf_path} | gpg --batch --gen-key"
+  command "cat #{gpg_conf_path} | gpg1 --batch --gen-key"
   only_if { node.run_state['bach']['repository']['regen_gpg_keys'] == true }
   notifies :touch, "file[#{gpg_private_key_path} permission setting]", :immediate
 end
@@ -177,7 +180,7 @@ end
 #
 execute 'generate ascii key' do
   umask 0222
-  command "gpg --enarmor < #{gpg_public_key_path} " \
+  command "gpg1 --enarmor < #{gpg_public_key_path} " \
     "> #{node['bach']['repository']['ascii_key_path']}"
 end
 
@@ -220,7 +223,7 @@ end
 
 execute 'sign release file' do
   command <<-EOM
-  gpg --no-tty -abs \
+  gpg1 --no-tty -abs \
       --no-default-keyring \
       --keyring #{gpg_public_key_path} \
       --secret-keyring #{gpg_private_key_path} \
