@@ -32,6 +32,7 @@
   powertop
   silversearcher-ag
   sysstat
+  traceroute
   vim-nox
   xclip
   zip
