@@ -140,6 +140,7 @@ ruby_block 'decide to bootstrap MySQL quorum' do
      self.notifies :start, 'service[mysql]', :immediate
    else
      if node['bcpc']['mysql']['bootstrap_on_error'] == true then
+       Chef::Log.info("Bootstraping MySQL")
        self.notifies :run, 'execute[bootstrap MySQL quorum]', :immediate
      else
          raise 'All node appear to be inactive but bootstrap on error is disabled, this requires manual intervention'
@@ -219,6 +220,12 @@ end
 mysql_nodes = get_head_nodes
 pool_size = node['bcpc']['mysql']['innodb_buffer_pool_size']
 
+# work around https://bugs.launchpad.net/ubuntu/+source/percona-xtradb-cluster-5.6/+bug/1583000
+bash 'kill-mysql' do
+  code 'pkill -u mysql -f mysql'
+  action :nothing
+end
+
 template '/etc/mysql/conf.d/wsrep.cnf' do
   source 'mysql/wsrep.cnf.erb'
   mode 00644
@@ -227,6 +234,7 @@ template '/etc/mysql/conf.d/wsrep.cnf' do
             servers: mysql_nodes)
   sensitive true if respond_to?(:sensitive)
   notifies :stop, 'service[mysql]', :immediate
+  notifies :run, 'bash[kill-mysql]', :immediate
   notifies :run, 'ruby_block[decide to bootstrap MySQL quorum]', :immediate
 end
 
@@ -252,7 +260,7 @@ ruby_block 'Check MySQL Quorum Status' do
     # Returns 'ON' if wsrep is ready.
     # Returns 'nil' if we time out or get an error.
     mysql_status = nil
-    poll_attempts = 10
+    poll_attempts = 60
 
     poll_attempts.times do |i|
       mysql_status = wsrep_ready_value(mysql_local_connection_info)
