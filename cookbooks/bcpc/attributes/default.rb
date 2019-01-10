@@ -175,54 +175,6 @@ default['bcpc']['repos_for']['bionic'].tap do |bionic_repos|
   end
 end
 
-default['bcpc']['repos_for']['trusty'].tap do |trusty_repos|
-  trusty_repos['percona'].tap do |repo|
-    repo[:components] = ['main']
-    repo[:distribution] = 'trusty'
-    repo[:key] = 'percona-release.key'
-    repo[:uri] = 'http://repo.percona.com/apt'
-  end
-
-  trusty_repos['canonical-support-tools'].tap do |repo|
-    repo[:components] = ['main']
-    repo[:distribution] = 'trusty'
-    repo[:key] = 'ubuntu-support-tools.key'
-    repo[:uri] =
-      'http://ppa.launchpad.net/canonical-support/support-tools/ubuntu'
-  end
-
-  trusty_repos['hortonworks'].tap do |repo|
-    repo[:components] = ['main']
-    repo[:distribution] = 'HDP'
-    repo[:key] = 'hortonworks.key'
-    repo[:uri] =
-      'http://public-repo-1.hortonworks.com/HDP/ubuntu14/2.x/updates/2.6.5.0'
-  end
-
-  trusty_repos['hortonworks-gpl'].tap do |repo|
-    repo[:components] = ['main']
-    repo[:distribution] = 'HDP-GPL'
-    repo[:key] = 'hortonworks.key'
-    repo[:uri] =
-      'http://public-repo-1.hortonworks.com/HDP-GPL/ubuntu14/2.x/updates/2.6.5.0'
-   end
-
-  trusty_repos['hdp-utils'].tap do |repo|
-    repo[:components] = ['main']
-    repo[:distribution] = 'HDP-UTILS'
-    repo[:key] = 'hortonworks.key'
-    repo[:uri] =
-      'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu14'
-  end
-
-  trusty_repos['zabbix'].tap do |repo|
-    repo[:components] = ['main']
-    repo[:distribution] = 'trusty'
-    repo[:key] = 'zabbix-official-repo.key'
-    repo[:uri] = 'http://repo.zabbix.com/zabbix/3.0/ubuntu/'
-  end
-end
-
 default['bcpc']['repos'] = node['bcpc']['repos_for'][node['lsb']['codename']]
 
 ###########################################
