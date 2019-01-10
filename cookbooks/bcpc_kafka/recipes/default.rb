@@ -13,7 +13,6 @@ include_recipe 'bcpc::chef_vault_install'
 include_recipe 'bcpc::default'
 include_recipe 'bcpc::networking'
 include_recipe 'bcpc-hadoop::disks'
-include_recipe 'bcpc::ubuntu_tools_repo'
 include_recipe 'bcpc-hadoop::default'
 
 #
