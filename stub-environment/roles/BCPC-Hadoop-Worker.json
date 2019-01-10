@@ -11,6 +11,8 @@
     "recipe[bcpc-hadoop::hdp_repo]",
     "recipe[bach_krb5::krb5_client]",
     "recipe[hdfsdu::create_user]",
+    "recipe[java::default]",
+    "recipe[java::oracle_jce]",
     "recipe[bcpc-hadoop::configs]",
     "recipe[pam::default]",
     "recipe[bcpc-hadoop::datanode]"

@@ -63,10 +63,6 @@ package 'hdp-select' do
   action :upgrade
 end
 
-# Install Java
-include_recipe 'java::default'
-include_recipe 'java::oracle_jce'
-
 # jvmkill
 include_recipe 'bcpc-hadoop::jvmkill'
 
