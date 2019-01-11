@@ -61,9 +61,10 @@ vrrp_instance VI2_<%="#{node[:bcpc][:region_name]}"%> {
   }
   track_script {
     chk_haproxy
+  }
   authentication {
     auth_type PASS
-    auth_pass <%="#{get_config('keepalived-password')}"%>
+    auth_pass <%="#{get_config!('password','keepalived','os')}"%>
   }
 }
 
@@ -82,6 +83,7 @@ vrrp_instance GLOBAL_VIP_<%="#{node[:bcpc][:region_name]}"%> {
   }
   track_script {
     chk_haproxy
+  }
   authentication {
     auth_type PASS
     auth_pass <%="#{get_config!('password','keepalived','os')}"%>
