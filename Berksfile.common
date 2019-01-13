@@ -52,7 +52,7 @@ cookbook 'kafka',
 
 # we have a full fork of the chef-pdns cookbook
 cookbook 'pdns',
-  git: 'https://github.com/http-418/pdns'
+  git: 'https://github.com/cbaenziger/pdns'
 
 # locking_resource is not on the supermarket
 cookbook 'locking_resource',
