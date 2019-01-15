@@ -34,6 +34,19 @@ chef_vault_secret "mysql-pdns" do
   action :nothing
 end.run_action(:create_if_missing)
 
+# setup SystemD PID directories
+directory '/var/run/pdns_recursor' do
+  owner 'root'
+  group node['pdns']['group']
+  mode 0750
+end
+
+directory '/var/run/pdns_authoritative' do
+  owner 'root'
+  group node['pdns']['group']
+  mode 0750
+end
+
 subnet = node[:bcpc][:management][:subnet]
 raise "Did not get a subnet" if not subnet
 
@@ -57,6 +70,14 @@ if node[:bcpc][:management][:vip] and get_nodes_for("mysql").length() > 0
     tempHash['storage_ip'] =  node[:bcpc][:management][:vip]
     allnodes.push(tempHash)
   end
+
+  node.default['pdns']['authoritative']['config']['local-port'] =
+    '5300'
+  node.default['pdns']['authoritative']['config']['socket-dir'] =
+    '/var/run/pdns_authoritative'
+  node.default['pdns']['authoritative']['config']['local-address'] =
+    '127.0.0.1'
+  node.rm('pdns', 'authoritative', 'config', 'setgid')
 
   node.default['pdns']['authoritative']['package']['backends'] = ['gmysql']
   node.default['pdns']['authoritative']['config']['disable_axfr'] = false
@@ -91,7 +112,7 @@ if node[:bcpc][:management][:vip] and get_nodes_for("mysql").length() > 0
     connection lazy { mysql_connection_info.call }
     password get_config!('password', 'mysql-pdns', 'os')
     action :create
-    notifies :reload, 'service[pdns]'
+    notifies :restart, 'service[pdns]'
   end
 
   mysql_database_user get_config!('mysql-pdns-user') do
@@ -100,10 +121,20 @@ if node[:bcpc][:management][:vip] and get_nodes_for("mysql").length() > 0
     host '%'
     privileges [:all]
     action :grant
-    notifies :reload, 'service[pdns]'
+    notifies :restart, 'service[pdns]'
   end
 
   include_recipe 'pdns::authoritative_package'
+
+  node.default['pdns']['recursor']['config']['forward-zones'].push = 
+    "#{node['bcpc']['domain_name']}=127.0.0.1:5300"
+  node.default['pdns']['recursor']['config']['socket-dir'] =
+    '/var/run/pdns_recursor'
+  node.default['pdns']['recursor']['config']['local-address'] =
+    '127.0.0.1'
+  node.rm('pdns', 'recursor', 'config', 'setgid')
+
+  include_recipe 'pdns::recursor'
   delete_resource(:gem_package, 'mysql2')
   delete_resource(:gem_package, 'sequel')
 
@@ -136,17 +167,10 @@ if node[:bcpc][:management][:vip] and get_nodes_for("mysql").length() > 0
       c.status.success?
     }
     sensitive true if respond_to?(:sensitive)
-    notifies :reload, 'service[pdns]'
+    notifies :restart, 'service[pdns]'
   end
 
 end
-
-node.default['pdns']['authoritative']['config']['recursor'] =
-  node[:bcpc][:dns_servers][0]
-
-node.default['pdns']['authoritative']['config']['local_address'] = [ node[:bcpc][:floating][:vip] , node[:bcpc][:management][:vip] ]
-
-include_recipe 'pdns::authoritative_package'
 
 reverse_dns_zone = node['bcpc']['networks'][subnet]['floating']['reverse_dns_zone'] || calc_reverse_dns_zone(node['bcpc']['networks'][subnet]['floating']['cidr'])
 
@@ -236,4 +260,6 @@ allnodes.each do |server|
       end
     end
   end
+
+  include_recipe 'pdns::recursor'
 end
